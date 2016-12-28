@@ -3,5 +3,16 @@
     "description": "ORM for any PHP frameworks",
     "require": {
         "php": "^5.3.0"
-    }
+    },
+    "keywords": ["orm", "framwork", "library"],
+    "homepage": "http://github.com/ekodedypurnomo/Roulette",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eko Dedy Purnomo",
+            "email": "dedy@sekawanmedia.com",
+            "homepage": "http://sekawanmedia.com"
+        }
+    ]
 }
