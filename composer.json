@@ -1,0 +1,7 @@
+{
+    "name": "roulette/roulette",
+    "description": "ORM for any PHP frameworks",
+    "require": {
+        "php": "^5.3.3 || ^7.0"
+    }
+}
