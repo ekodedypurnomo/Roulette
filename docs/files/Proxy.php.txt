@@ -1,0 +1,560 @@
+<?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette;
+
+use Roulette\Base;
+use Roulette\Helper;
+use Roulette\Iterator;
+use Roulette\Tunnel\Tunnel;
+use Roulette\FrameworkChecker;
+use Roulette\Operation;
+use Roulette\Collection;
+
+/**
+ * Proxy class is used for database operation, it operate SELECT, INSERT, UPDATE, DELETE.
+ * 
+ * Any class can use proxy to make operation to database then proxy forward process onto {@link Roulette\Adapter Adapter}.
+ * One proxy proxy for one table, to operate CRUD in another table use better to use another table.
+ * Any custom operation can made with method `query`.
+ *
+ *      // dont forget to set the adapter first, only once
+ *      // eg, use CI3 framework
+ *      Proxy::tunnel(new \Roulette\proxies\CI3\Proxy($this->db));
+ *
+ * Proxy can be used for CRUD in SQL notation (SELECT, INSERT, UPDATE, DELETE)
+ *
+ *      // INSERT operation using proxy
+ *      Proxy::insert('employees', array(
+ *          'name'=>'me', 'job'=>'programmer'
+ *      ));
+ *
+ *      // UPDATE operation using proxy
+ *      Proxy::update('employees', array(
+ *          'name'=>'me' // where name is `me`
+ *      ), array(
+ *          'job'=>'developer' // set job = `developer`
+ *      ));
+ *
+ *      // SELECT operation using proxy
+ *      Proxy::select('employees', array(
+ *          'limit'=> 3,
+ *          'filters' => array( 'job'=>'developer' )
+ *      )); // will return array of record from database
+ *
+ *      // DELETE operation using proxy
+ *      Proxy::delete('employees', array(
+ *          'name'=>'me' // where name is `me`
+ *      ));
+ *
+ * @package \Roulette
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ */
+class Proxy extends Base
+{
+    /**
+     * Logged operation
+     * @var null
+     */
+    static protected $operations = null;
+
+    /**
+     * Set to true to keep operation logged
+     * @var boolean
+     */
+    static protected $operationLogging = false;
+
+    /**
+     * Tunnel to be used by operation to communicate with DB
+     * @var null
+     */
+    static protected $tunnel = null;
+
+    /**
+     * Tunnel for the framework that being used
+     * @var null
+     */
+    static protected $frameworkTunnel = null;
+
+    /**
+     * Framework that being used by the server application
+     * @var null
+     */
+    static protected $frameworkInfo = null;
+
+    /**
+     * Get the model that being used
+     * @param  [type] $model [description]
+     * @return [type]        [description]
+     */
+    static function getModel($model = null)
+    {
+        return static::tunnel()->getModel($model);
+    }
+
+    /**
+     * Get the framework that being used as a server application
+     * @return [type] [description]
+     */
+    static function getFrameworkInfo()
+    {
+        if(!static::$frameworkInfo)
+        {
+            static::$frameworkInfo = FrameworkChecker::getFrameworkInfo();
+        }
+        return static::$frameworkInfo;
+    }
+
+    /**
+     * Get the tunnel of the framework that being used
+     * @return [type] [description]
+     */
+    static function getFrameworkTunnel()
+    {
+        if(!self::$frameworkTunnel)
+        {
+            self::$frameworkTunnel = Collection::from(self::getFrameworkInfo())->get('tunnel');
+        }
+        return self::$frameworkTunnel;
+    }
+
+    /**
+     * Set or get the tunnel
+     * @return [type] [description]
+     */
+    static function tunnel()
+    {
+        $args = func_get_args();
+
+        return empty($args) ? static::getTunnel() : static::setTunnel(func_get_arg(0));
+    }
+
+    /** 
+     * Set the tunnel from framework that being used, to the proxy
+     * @return [type] [description]
+     */
+    static function useFrameworkTunnel()
+    {
+        static::setTunnel(static::getFrameworkTunnel());
+    }
+
+    /**
+     * retrieve data on a model
+     * @param Tunnel $tunnel [description]
+     */
+    static function setTunnel(Tunnel $tunnel)
+    {
+        static::$tunnel = $tunnel;
+        return static::class;
+    }
+
+    /**
+     * Get the tunnel that being used by the proxy
+     * @return /Roulette/tunnel 
+     */
+    static function getTunnel()
+    {
+        if(!static::$tunnel) static::useFrameworkTunnel();
+        return static::$tunnel;
+    }
+
+    /**
+     * Get Logged Operation
+     * @return Operation
+     */
+    static function getOperations()
+    {
+        if(!is_array(static::$operations)) static::$operations = array();
+        return static::$operations;
+    }
+
+    /**
+     * Add Operation
+     * @param Operation|null $operation [description]
+     */
+    static function addOperation(Operation $operation = null)
+    {
+        if(static::$operationLogging === true)
+        {
+            static::getOperations();
+            static::$operations[] = $operation;
+        }
+        return static::class;
+    }
+
+    /**
+     * Get the last added operation of the proxy
+     * @return array 
+     */
+    static function getLastOperation()
+    {
+        $operation = static::getOperations();
+        return empty($operation) ? null: end($operation);
+    }
+
+    /** 
+     * Get operationLogging
+     * @return boolean 
+     */
+    static function operationLogging()
+    {
+        return static::$operationLogging;
+    }
+
+    /**
+     * Set operationLogging to true
+     */
+    static function enableOperationLog()
+    {
+        static::$operationLogging = true;
+        return static::class;
+    }
+
+    /**
+     * Set operationLogging to false
+     */
+    static function disableOperationLog()
+    {
+        static::$operationLogging = false;
+        return static::class;
+    }
+
+    /**
+     * making operations with database
+     * @param  array   $config  [description]
+     * @param  boolean $execute [description]
+     * @return Operation
+     */
+    protected static function createOperation(array $config, $execute = true)
+    {
+        $tunnel = static::tunnel();
+
+        $operation = new Operation(static::tunnel(), $config);
+        
+        static::addOperation($operation);
+
+        if($execute) $operation->execute();
+
+        return $operation;
+    } 
+
+    /**
+     * Operate query to database.
+     *
+     * @param String $query Query string
+     * @param Boolean $result_array False to return as Object instead of Array, default `true`
+     * @param String|Array $callback A callable function for callback
+     * @return Mixed Object if $result_array is true, Array otherwise, Boolean false if operation raise an error.
+     */
+    static function query( $query = null, $result_array = true, $callback = null )
+    {
+        return static::createOperation(array(
+            'action'=>'query',
+            'parameters'=>array(
+                'query'=>$query, 'result_array'=>$result_array, 'callback'=>$callback
+            )
+        ));
+    }
+
+    /**
+     * @ignore
+     */
+    static protected function _select( $config = null )
+    {
+        $config = Iterator::apply_if($config, array(
+            'fields' => '*',
+            'filters' => null,
+            'sorter' => null,
+            'limit' => null,
+            'start' => 0,
+            'result_array' => true,
+        ), true);
+        $config = Iterator::apply($config, array(
+            'table'=> $table,
+        ), true);
+
+        // fields
+        if( ! is_array($config['fields']) ){
+            $config['fields'] = array($config['fields']);
+        }
+        if( is_array($config['fields']) ){
+            $fields = array();
+            foreach ($config['fields'] as $idx => $f) {
+                if( ! is_numeric($idx) ){
+                    $f = $idx.' AS `'.$f.'`';
+                }
+                array_push($fields, $f);
+            }
+            $config['fields'] = $fields;
+        }
+
+        $config = Iterator::transform_key($config, array(
+            'table'=> 'from',
+            'filters' => 'where',
+            'sorter' => 'order'
+        ));
+
+        $tunnel = static::tunnel();
+        $result = $tunnel->select($config);
+
+        return $result;
+    }
+
+    /**
+     * Operate select to database.
+     *
+     *      Example:
+     *
+     *      // #using fields
+     *      // fields can be writen in string or array (numeric or associative)
+     *      Proxy::select(array(
+     *          'table' => 'users',
+     *         'fields' => array('name','email') // it can be writen as string as well, eg: 'name, email'
+     *      ));
+     *      // if writen in string
+     *      Proxy::select(array(
+     *          'table' => 'users',
+     *         'fields' => 'name,email'
+     *      ));
+     *      // or using array as alias
+     *      Proxy::select(array(
+     *          'table' => 'users',
+     *         'fields' => array('name'=>'Name') // will same as 'select `name` as `Name`'
+     *      ));
+     *
+     *      // #using filters
+     *      // filters is like fields, could be writen in string or array
+     *      Proxy::select(array(
+     *          'table' => 'users',
+     *          'filters' => 'name = `me`'
+     *      ));
+     *      // or
+     *      Proxy::select(array(
+     *          'table' => 'users',
+     *          'filters' => array('name'=>'me')
+     *      ));
+     *      // and easy to use multi filters
+     *      // if you are familiar with CI where condition style, it will be easy
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'filters' => array('email like'=>'%@gmail.com', 'ocupation IS NOT NULL'=>null, 'age >'=>5)
+     *      ));
+     *
+     *      // #using sorter
+     *      // sorter can be writen in string or array too
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'sorter' => 'name' // will be sort by name asc
+     *      ));
+     *      // or
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'sorter' => 'name desc' // will be sort by name desc
+     *      ));
+     *      // or
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'sorter' => array('name') // will be sort by name asc
+     *      ));
+     *      // or
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'sorter' => array('name'=>'desc') // will be sort by name desc
+     *      ));
+     *      // or use multiple sort
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'sorter' => array('name', 'age'=>'desc') // will be sort by name asc and sort by age desc
+     *      ));
+     *
+     *      // #using limmit and sort
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'limit' => 10 // default is null, mean no limit
+     *      ));
+     *      // or
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'limit' => 10,
+     *          'start' => 5  // default is 0
+     *      ));
+     *
+     *      // #using result_array
+     *      Proxy::select(array(
+     *          'table' => 'users'
+     *          'result_array' => false // each record will be return as object instead of array, default result_array is true
+     *      ));
+     *
+     * @param Array $config Select config. 
+     *                      Config can be contain: 
+     *                      fields@Array|String, 
+     *                      filters@Array|String,
+     *                      sorter@Array|String, 
+     *                      limit@Integer, 
+     *                      start@Integer, 
+     *                      result_array@Boolean
+     * @param String|Array $callback A callable function for callback
+     * @return Mixed Object if $config['result_array'] is true, Array otherwise, Boolean false if operation raise an error.
+     */
+    static function select( array $config = null, callable $callback = null )
+    {
+        return static::createOperation(array(
+            'action'=>'select',
+            'parameters'=>$config
+        ));
+    }
+
+    /**
+     * Operate select to database, but only retrieve first record if success.
+     * Shorthand for select with limit = 1, so there is no different in config.
+     *
+     * @param Array $config Select config
+     * @param String|Array $callback A callable function for callback
+     * @return Mixed Object if $config['result_array'] is true, Array otherwise, Boolean false if operation raise an error.
+     */
+    static function selectOne(array $config = null, callable $callback = null )
+    {
+        return static::createOperation(array(
+            'action'=>'select',
+            'parameters'=>array_merge($config, array('take'=>1))
+        ));
+    }
+
+    /**
+     * Operate insert to database.
+     *
+     *      Example:
+     *      $proxy = new \Roulette\Proxy(array(
+     *          'connection' => $this->db,
+     *          'table' => 'users'
+     *      ));
+     *      $operation = $proxy->insert(array(
+     *          'field_one'=>'value_one',
+     *          'field_two'=>'value_two'
+     *      ));
+     *      if($operation === true){
+     *          echo 'the record successfully inserted';
+     *      }
+     *
+     * @param Array $data Key value pairs (data) to insert into table
+     * @param String|Array $callback A callable function for callback
+     * @return Boolean Success status
+     */
+    /**
+     * Operate insert to database.
+     * @param  array  $config   [description]
+     * @param  [type] $callback [description]
+     * @return [type]           [description]
+     */
+    static function insert( $config = array(), $callback = null )
+    {
+        return static::createOperation(array(
+            'action'=>'insert',
+            'parameters'=>$config
+        ));
+    }
+
+    /**
+     * Operate update to database.
+     *
+     *      Example:
+     *      $proxy = new \Roulette\Proxy(array(
+     *          'connection' => $this->db,
+     *          'table' => 'users'
+     *      ));
+     *      $operation = $proxy->update(array(
+     *          'field_two'=>'value_two'
+     *      ), array(
+     *          'field_one'=>'value_one',
+     *      ));
+     *      if($operation === true){
+     *          echo 'the record successfully updated';
+     *      }
+     *
+     * @param Array $data Key value pairs (data) to insert into table
+     * @param Array $condition Where condition
+     * @param String|Array $callback A callable function for callback
+     * @return Boolean Success status
+     */
+    /**
+     * update data to be sent to DB
+     * @param  array  $config   [description]
+     * @param  [type] $callback [description]
+     * @return [type]           [description]
+     */
+    static function update( $config = array(), $callback = null )
+    {
+        return static::createOperation(array(
+            'action'=>'update',
+            'parameters'=>$config
+        ));
+    }
+
+    /**
+     * Operate delete to database.
+     *
+     *      Example:
+     *      $proxy = new \Roulette\Proxy(array(
+     *          'connection' => $this->db,
+     *          'table' => 'users'
+     *      ));
+     *      $operation = $proxy->delete(array(
+     *          'field_one'=>'value_one',
+     *      ));
+     *      if($operation === true){
+     *          echo 'the record deleted';
+     *      }
+     *
+     * @param Array $condition Where condition
+     * @param String|Array $callback A callable function for callback
+     * @return Boolean Success status
+     */
+    /**
+     * the process of deleting data on DB
+     * @param  array  $config   [description]
+     * @param  [type] $callback [description]
+     * @return [type]           [description]
+     */
+    static function delete( $config = array(), $callback = null )
+    {
+        return static::createOperation(array(
+            'action'=>'delete',
+            'parameters'=>$config
+        ));
+    }
+
+    /**
+     * Get number of existense record in the database with condition.
+     * It could return as Boolean (true if any records, false otherwise).
+     *
+     * @param Array|String $condition Query condition
+     * @param Boolean $count False to return as Boolean instead of Number, default `true`
+     * @return Mixed Number if $count is true, Boolean otherwise.
+     */
+    /**
+     * Get number of existense record in the database with condition.
+     * @param  [type]  $config [description]
+     * @param  boolean $count  [description]
+     * @return [type]          [description]
+     */
+    static function exist( $config = null, $count = true )
+    {
+        $operation = static::createOperation(array(
+            'action'=>'exist',
+            'parameters'=>$config
+        ));
+
+        if(!$count ) $operation->result = (boolean) $operation->result;
+
+        return $operation;
+    }
+
+}
+

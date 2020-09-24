@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta charset="utf-8"/>
+    <title>    Roulette v2.0.0 API &raquo; \Roulette\Association\HasMany
+</title>
+    <meta name="author" content=""/>
+    <meta name="description" content=""/>
+
+            <link href="../css/template.css" rel="stylesheet" media="all"/>
+    
+            <!--[if lt IE 9]>
+        <script src="https://html5shim.googlecode.com/svn/trunk/html5.js" type="text/javascript"></script>
+        <![endif]-->
+        <script src="../js/jquery-1.7.1.min.js" type="text/javascript"></script>
+        <script src="../js/jquery-ui-1.8.2.custom.min.js" type="text/javascript"></script>
+        <script src="../js/jquery.mousewheel.min.js" type="text/javascript"></script>
+        <script src="../js/bootstrap.js" type="text/javascript"></script>
+        <script src="../js/template.js" type="text/javascript"></script>
+        <script src="../js/prettify/prettify.min.js" type="text/javascript"></script>
+    
+            <link rel="shortcut icon" href="../img/favicon.ico"/>
+        <link rel="apple-touch-icon" href="../img/apple-touch-icon.png"/>
+        <link rel="apple-touch-icon" sizes="72x72" href="../img/apple-touch-icon-72x72.png"/>
+        <link rel="apple-touch-icon" sizes="114x114" href="../img/apple-touch-icon-114x114.png"/>
+    </head>
+<body>
+
+        <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span> <span class="icon-bar"></span>
+                    <span class="icon-bar"></span> </a>
+                <a class="brand" href="../index.html">Roulette v2.0.0 API</a>
+
+                <div class="nav-collapse">
+                    <ul class="nav">
+                        <li class="dropdown">
+                            <a href="#api" class="dropdown-toggle" data-toggle="dropdown">
+                                API Documentation <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                                                    <li><a>Namespaces</a></li>
+                                                                        <li><a href="../namespaces/Roulette.html">Roulette</a></li>
+                                                                                                                                </ul>
+                        </li>
+                        <li class="dropdown" id="charts-menu">
+                            <a href="#charts" class="dropdown-toggle" data-toggle="dropdown">
+                                Charts <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="../graph_class.html">
+                                        <i class="icon-list-alt"></i>&#160;Class hierarchy diagram
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="dropdown" id="reports-menu">
+                            <a href="#reports" class="dropdown-toggle" data-toggle="dropdown">
+                                Reports <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="../errors.html">
+                                        <i class="icon-list-alt"></i>&#160;Errors
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="../markers.html">
+                                        <i class="icon-list-alt"></i>&#160;Markers
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="../deprecated.html">
+                                        <i class="icon-list-alt"></i>&#160;Deprecated
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="go_to_top">
+            <a href="#___" style="color: inherit">Back to top&#160;&#160;<i class="icon-upload icon-white"></i></a>
+        </div>
+    </div>
+    
+    <div id="___" class="container">
+        <noscript>
+            <div class="alert alert-warning">
+                Javascript is disabled; several features are only available if Javascript is enabled.
+            </div>
+        </noscript>
+
+        
+            <style>
+        .deprecated h2 {
+            text-decoration: line-through;
+        }
+    </style>
+    <div class="row">
+        <div class="span4">
+                    <div class="btn-group view pull-right" data-toggle="buttons-radio">
+        <button class="btn details" title="Show descriptions and method names"><i class="icon-list"></i></button>
+        <button class="btn simple" title="Show only method names"><i class="icon-align-justify"></i></button>
+    </div>
+    <div class="btn-group visibility" data-toggle="buttons-checkbox">
+        <button class="btn public active" title="Show public elements">Public</button>
+        <button class="btn protected" title="Show protected elements">Protected</button>
+        <button class="btn private" title="Show private elements">Private</button>
+        <button class="btn inherited active" title="Show inherited elements">Inherited</button>
+    </div>
+
+        <ul class="side-nav nav nav-list">
+        <li class="nav-header">
+            <i class="icon-custom icon-method"></i> Methods
+            <ul>
+                                                                                                    <li class="method public inherited">
+        <a href="#method___construct" title="__construct :: ">
+            <span class="description"></span><pre>__construct</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_associate" title="associate :: Get record/s from the model that being associated with">
+            <span class="description">Get record/s from the model that being associated with</span><pre>associate</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_config" title="config :: Sorthand for getConfig if pass one argument.">
+            <span class="description">Sorthand for getConfig if pass one argument.</span><pre>config</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_configDisabled" title="configDisabled :: Check if config has `true` value">
+            <span class="description">Check if config has `true` value</span><pre>configDisabled</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_configEnabled" title="configEnabled :: Check if config has `true` value">
+            <span class="description">Check if config has `true` value</span><pre>configEnabled</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_configure" title="configure :: Configure class using passed arguments (Array necessaries)">
+            <span class="description">Configure class using passed arguments (Array necessaries)</span><pre>configure</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_create" title="create :: Function to send new data">
+            <span class="description">Function to send new data</span><pre>create</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_disableConfig" title="disableConfig :: Set config or property to `true`">
+            <span class="description">Set config or property to `true`</span><pre>disableConfig</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_enableConfig" title="enableConfig :: Set config or property to `true`">
+            <span class="description">Set config or property to `true`</span><pre>enableConfig</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_from" title="from :: function to process layout">
+            <span class="description">function to process layout</span><pre>from</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_getConfig" title="getConfig :: Get value from a config/property">
+            <span class="description">Get value from a config/property</span><pre>getConfig</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_getField" title="getField :: get the foreign field of the assocaited model">
+            <span class="description">get the foreign field of the assocaited model</span><pre>getField</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_getModel" title="getModel :: ">
+            <span class="description"></span><pre>getModel</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_getName" title="getName :: get the Name fo the Association">
+            <span class="description">get the Name fo the Association</span><pre>getName</pre>
+        </a>
+    </li>
+
+                                                                                                                                                                <li class="method public inherited">
+        <a href="#method_getType" title="getType :: get the Type of the Association">
+            <span class="description">get the Type of the Association</span><pre>getType</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_hasConfig" title="hasConfig :: Check existense of config name.">
+            <span class="description">Check existense of config name.</span><pre>hasConfig</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_is" title="is :: Determines information about the current platform the application is running on">
+            <span class="description">Determines information about the current platform the application is running on</span><pre>is</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_mergeParentConfig" title="mergeParentConfig :: Merge its config with parent config.">
+            <span class="description">Merge its config with parent config.</span><pre>mergeParentConfig</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_setConfig" title="setConfig :: Set value for a config/property">
+            <span class="description">Set value for a config/property</span><pre>setConfig</pre>
+        </a>
+    </li>
+
+                                                                                                        <li class="method public inherited">
+        <a href="#method_setModel" title="setModel :: ">
+            <span class="description"></span><pre>setModel</pre>
+        </a>
+    </li>
+
+                                                </ul>
+        </li>
+        <li class="nav-header protected">» Protected
+            <ul>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <li class="method protected inherited">
+                            <a href="#method_getRelationFrom" title="getRelationFrom :: ">
+                                <span class="description"></span><pre>getRelationFrom</pre>
+                            </a>
+                        </li>
+                                                                                                                                                                                                                                                                        </ul>
+        </li>
+        <li class="nav-header private">» Private
+            <ul>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </ul>
+        </li>
+        <li class="nav-header">
+            <i class="icon-custom icon-constant"></i> Constants
+            <ul>
+                            </ul>
+        </li>
+    </ul>
+
+
+        </div>
+
+        <div class="span8">
+            <div class="element class">
+                <h1>HasMany</h1>
+                <small style="display: block; text-align: right">
+                                            Extends <a href="../classes/Roulette.Association.AssociationAbstract.html">\Roulette\Association\AssociationAbstract</a>
+                                                        </small>
+                <p class="short_description">Assosiation was a description of a relationship between a model one with the other models
+which in this function there-many relationship model or one model</p>
+                <div class="details">
+                    <div class="long_description">
+                        
+                    </div>
+                    <table class="table table-bordered">
+                                                                                    <tr>
+                                    <th>
+                                        package
+                                                                            </th>
+                                    <td>
+                                                                                    
+                                                                                <p>\Roulette</p>
+                                    </td>
+                                </tr>
+                                                                                                                <tr>
+                                    <th>
+                                        since
+                                                                            </th>
+                                    <td>
+                                                                                    
+                                                                                <p>Version 2.0.0</p>
+                                    </td>
+                                </tr>
+                                                                                                                <tr>
+                                    <th>
+                                        author
+                                                                            </th>
+                                    <td>
+                                                                                    
+                                                                                <p>Eko Dedy Purnomo <a href="mailto:eko.dedy.purnomo@gmail.com">eko.dedy.purnomo@gmail.com</a></p>
+                                    </td>
+                                </tr>
+                                                                                                                                                                                </table>
+
+                    <h3><i class="icon-custom icon-method"></i> Methods</h3>
+                                                                <a id="method___construct"></a>
+                        <div class="element clickable method public  method___construct inherited" data-toggle="collapse" data-target=".method___construct .collapse">
+                            <h2>__construct</h2>
+                            <pre>__construct() </pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                    
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_associate"></a>
+                        <div class="element clickable method public  method_associate inherited" data-toggle="collapse" data-target=".method_associate .collapse">
+                            <h2>Get record/s from the model that being associated with</h2>
+                            <pre>associate(array $record, boolean $reload = false,  $options = null) : array</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                <span class="label">abstract</span>                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$record</h4>
+                                                <code>array</code><p><p>retrieve data on a model</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$reload</h4>
+                                                <code>boolean</code><p><p>choice whether or not to refresh</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$options</h4>
+                                                <code></code><p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>array</code><p><p>[description]</p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_config"></a>
+                        <div class="element clickable method public  method_config inherited" data-toggle="collapse" data-target=".method_config .collapse">
+                            <h2>Sorthand for getConfig if pass one argument.</h2>
+                            <pre>config() : Mixed</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"><p>Sorthand for setConfig if pass two or more arguments.</p></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                    
+                                                                            <h3>Response</h3>
+                                        <code>Mixed</code><p><p>Value depend on the arguments passed</p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_configDisabled"></a>
+                        <div class="element clickable method public  method_configDisabled inherited" data-toggle="collapse" data-target=".method_configDisabled .collapse">
+                            <h2>Check if config has `true` value</h2>
+                            <pre>configDisabled(string $configName = null) : boolean</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configName</h4>
+                                                <code>string</code><p><p>Config name</p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>boolean</code><p><p>Enabled status</p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_configEnabled"></a>
+                        <div class="element clickable method public  method_configEnabled inherited" data-toggle="collapse" data-target=".method_configEnabled .collapse">
+                            <h2>Check if config has `true` value</h2>
+                            <pre>configEnabled(string $configName = null) : boolean</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configName</h4>
+                                                <code>string</code><p><p>Config name</p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>boolean</code><p><p>Enabled status</p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_configure"></a>
+                        <div class="element clickable method public  method_configure inherited" data-toggle="collapse" data-target=".method_configure .collapse">
+                            <h2>Configure class using passed arguments (Array necessaries)</h2>
+                            <pre>configure(Array $config = null,  $options = null) : \Roulette\Base</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"><p>Example:
+class Person extends \Roulette\Base
+{
+protected $name = null;
+function <strong>construct($config){
+function </strong>construct($config)
+}
+}
+$person-&gt;configure(array(
+'name'=&gt;'Eko'
+));
+$person-&gt;getConfig('name'); // return 'Eko'</p></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$config</h4>
+                                                <code>Array</code><p><p>New configs to be applied in</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$options</h4>
+                                                <code></code><p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code><a href="../classes/Roulette.Base.html">\Roulette\Base</a></code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_create"></a>
+                        <div class="element clickable method public  method_create inherited" data-toggle="collapse" data-target=".method_create .collapse">
+                            <h2>Function to send new data</h2>
+                            <pre>create(\Roulette\[type] $config = null) : \Roulette\[type]</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                <span class="label">static</span>                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$config</h4>
+                                                <code>\Roulette\[type]</code><p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>\Roulette\[type]</code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_disableConfig"></a>
+                        <div class="element clickable method public  method_disableConfig inherited" data-toggle="collapse" data-target=".method_disableConfig .collapse">
+                            <h2>Set config or property to `true`</h2>
+                            <pre>disableConfig(string $configName = null, boolean $disabled = true) : \Roulette\Base</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configName</h4>
+                                                <code>string</code><p><p>Config/Property name to be setted</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$disabled</h4>
+                                                <code>boolean</code><p><p>Enabled status</p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code><a href="../classes/Roulette.Base.html">\Roulette\Base</a></code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_enableConfig"></a>
+                        <div class="element clickable method public  method_enableConfig inherited" data-toggle="collapse" data-target=".method_enableConfig .collapse">
+                            <h2>Set config or property to `true`</h2>
+                            <pre>enableConfig(string $configName = null, boolean $enabled = true) : \Roulette\Base</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configName</h4>
+                                                <code>string</code><p><p>Config/Property name to be setted</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$enabled</h4>
+                                                <code>boolean</code><p><p>Enabled status</p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code><a href="../classes/Roulette.Base.html">\Roulette\Base</a></code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_from"></a>
+                        <div class="element clickable method public  method_from inherited" data-toggle="collapse" data-target=".method_from .collapse">
+                            <h2>function to process layout</h2>
+                            <pre>from(object $object = null) : object</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                <span class="label">static</span>                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$object</h4>
+                                                <code>object</code><p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>object</code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_getConfig"></a>
+                        <div class="element clickable method public  method_getConfig inherited" data-toggle="collapse" data-target=".method_getConfig .collapse">
+                            <h2>Get value from a config/property</h2>
+                            <pre>getConfig(string $configName = null, mixed $defaultValue = null) : Mixed</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configName</h4>
+                                                <code>string</code><p><p>Config/property name</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$defaultValue</h4>
+                                                <code>mixed</code><p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>Mixed</code><p><p>Config/property value</p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_getField"></a>
+                        <div class="element clickable method public  method_getField inherited" data-toggle="collapse" data-target=".method_getField .collapse">
+                            <h2>get the foreign field of the assocaited model</h2>
+                            <pre>getField() : String</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                    
+                                                                            <h3>Response</h3>
+                                        <code>String</code><p><p>[description]</p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_getModel"></a>
+                        <div class="element clickable method public  method_getModel inherited" data-toggle="collapse" data-target=".method_getModel .collapse">
+                            <h2>getModel</h2>
+                            <pre>getModel() </pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                    
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_getName"></a>
+                        <div class="element clickable method public  method_getName inherited" data-toggle="collapse" data-target=".method_getName .collapse">
+                            <h2>get the Name fo the Association</h2>
+                            <pre>getName() : String</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                    
+                                                                            <h3>Response</h3>
+                                        <code>String</code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_getRelationFrom"></a>
+                        <div class="element clickable method protected  method_getRelationFrom inherited" data-toggle="collapse" data-target=".method_getRelationFrom .collapse">
+                            <h2>getRelationFrom</h2>
+                            <pre>getRelationFrom(\Roulette\Model $record) </pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$record</h4>
+                                                <code><a href="../classes/Roulette.Model.html">\Roulette\Model</a></code><p></p>
+                                            </div>
+                                                                            
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_getType"></a>
+                        <div class="element clickable method public  method_getType inherited" data-toggle="collapse" data-target=".method_getType .collapse">
+                            <h2>get the Type of the Association</h2>
+                            <pre>getType() : String</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                    
+                                                                            <h3>Response</h3>
+                                        <code>String</code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_hasConfig"></a>
+                        <div class="element clickable method public  method_hasConfig inherited" data-toggle="collapse" data-target=".method_hasConfig .collapse">
+                            <h2>Check existense of config name.</h2>
+                            <pre>hasConfig(string $configName = null) : boolean</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configName</h4>
+                                                <code>string</code><p><p>Config name</p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>boolean</code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_is"></a>
+                        <div class="element clickable method public  method_is inherited" data-toggle="collapse" data-target=".method_is .collapse">
+                            <h2>Determines information about the current platform the application is running on</h2>
+                            <pre>is(object $object = null) : object</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                <span class="label">static</span>                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$object</h4>
+                                                <code>object</code><p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code>object</code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_mergeParentConfig"></a>
+                        <div class="element clickable method public  method_mergeParentConfig inherited" data-toggle="collapse" data-target=".method_mergeParentConfig .collapse">
+                            <h2>Merge its config with parent config.</h2>
+                            <pre>mergeParentConfig(array $config = null) : \Roulette\Base</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"><p>this will merge the parent config into it from parent config,
+this method better to use in merge some config within value is array</p></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$config</h4>
+                                                <code>array</code><p><p>a set of configuration to be applied to the class</p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code><a href="../classes/Roulette.Base.html">\Roulette\Base</a></code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_setConfig"></a>
+                        <div class="element clickable method public  method_setConfig inherited" data-toggle="collapse" data-target=".method_setConfig .collapse">
+                            <h2>Set value for a config/property</h2>
+                            <pre>setConfig(string $configName = null, Mixed $configValue = null, boolean $merge_config = false) : \Roulette\Base</pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configName</h4>
+                                                <code>string</code><p><p>Config/property name</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$configValue</h4>
+                                                <code>Mixed</code><p><p>Value to be set into the property</p></p>
+                                            </div>
+                                                                                    <div class="subelement argument">
+                                                <h4>$merge_config</h4>
+                                                <code>boolean</code><p><p>merge config with its existing config, used if existing value is array</p></p>
+                                            </div>
+                                                                            
+                                                                            <h3>Response</h3>
+                                        <code><a href="../classes/Roulette.Base.html">\Roulette\Base</a></code><p></p>
+                                                                    </div>
+                            </div>
+
+                        </div>
+                                            <a id="method_setModel"></a>
+                        <div class="element clickable method public  method_setModel inherited" data-toggle="collapse" data-target=".method_setModel .collapse">
+                            <h2>setModel</h2>
+                            <pre>setModel( $model) </pre>
+                            <div class="labels">
+                                <span class="label">inherited</span>                                                                                                                                                            </div>
+
+                            
+                            <div class="row collapse">
+                                <div class="detail-description">
+                                    <div class="long_description"></div>
+
+                                    <table class="table">
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                    <tr>
+                                                <th>
+                                                    
+                                                </th>
+                                                <td>
+                                                                                                    </td>
+                                            </tr>
+                                                                                                                    </table>
+
+                                                                            <h3>Arguments</h3>
+                                                                                    <div class="subelement argument">
+                                                <h4>$model</h4>
+                                                <code></code><p></p>
+                                            </div>
+                                                                            
+                                                                    </div>
+                            </div>
+
+                        </div>
+                    
+                    
+                                                                <h3><i class="icon-custom icon-property"></i> Properties</h3>
+                                                    <a id="property_type"> </a>
+                            <div class="element clickable property  protected property_type inherited" data-toggle="collapse" data-target=".property_type .collapse">
+                                <h2>Type of the Association
+only hasMany | hasOne</h2>
+                                <pre>type : string</pre>
+                                <div class="labels">
+                                    <span class="label">inherited</span>                                                                    </div>
+                                <div class="row collapse">
+                                    <div class="detail-description">
+                                        <div class="long_description"></div>
+
+                                        <table class="table">
+                                                                                            <tr>
+                                                    <th>
+                                                        var
+                                                    </th>
+                                                    <td>
+                                                                                                                    
+                                                                                                            </td>
+                                                </tr>
+                                                                                    </table>
+
+                                                                                    <h3>Type(s)</h3>
+                                            <code>string</code>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                    <a id="property_name"> </a>
+                            <div class="element clickable property  protected property_name inherited" data-toggle="collapse" data-target=".property_name .collapse">
+                                <h2>name of the Association</h2>
+                                <pre>name : String</pre>
+                                <div class="labels">
+                                    <span class="label">inherited</span>                                                                    </div>
+                                <div class="row collapse">
+                                    <div class="detail-description">
+                                        <div class="long_description"></div>
+
+                                        <table class="table">
+                                                                                            <tr>
+                                                    <th>
+                                                        var
+                                                    </th>
+                                                    <td>
+                                                                                                                    
+                                                                                                            </td>
+                                                </tr>
+                                                                                    </table>
+
+                                                                                    <h3>Type(s)</h3>
+                                            <code>String</code>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                    <a id="property_pivot"> </a>
+                            <div class="element clickable property  protected property_pivot inherited" data-toggle="collapse" data-target=".property_pivot .collapse">
+                                <h2>pivot</h2>
+                                <pre>pivot : </pre>
+                                <div class="labels">
+                                    <span class="label">inherited</span>                                                                    </div>
+                                <div class="row collapse">
+                                    <div class="detail-description">
+                                        <div class="long_description"></div>
+
+                                        <table class="table">
+                                                                                            <tr>
+                                                    <th>
+                                                        
+                                                    </th>
+                                                    <td>
+                                                                                                            </td>
+                                                </tr>
+                                                                                    </table>
+
+                                                                                    <h3>Type(s)</h3>
+                                            <code></code>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                    <a id="property_field"> </a>
+                            <div class="element clickable property  protected property_field inherited" data-toggle="collapse" data-target=".property_field .collapse">
+                                <h2>Foreign field of the associated model</h2>
+                                <pre>field : null</pre>
+                                <div class="labels">
+                                    <span class="label">inherited</span>                                                                    </div>
+                                <div class="row collapse">
+                                    <div class="detail-description">
+                                        <div class="long_description"></div>
+
+                                        <table class="table">
+                                                                                            <tr>
+                                                    <th>
+                                                        var
+                                                    </th>
+                                                    <td>
+                                                                                                                    
+                                                                                                            </td>
+                                                </tr>
+                                                                                    </table>
+
+                                                                                    <h3>Type(s)</h3>
+                                            <code>null</code>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                    <a id="property_model"> </a>
+                            <div class="element clickable property  protected property_model inherited" data-toggle="collapse" data-target=".property_model .collapse">
+                                <h2>The model.</h2>
+                                <pre>model : string</pre>
+                                <div class="labels">
+                                    <span class="label">inherited</span>                                                                    </div>
+                                <div class="row collapse">
+                                    <div class="detail-description">
+                                        <div class="long_description"></div>
+
+                                        <table class="table">
+                                                                                            <tr>
+                                                    <th>
+                                                        var
+                                                    </th>
+                                                    <td>
+                                                                                                                    
+                                                                                                            </td>
+                                                </tr>
+                                                                                    </table>
+
+                                                                                    <h3>Type(s)</h3>
+                                            <code>string</code>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                            </div>
+            </div>
+            <a id="\Roulette\Association\HasMany"></a>
+            <ul class="breadcrumb">
+                <li><a href="../index.html"><i class="icon-custom icon-class"></i></a></li>
+                    
+    
+    <li><span class="divider">\</span><a href="../namespaces/Roulette.Association.html">Association</a></li>
+
+                <li class="active"><span class="divider">\</span><a href="../classes/Roulette.Association.HasMany.html">HasMany</a></li>
+            </ul>
+        </div>
+    </div>
+
+    </div>
+
+        <footer class="span12">
+            Template is built using <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap 2</a> and icons provided by
+            <a href="http://glyphicons.com/">Glyphicons</a>.<br/>
+            Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and<br/>
+            generated on Mon, 27 Feb 2017 09:40:54 +0700.<br/>
+    </footer>
+    </body>
+</html>

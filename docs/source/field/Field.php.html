@@ -1,0 +1,489 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/**
+ * Roulette\field\Field Field is part of the model, which is used to declare a field of that model
+ */
+namespace Roulette\field;
+
+use Roulette\Base;
+use Roulette\Collection;
+use Roulette\validation\Validation;
+
+use Roulette\util\Configurable;
+
+/**
+ *  Field is part of the model, which is used to declare a field of that model
+ *  
+ * @package Roulette
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ */
+class Field extends Base
+{
+    // use util\Observable;
+    use Configurable;
+
+    /**
+     * The name of field by which for references.
+     * 
+     * @var string
+     */
+    public $name = null;
+
+    /**
+     * Name of field from database to access.
+     * 
+     * @var array
+     */
+    public $source = null;
+
+    /**
+     * String to output for message and another user text purpose.
+     * 
+     * @var String
+     */
+    public $display = null;
+
+    /**
+     * Accessibility for getData in model, private is `true` will be ignored for append on it.
+     * 
+     * @var boolean
+     */
+    public $private = false;
+
+    /**
+     * Define if field is puphet will be ignore for insert/update operation.
+     * 
+     * @var boolean
+     */
+    public $extension = false;
+
+    /**
+     * Readonly is `true` will be effect on field as readonly
+     * 
+     * @var boolean
+     */
+    public $readOnly = false;
+
+    /**
+     * Default value for first initializing data in the Model.
+     * 
+     * @var String
+     */
+    public $default = null;
+
+    /**
+     * Make field will be insert on DB, if insert `false` field not be insert on DB
+     * 
+     * @var boolean
+     */
+    public $insert = true;
+
+    /**
+     * Field will be update on DB &quot;Default value is true&quot;, if update `false` field can't be update
+     * 
+     * @var boolean
+     */
+    public $update = true;
+
+    /**
+     * Field can be delete from DB &quot;Default value is true&quot;, if delete `false` field can't be delete
+     * 
+     * @var boolean
+     */
+    public $delete = true;
+
+    /**
+     * Default value select is true, if select `false` so field can't be select
+     * 
+     * @var boolean
+     */
+    public $select = true;
+
+    /**
+     * writer will enter the field to DB
+     * 
+     * @var array
+     */
+    public $writer = null;
+
+    /**
+     * reader will read Field from DB field
+     * 
+     * @var array
+     */
+    public $reader = null;
+
+    /**
+     * Default value converter is null, can be filled with an array
+     * 
+     * @var array
+     */
+    public $converter = null;
+
+    /**
+     * Default value renderer is null. renderer can be use for field ex: gender-&gt;render to Male or boolean
+     * 
+     * @var null
+     */
+    public $renderer = null;
+
+    /**
+     * Field will be vatidate from DB is same on record
+     * 
+     * @var null
+     */
+    public $validation = null;
+
+    /**
+     * __construct for function creates a new object field.
+     * @param object|string|array $config field configuration
+     */
+    function __construct($config = null)
+    {
+        if(is_string($config)) $config = array('name'=&gt;$config);
+        if(is_object($config)) $config = (array) $config; 
+        if(!is_array($config)) $config = array($config);
+
+        $configs = Collection::create($config);
+
+        // set default for source and display
+        $configs-&gt;setIfNot(array(
+            'source'=&gt;$configs-&gt;get('name'),
+            'display'=&gt;$configs-&gt;get('name'),
+        ));
+
+        // config validation
+        $validation = $configs-&gt;get('validation');
+        if (Validation::isNot($validation)) {
+            $configs-&gt;set('validation', new Validation(array(
+                'validators' =&gt; $validation
+            )));
+        }
+
+        $this-&gt;configure($configs-&gt;getAll());
+
+        return $this;
+    }
+
+    /**
+     * Method allows a class to decide how it will react when it is treated like a string.
+     * Converting objects without __toString() method to string would cause E_RECOVERABLE_ERROR
+     * 
+     * @return string [any string on name]
+     */
+    function __toString()
+    {
+        return $this-&gt;name;
+    }
+
+    /**
+     * Take specified Name from field
+     * 
+     * @return String just take the data string
+     */
+    function getName()
+    {
+        return $this-&gt;name;
+    }
+
+    /**
+     * Take specified Source from Field
+     * 
+     * @return String     
+     */
+    function getSource()
+    {
+        return $this-&gt;source;
+    }
+
+    /**
+     * Take specified Display from Field
+     * 
+     * @return String
+     */
+    function getDisplay()
+    {
+        return $this-&gt;display;
+    }
+
+    /**
+     * Take specified Default value from Field
+     * 
+     * @return String
+     */
+    function getDefault()
+    {
+        return $this-&gt;default;
+    }
+
+    /**
+     * Field can only view if field isReadOnly is true
+     * 
+     * @return boolean [true / false]
+     */
+    function isReadOnly()
+    {
+        return (bool) $this-&gt;readOnly;
+    }
+
+    /**
+     * See what the field can be Update/Insert
+     * 
+     * @return boolean
+     */
+    function isExtension()
+    {
+        return (bool) $this-&gt;extension;
+    }
+
+    /**
+     * See what the field is Private or not
+     * 
+     * @return boolean
+     */
+    function isPrivate()
+    {
+        return (bool) $this-&gt;private;
+    }
+
+    /**
+     * See what the field is Public or not
+     * 
+     * @return boolean
+     */
+    function isPublic()
+    {
+        return !$this-&gt;isPrivate();
+    }
+
+    /**
+     * View the status field, can be select or not
+     * 
+     * @return Boolean
+     */
+    function selectable()
+    {
+        return $this-&gt;select;
+    }
+
+    /**
+     * View the status field, can be insert or not
+     * 
+     * @return Boolean
+     */
+    function insertable()
+    {
+        return $this-&gt;insert;
+    }
+
+    /**
+     * View the status field, can be update or not
+     * 
+     * @return Boolean
+     */
+    function updateable()
+    {
+        return $this-&gt;update;
+    }
+
+    /**
+     * View the status field, can be delete or not
+     * 
+     * @return Boolean
+     */
+    function deleteable()
+    {
+        return $this-&gt;delete;
+    }
+
+    /**
+     * Use Renderer for specified fields
+     * 
+     * @return Array
+     */
+    function useRenderer()
+    {
+        return !empty($this-&gt;renderer);
+    }
+
+    /**
+     * Use Converter for specified fields
+     * 
+     * @return Array
+     */
+    function useConverter()
+    {
+        return !empty($this-&gt;converter);
+    }
+
+    /**
+     * Use Reader for specified fields
+     * 
+     * @return Array
+     */
+    function useReader()
+    {
+        return !empty($this-&gt;reader);
+    }
+
+    /**
+     * Use Writer for specified fields
+     * 
+     * @return Array
+     */
+    function useWriter()
+    {
+        return !empty($this-&gt;writer);
+    }
+
+    /**
+     * Use Validation for specified fields
+     * 
+     * @return Array
+     */
+    function useValidation()
+    {
+        return !empty($this-&gt;validation);
+    }
+
+    /**
+     * Read this field by params value
+     * 
+     * @param  String $value value of this field
+     * @return Object return a value
+     */
+    function read($value = null)
+    {
+        if ($this-&gt;useReader() and is_callable($this-&gt;reader)) {
+            $value = call_user_func_array($this-&gt;reader, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * write description
+     * 
+     * @param  String $value
+     * @return Object return a value
+     */
+    function write($value = null)
+    {
+        if ($this-&gt;useWriter() and is_callable($this-&gt;writer)) {
+            $value = call_user_func_array($this-&gt;writer, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * Convert fields to be displayed
+     * Example : 
+     *      'convert'=&gt;function($value){
+     *          return htmlspecialchars_decode($value);
+     *      }
+     *      
+     * @param  array $value 
+     * @return array
+     */
+    function convert($value = null)
+    {
+        if ($this-&gt;useConverter() and is_callable($this-&gt;converter)) {
+            $value = call_user_func_array($this-&gt;converter, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * Render will reverse field from its original value
+     * 
+     * @param  array $value
+     * @return array
+     */
+    function render($value = null)
+    {
+        if ($this-&gt;useRenderer() and is_callable($this-&gt;renderer)) {
+            $value = call_user_func_array($this-&gt;renderer, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * Validate fields that will be processed
+     * 
+     * @param  array $value
+     * @return array
+     */
+    function validate($value = null)
+    {
+        if($this-&gt;useValidation() and Validation::is($this-&gt;validation))
+        {
+             /* validation is valid if return is any empty
+                and so the return
+             */
+            return call_user_func_array(array($this-&gt;getValidation(), 'validate'), func_get_args());
+        }
+    }
+
+    /**
+     * Take the validation to be processed
+     * 
+     * @return Array
+     */
+    function getValidation()
+    {
+        if(Validation::isNot($this-&gt;validation)) $this-&gt;validation = new Validation();
+        return $this-&gt;validation;
+    }
+}</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

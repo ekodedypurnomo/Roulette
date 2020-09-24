@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdoc>
+	<title>Roulette v2.0.0 API</title>
+    <parser>
+        <target>./docs/</target>
+    </parser>
+    <transformer>
+        <target>./docs/</target>
+    </transformer>
+    <transformations>
+        <!-- <template name="responsive"/> -->
+        <!-- <template name="/home/mvriel/phpDocumentor Templates/myTemplate"/> -->
+        <template name="responsive-twig"/>
+    </transformations>
+    <files>
+        <directory>vendor/roulette/src/Roulette/</directory>
+        <ignore>vendor/roulette/src/Roulette/Tunnel/Codeigniter3/*</ignore>
+        <ignore>vendor/roulette/src/Roulette/Tunnel/Laravel5/*</ignore>
+        <ignore>vendor/roulette/src/Roulette/Ux/*</ignore>
+    </files>
+
+    <logging>
+        <level>warn</level>
+        <paths>
+            <default>./docs/log/{DATE}.log</default>
+            <errors>./docs/error/{DATE}.log</errors>
+        </paths>
+    </logging>
+
+</phpdoc>

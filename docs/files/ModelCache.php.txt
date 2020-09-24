@@ -1,0 +1,128 @@
+<?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette;
+
+use Roulette\Base;
+use Roulette\Model;
+use Roulette\Collection;
+
+/**
+ * Cache management for model instance to increase speed of load data 
+ *
+ * @package \Roulette
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ */
+class ModelCache extends Base
+{
+    /**
+     * Stored cache
+     * @var null
+     */
+    static protected $cache = null;
+
+    /**
+     * [cache description]
+     * @return object 
+     */
+    static function cache()
+    {
+        return static::$cache = Collection::from(static::$cache);
+    }
+
+    /**
+     * Adding item into stored cache
+     * 
+     * @param object $value object type item
+     */
+    static function add($value = null)
+    {
+        $id = spl_object_hash($value);
+        static::cache()->set($id, $value);
+        
+        return $id;
+    }
+    
+    /**
+     * adding new item into stored cache by referring the `key` and `value`
+     * 
+     * @param  string $key   
+     * @param  string $value 
+     * @return [type]        [description]
+     */
+    static function store($key, $value = null)
+    {
+        static::cache()->set($key, $value);
+        return static::class;
+    }
+    
+    /**
+     * Empty the cached item
+     * @return [type] [description]
+     */
+    static function clear()
+    {
+        static::cache()->reset();
+        return static::class;
+    }
+    
+    /**
+     * check whether the cached item have the specified `key`
+     * 
+     * @param  string|integer $key key must be string or integer
+     * @return booelan true if item in the cached have the defined key
+     */
+    static function exist($key = null)
+    {
+        return static::cache()->hasKey($key);
+    }
+
+    /**
+     * Check existence of `item` in the cached item
+     * 
+     * @param  string $item 
+     * @return boolean      
+     */
+    static function has($item = null)
+    {
+        return static::cache()->hasItem($item);
+    }
+    
+    /**
+     * retrieve data in cache
+     * 
+     * @param  string|int $key the key to compare with key cached item
+     * @return array      the item with the specified `key`
+     */
+    static function fetch($key = null)
+    {
+        return static::cache()->get($key);
+    }
+
+    /**
+     * Get an item in the collection specified by the fetch.
+     * @return array [description]
+     */
+    static function get()
+    {
+        return forward_static_call_array(array('static','fetch'), func_get_args());
+    }
+
+    /**
+     * Delete a cached item specified by `key`
+     * 
+     * @param  string|int $key 
+     * @return array removed item
+     */
+    static function remove($key = null)
+    {
+        return static::cache()->removeOn($key);
+    }
+}

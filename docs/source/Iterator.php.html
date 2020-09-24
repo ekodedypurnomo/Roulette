@@ -1,0 +1,644 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette;
+
+use Roulette\Base;
+
+/**
+ * Provide any function for iterable (array or object) variable
+ * 
+ * @package \Roulette
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ */
+class Iterator extends Base
+{
+    /**
+     * Filtering the variable to match the requirement
+     * 
+     * @param  object|array $iterator
+     * @return object|array           
+     */
+    static function from($iterator = null)
+    {
+        if(is_object($iterator)) $iterator = get_object_vars($iterator);
+        if(!is_array($iterator)) $iterator = array($iterator);
+        return $iterator;
+    }
+
+    /**
+     * Check if variable is iterable (array or object)
+     *      
+     *      Example:
+     *      \Roulette\Iterator::isIterable(array(1,2,3)); // true
+     *
+     *      \Roulette\Iterator::isIterable('hello world'); // false
+     * 
+     * @param mixed $iterable Iterable variable (array or object)
+     * @return Boolean true if the variable is iterable
+     */
+    static function isIterable($iterable = null)
+    {
+        return (is_array($iterable) or is_object($iterable));
+    }
+
+    /**
+     * Check if variable is associative array 
+     *      
+     *      Example:
+     *      \Roulette\Iterator::isAssoc(array(1,2,3)); // false
+     *      
+     *      \Roulette\Iterator::isAssoc(array('a'=&gt;1,'b'=&gt;2,3)); // true
+     *      
+     *      \Roulette\Iterator::isAssoc(array('1'=&gt;1,'2'=&gt;2,'3'=&gt;3)); // false
+     * 
+     * @param mixed $array Array
+     * @return Boolean if the variable is association array
+     */ 
+    static function isAssoc($array = null)
+    {
+        return ( is_array($array) and array_keys($array) !== range(0, count($array) - 1) );
+    }
+
+    /**
+     * Get a valid defined value in an array
+     * if value doesnt defined so it will return default value  
+     *      
+     *      Example:
+     *      \Roulette\Iterator::enum('a',array('a','b')); // return 'a'
+     * 
+     *      \Roulette\Iterator::enum('c',array('a','b')); // return null
+     * 
+     *      \Roulette\Iterator::enum('c',array('a','b'),'d'); // return 'd'
+     * 
+     * @param Mixed $var Value to check existense 
+     * @param Array $list Array of defined values
+     * @param Mixed $default Default value if $var doens't exist in $list
+     * @param boolean $strict 
+     * @return Mixed 
+     */
+    static function enum($var, $list, $default = null, $strict = false)
+    {
+        if (is_array($list) and in_array($var, $list, $strict)) {
+            return $var;
+        } else {
+            return $default;
+        }
+    }
+
+    /**
+     * Iterate every key on Iterable value given
+     * 
+     * @param Array $iterable Iterable value 
+     * @param String|Array $fn A Callable function to be callback 
+     * @param Array $reverse indicate if iteration going to be reversed mode
+     * @return Mixed 
+     */
+    static function each($iterable = null, $fn = null, $reverse = false)
+    {
+        if ( static::isIterable($iterable) and is_callable($fn) ) {
+            if( is_object($iterable) ){
+                $iterable = get_object_vars($iterable);
+            }
+            $_iterable = $iterable;
+            if ($reverse === true) {
+                $_iterable = array_reverse($iterable);
+            }
+            foreach ($_iterable as $i =&gt; $current) {
+                $return = call_user_func_array($fn, array( $current, $i, $_iterable));
+                if ($return === false) break;
+            }
+        }
+        return $iterable;
+    }
+
+    /**
+     * [map description]
+     * 
+     * @param  object|array  $iterable 
+     * @param  function  $fn
+     * @param  boolean $reverse default value is false  
+     * @return Iterable $source
+     */
+    static function map($iterable = null, $fn = null, $reverse = false)
+    {
+        if( is_object($iterable) ){
+            $iterable = get_object_vars($iterable);
+        }
+
+        if ( is_array($iterable) and is_callable($fn) )
+        {
+            $_iterable = ($reverse === true) ? array_reverse($iterable) : $iterable;
+
+            foreach ($_iterable as $i =&gt; $current) {
+                $mapped[$i] = call_user_func_array($fn, array( $current, $i, $_iterable));;
+            }
+        }
+        return $mapped;
+    }
+
+    /**
+     * fill an Iterable with given value on its key/property in defined list
+     *      
+     *      Example:
+     *      \Roulette\Iterator::fillKey(array(),array('a','b'),'5'); // return array('a'=&gt;'5', 'b'=&gt;'5');
+     *
+     *      \Roulette\Iterator::fillKey(array(),array('a','b'),'5'); // return array('a'=&gt;'5', 'b'=&gt;'5');
+     * 
+     * @param Array $source Iterable value 
+     * @param Array $var defined list key to fill
+     * @param Array $value value to fill each defined key/property on list
+     * @return Iterable $source
+     */
+    static function fillKey($source, $var = null, $value = null)
+    {
+        if(is_string($var)){
+            $var = array($var);
+        }
+
+        if ( is_array($var) ){
+            if (is_array($source)) {
+                foreach ($var as $k =&gt; $v) {
+                    $source[$v] = $value;
+                }
+            }
+            if (is_object($source)) {
+                foreach ($var as $k =&gt; $v) {
+                    $source-&gt;$v = $value;
+                }
+            }
+        }
+        return $source;
+    }
+
+    /**
+     * fill an Iterable with given value on its key/property in defined list if key/property is not exist
+     *      
+     *      Example:
+     *      \Roulette\Iterator::fillKey(
+     *          array(),
+     *          array('a','b'),
+     *          '5'
+     *      ); // return array('a'=&gt;'5', 'b'=&gt;'5')
+     * 
+     *      \Roulette\Iterator::fillKey(
+     *          array('a'=&gt;null),
+     *          array('a','b'),
+     *          '5'
+     *      ); // return array('a'=&gt;null, 'b'=&gt;'5')
+     * 
+     * @param Array $source Iterable value 
+     * @param Array $var defined list key to fill
+     * @param Array $value value to fill each defined key/property on list
+     * @return Iterable $source
+     */
+    static function fillKeyIf()
+    {
+        return forward_static_call_array(array(static::class,'fillKeyifNotExist'), func_get_args());
+    }
+
+    /**
+     * fill an iterable with given value on its key/property in defined list if key/property is exist
+     * 
+     * @param  array $source
+     * @param  array $var   
+     * @param  array $value  
+     * @return Iterable $source
+     */
+    static function fillKeyifExist($source, $var = null, $value = null)
+    {
+        if(is_string($var)){
+            $var = array($var);
+        }
+        if ( is_array($var) ){
+            if (is_array($source)) {
+                foreach ($var as $k =&gt; $v) {
+                    if ( array_key_exists($v, $source) ) {
+                        $source[$v] = $value;
+                    }
+                }
+            }
+            if (is_object($source)) {
+                foreach ($var as $k =&gt; $v) {
+                    if ( property_exists($source, $v) ) {
+                        $source-&gt;$v = $value;
+                    }
+                }
+            }
+        }
+        return $source;      
+    }
+    
+    /**
+     * Filter field with the key if exist
+     * 
+     * @param  array|object $source
+     * @param  array $var
+     * @param  array|object $value
+     * @return array
+     */
+    static function fillKeyifNotExist($source, $var = null, $value = null)
+    {
+        if(is_string($var)){
+            $var = array($var);
+        }
+        if ( is_array($var) ){
+            if (is_array($source)) {
+                foreach ($var as $k =&gt; $v) {
+                    if ( ! array_key_exists($v, $source) ) {
+                        $source[$v] = $value;
+                    }
+                }
+            }
+            if (is_object($source)) {
+                foreach ($var as $k =&gt; $v) {
+                    if ( ! property_exists($source, $v) ) {
+                        $source-&gt;$v = $value;
+                    }
+                }
+            }
+        }
+        return $source;
+    }
+
+    /**
+     * Copies all the properties of config to the iterable object
+     *      
+     *      Example:
+     *      \Roulette\Iterator::apply(
+     *          array(),
+     *          array('a'=&gt;5,'b'=&gt;'B')
+     *      ); // return array('a'=&gt;5, 'b'=&gt;'B')
+     *      
+     *      \Roulette\Iterator::apply(
+     *          array('a'=&gt;4),
+     *          array('a'=&gt;5,'b'=&gt;'B')
+     *      ); // return array('a'=&gt;5, 'b'=&gt;'B')
+     * 
+     * @param Array $source Iterable object
+     * @param Array $var config to copy
+     * @param Array $savemode create and iterable object if $source isnt iterable
+     * @return Iterable Object $source
+     */
+    static function apply($source, $var = null, $savemode = true)
+    {
+        if ( ! static::isIterable($var) ){
+            return $source;
+        }
+
+        if( $savemode === true ){
+            if( !(is_array($source) or is_object($source)) ){
+                $source = array();
+            }
+        }
+
+        if (is_array($source)) {
+            if(is_array($var)){
+                $source = array_merge($source, $var);
+            }
+            if(is_object($var)){
+                $source = array_merge($source, get_object_vars($var));
+            }
+        }
+        if (is_object($source)) {
+            if(is_object($var)){
+                $var = get_object_vars($var);
+            }
+            if(is_array($var)){
+                foreach ($var as $key =&gt; $value) {
+                    $source-&gt;$key = $value;
+                }
+            }
+        }
+        return $source;
+    }
+
+    /**
+     * Copies all the properties of config to the iterable object if key/properties doesnt exist
+     * @return Iterable $source
+     */
+    static function applyIf()
+    {
+        return forward_static_call_array(array(static::class,'applyIfNotExist'), func_get_args());
+    }
+
+    /**
+     * Copies all the properties of config to the iterable object if key/properties exist
+     * 
+     * @param  array  $source
+     * @param  array  $var
+     * @param  boolean $savemode
+     * @return Iterable $source
+     */
+    static function applyIfExist($source, $var = null, $savemode = true)
+    {
+        if( $savemode === true and !(is_array($source) or is_object($source)) ){
+            $source = array();
+        }
+
+        if(is_object($var))
+        {
+            $var = get_object_vars($var);
+        }
+
+        if (is_array($source)) 
+        {
+            foreach ($var as $k =&gt; $v) 
+            {
+                if(array_key_exists($k, $source)) $source[$k] = $v;
+            }
+        }
+
+        if (is_object($source)) 
+        {
+            foreach ($var as $key =&gt; $value) 
+            {
+                if ( property_exists($source, $key) ) $source-&gt;$key = $value;
+            }
+        }
+        return $source;
+    }
+
+    /**
+     * Copies all the properties of config to the iterable object if key/properties doesn't exist
+     * 
+     * @param  array  $source  
+     * @param  array  $var     
+     * @param  boolean $savemode
+     * @return Iterable $source
+     */
+    static function applyIfNotExist($source, $var = null, $savemode = false)
+    {
+        if( $savemode === true and !(is_array($source) or is_object($source)) ){
+            $source = array();
+        }
+
+        if (is_array($source)) {
+            if(is_array($var)){
+                $source = array_merge($var, $source);
+            }
+            if(is_object($var)){
+                $source = array_merge(get_object_vars($var), $source);
+            }
+        }
+
+        if (is_object($source)) {
+            if(is_object($var)){
+                $var = get_object_vars($var);
+            }
+            if(is_array($var)){
+                foreach ($var as $key =&gt; $value) {
+                    if ( ! property_exists($source, $key) ) {
+                        $source-&gt;$key = $value;
+                    }
+                }
+            }
+        }
+        return $source;
+    }
+
+    /**
+     * get all value by defined keys to take
+     *      
+     *      Example:
+     *      \Roulette\Iterator::take(
+     *          array('a'=&gt;5,'b'=&gt;'B'),
+     *          array('a')
+     *      ); // return array('a'=&gt;5)
+     * 
+     * @param Array $source Iterable object
+     * @param Array $takes list of keys to get the value
+     * @param  Boolean $savemode
+     * @param  Array $default
+     * @return Array taken values 
+     */
+    static function take($source, $takes = array(), $savemode = false, $default = null)
+    {
+        $taken = array();
+        if( is_string($takes) or is_numeric($takes) ){
+            $takes = array($takes);
+        }
+        if( static::isIterable($source) and is_array($takes) ){
+            if( is_array($source) ){
+                foreach ($takes as $idx =&gt; $take) {
+                    if( array_key_exists($take, $source)){
+                        $taken[$take] = $source[$take];
+                    }else if($savemode == true){
+                        $taken[$take] = $default;
+                    }
+                }
+            }else if( is_object($source) ){
+                foreach ($takes as $idx =&gt; $take) {
+                    if( property_exists($source, $take) ){
+                        $taken[$take] = $iterable-&gt;$take;
+                    }else if($savemode == true){
+                        $taken[$take] = $default;
+                    }
+                }
+            }
+        }
+        return $taken;
+    }
+
+    /**
+     * transform the value by the replacer.
+     * It will return the object it static if the source is Object
+     * 
+     *      Example:
+     *      \Roulette\Iterator::transformValue(
+     *          array('a'=&gt;5,'b'=&gt;'B'),
+     *          array('5'=&gt;6,'B'=&gt;'bb')
+     *      ); // return array('a'=&gt;6,'b'=&gt;'bb')
+     *      
+     *      \Roulette\Iterator::transformValue(
+     *          'B',
+     *          array('5'=&gt;6,'B'=&gt;'bb')
+     *      ); // return 'bb';
+     * 
+     * @param Array $source source to transform
+     * @param Array $transformer transform config
+     * @return Mixed $source transformed
+     */
+    static function transformValue($source, $transformer = null)
+    {
+        if (is_array($source)) {
+            foreach ($source as $source_key =&gt; $source_value) {
+                $source[$source_key] = static::transformValue($source_value, $transformer);
+            }
+        } else if(is_object($source)) {
+            $_source = get_object_vars($source);
+            foreach ($_source as $source_key =&gt; $source_value) {
+                $source-&gt;$source_key = static::transformValue($source_value, $transformer);
+            }
+        } else if (is_numeric($source) || is_string($source) || is_bool($source)) {
+            if( is_array($transformer) and array_key_exists($source, $transformer)) {
+                $source = $transformer[$source];
+            }else if( is_callable($transformer) ){
+                $source = call_user_func_array($transformer, array($source));
+            }
+        }
+        return $source;
+    }
+
+    /**
+     * transform the key by the replacer.
+     * It will return the object it static if the source is Object
+     *      
+     *      Example:
+     *      \Roulette\Iterator::transformValue(
+     *          array('a'=&gt;5,'b'=&gt;'B'),
+     *          array('a'=&gt;'A','b'=&gt;'B')
+     *      );
+     *      // return array('A'=&gt;5,'B'=&gt;'B')
+     * 
+     * @param Array $source source to transform
+     * @param Array $transformer transform config
+     * @return Mixed $source transformed
+     */
+    static function transformKey($source, $transformer = null)
+    {
+        if( is_array( $source ) ){
+            foreach ($source as $source_key =&gt; $source_value) {
+                if (is_array($transformer) and array_key_exists($source_key, $transformer)) {
+                    unset($source[$source_key]);
+                    $source[$transformer[$source_key]] = $source_value;
+                }else if( is_callable($transformer) ){
+                    unset($source[$source_key]);
+                    $source[call_user_func_array($transformer, array($source_key))] = $source_value;
+                }
+            }
+        }else if( is_object($source) ){
+            $_source = get_object_vars($source);
+            foreach ($_source as $source_key =&gt; $source_value) {
+                if (array_key_exists($source_key, $transformer)) {
+                    unset($source-&gt;$source_key);
+                    $source-&gt;$transformer[$source_key] = $source_value;
+                }else if( is_callable($transformer) ){
+                    unset($source-&gt;$source_key);
+                    $key = call_user_func_array($transformer, array($source_key));
+                    $source-&gt;$key = $source_value;
+                }
+            }
+        }
+        return $source;
+    }
+
+    /**
+     * get all match key from array within matcher array. 
+     * 
+     *      Example:
+     *      $source = array(
+     *              'a'=&gt;'A',
+     *              'b'=&gt;'B',
+     *              'c'=&gt;null,
+     *              'd'=&gt;false
+     *          );
+     *
+     *      $matchs = \Roulette\Iterator::match(
+     *          $source, 
+     *          array('a','b')
+     *      ); // return: array('a'=&gt;'B','b'=&gt;'B')
+     *
+     *      $matchs = \Roulette\Iterator::match(
+     *          $source, 
+     *          array('a','b','c','d')
+     *      ); // return: array('a'=&gt;'B','b'=&gt;'B','d'=&gt;false)
+     *
+     *      $matchs = \Roulette\Iterator::match(
+     *          $source, 
+     *          array('a','b','c','d'), true
+     *      ); // return: array('a'=&gt;'B','b'=&gt;'B','c'=&gt;null,'d'=&gt;false)
+     *
+     *      $matchs = \Roulette\Iterator::match(
+     *          $source, 
+     *          array('h')
+     *      ); // return: array()
+     *
+     *      $matchs = \Roulette\Iterator::match(
+     *          $source, 
+     *          array('h'), true, true
+     *      ); // return: array('h'=&gt;null)
+     *
+     *      $matchs = \Roulette\Iterator::match(
+     *          $source, 
+     *          array('h'), true, true, 5
+     *      ); // return: array('h'=&gt;5)
+     *
+     * @param Array     $source         Source array that will be get the match
+     * @param Array     $match          Array list of match key to fetch
+     * @param Boolean   $allow_null     Set false to ignored an item in source if value is null, default:true
+     * @param Boolean   $all_variable   Set true to give a default value if key doesnt exist, default:false
+     * @param Mixed     $default        Default value to give in property doesn exist, it only used if $all_variable is true, default:null
+     * @return Mixed the callback return
+     */
+    static function match($source, $match, $allow_null = true, $all_variable = false, $default = null)
+    {
+        $source_match = array();
+        if(is_array($source) and is_array($match)){
+            foreach ($match as $key) {
+                if (array_key_exists($key, $source)) {
+                    if (!is_null($source[$key]) || (is_null($source[$key]) and $allow_null === true)) {
+                        $source_match[$key] = $source[$key];
+                    }
+                } else {
+                    if ($all_variable === true)
+                        $source_match[$key] = $default;
+                }
+            }
+        }
+        return $source_match;
+    }
+
+}
+</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

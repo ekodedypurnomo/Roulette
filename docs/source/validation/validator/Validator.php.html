@@ -1,0 +1,156 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette\validation\validator;
+
+use Roulette\Base;
+use Roulette\Template;
+
+/**
+ * Abstract class for Validator.
+ * Any validator classes should extend it for standart Roulette Validator.
+ *
+ * @package Roulette\Validator
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ */
+abstract class Validator extends Base
+{
+	/**
+	 * Validator message.
+	 * 
+	 * @var string
+	 */
+	protected $message = null;
+
+	/**
+	 * Validation rule.
+	 * 
+	 * @var mixed
+	 */
+	protected $rule = null;
+
+	/**
+	 * Create new Validator.
+	 * 
+	 * @param boolean $rule Validator rule
+	 * @param string  $message Validator message
+	 */
+	function __construct($rule, $message = null)
+	{
+		$this-&gt;rule = $rule;
+		
+		if($message)
+			$this-&gt;message = $message;
+	}
+
+	/**
+	 * Get message with custom applied data.
+	 * Could be used after value fail the `test()`
+	 * 
+	 * @param  array $data
+	 * @return array
+	 */
+	function getMessage($data = null)
+	{
+		if(empty($data)) $data = array('value'=&gt;null);
+
+		if(!is_array($data)) $data = array('value'=&gt;$data);
+
+		return Template::compile($this-&gt;message)-&gt;apply(array_merge(
+			$data, array( 'rule'=&gt; $this-&gt;getRuleString() ) 
+		));
+	}
+
+	/**
+	 * Get stringify of rule.
+	 * 
+	 * @return string
+	 */
+	protected function getRuleString()
+	{
+		$rule = &quot;&quot;;
+
+		if(is_string($this-&gt;rule))
+		{
+			$rule = $this-&gt;rule;
+		}else
+		if(is_bool($this-&gt;rule))
+		{
+			$rule = $this-&gt;rule ? &quot;true&quot; : &quot;false&quot;;
+		}else
+		if(is_numeric($this-&gt;rule))
+		{
+			$rule = (string) $this-&gt;rule;
+		}else
+		if(is_array($this-&gt;rule))
+		{
+			$rule = &quot;[&quot;.implode(',', $this-&gt;rule).&quot;]&quot;;
+		}else
+		if(is_a($this-&gt;rule, 'Closure'))
+		{
+			$rule = &quot;[validation formula]&quot;;
+		}
+
+		return $rule;
+	}
+
+	/**
+	 * Validate $value.
+	 * 
+	 * @param  mixed $value Value to validate 
+	 * @return boolean       
+	 */
+	abstract function test($value = null);
+
+}</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,99 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette\tunnel;
+
+use Roulette\Base;
+
+/**
+ * Class Tunnel\Definer for defining the framework that being used.
+ *
+ * @package Roulette\Tunnel
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ */
+abstract class Definer extends Base
+{	
+	/**
+	 * Information of the used framework
+	 * @var null
+	 */
+	static $frameworkInfo = null;
+
+	/**
+	 * Default value if framework not identified
+	 * @return boolean
+	 */
+	static function check()
+	{
+		return false;
+	}
+
+	/**
+	 * Get the information about the framework being used
+	 * @return boolean
+	 */
+	static function info()
+	{
+		if(!static::$frameworkInfo)
+		{
+			static::check();
+		}
+		return static::$frameworkInfo;
+	}
+
+	/**
+	 * @ignore
+	 */
+	static function getTunnel(){}
+}</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

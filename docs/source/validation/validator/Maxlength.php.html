@@ -1,0 +1,90 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette\validation\validator;
+
+use Roulette\validation\validator\Validator;
+
+/**
+ * SubClass for Validator, will be show  message &quot;maximum characters length is {validator}&quot;
+ * 
+ * @package \Roulette\Validator
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ */
+class Maxlength extends Validator
+{
+    /**
+     * Default validator message for Maxlength
+     * @var string
+     */
+	protected $message = 'maximum characters length is &lt;b&gt;{validator}&lt;/b&gt;';
+    
+    /**
+     * Execute the validation process
+     * 
+     * @param  numeric|boolean $value variable to be validated
+     * @return boolean true if the variable is valid
+     */
+    function test($value = null)
+    {
+    	if(is_numeric($value) || is_bool($value)) $value = (string) $value;
+        
+        // only affect on string value, exlude null type, object type
+        if(is_string($value))
+        {
+        	return ($this-&gt;rule &gt;= strlen($value));
+        }
+        return true;
+    }
+}</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

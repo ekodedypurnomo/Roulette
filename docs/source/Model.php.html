@@ -1,0 +1,1462 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette;
+
+use Roulette\Helper;
+use Roulette\Base;
+use Roulette\Iterator as I;
+use Roulette\Collection;
+use Roulette\Error;
+use Roulette\Proxy;
+use Roulette\ModelCache as Cache;
+use Roulette\field\Field;
+use Roulette\field\Value as FieldValue;
+use Roulette\association\Association;
+use Roulette\association\Value as AssociationValue;
+
+/**
+ * A Model represents a record from database as an object, that have many crud
+ * operation function, including association.
+ *
+ * @package \Roulette
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo &lt;eko.dedy.purnomo@gmail.com&gt;
+ */
+class Model extends Base
+{
+    /**
+     * @ignore
+     */
+    static protected $prototype = null;
+
+    /**
+     * @ignore
+     */
+    static protected $caching = true;
+
+    /**
+     * @ignore
+     */
+    static function initialize(array $initConfig = null)
+    {
+        $class = static::class;
+        
+        if(is_object($initConfig)) $initConfig = (object) $initConfig;
+        if(empty($initConfig) || !is_array($initConfig)) $initConfig = array();
+
+        if(is_object(static::$prototype)) static::$prototype = (array) static::$prototype;
+        if(empty(static::$prototype)) static::$prototype = array();
+        
+        $configs = Collection::from(array_merge(static::$prototype, $initConfig));
+
+        # initializing table
+        if($configs-&gt;has('table'))
+        {
+            static::setTable($configs-&gt;get('table'));
+        }        
+
+        # initializing primary
+        if($configs-&gt;has('primary'))
+        {
+            static::setPrimary($configs-&gt;get('primary'));
+        }
+
+        # initializing fields
+        $fields = static::getFields()-&gt;reset();
+
+        I::each($configs-&gt;get('fields'), function($f, $i, $all) use($class, $fields)
+        {
+            $f = Field::from($f);
+            $fields-&gt;set($f-&gt;name, $f);
+        });
+
+        # initializing associations
+        $associations = static::getAssociations()-&gt;reset();
+
+        I::each($configs-&gt;get('associations'), function($a, $i, $all) use($class, $associations)
+        {
+            $a = Association::from($a);
+            $associations-&gt;set($a-&gt;getName(), $a);
+        });
+
+        # returning back the class
+        return static::class;
+    }
+
+    /**
+     * @ignore
+     */
+    static function prototype()
+    {
+        if(func_num_args() == 0)
+        {
+            if(Collection::isNot(static::$prototype))
+            {
+                static::$prototype = Collection::create();
+            }
+
+            return static::$prototype;
+        }
+        else
+        {
+            $prototypeConfig = func_get_arg(0);
+            return static::initialize($prototypeConfig);
+        }
+    }
+
+    /**
+     * @ignore
+     */
+    static function useCache()
+    {
+        return !!static::$caching;
+    }
+
+    /**
+     * Get the name of table from DB that associated to the model
+     * @return String 
+     */
+    static function getTable()
+    {
+        return static::prototype()-&gt;get('table');
+    }
+
+    /**
+     * Set the table name to assocate the model from DB
+     * @param [type] $table [description]
+     */
+    static function setTable( $table = null )
+    {
+        static::prototype()-&gt;set('table', $table);
+        return static::class;
+    }
+
+    /**
+     * Get the primary field of the model
+     *
+     *      Example: 
+     *      $student_model //declaration model firts
+     *      
+     *      $primary = $student_model::getPrimary() === 'id';
+     *      
+     * @return String 
+     */
+    static function getPrimary()
+    {
+        return static::prototype()-&gt;get('primary');
+    }
+
+    /**
+     * Set the primary field of the model
+     *
+     *      Example: 
+     *      // before set primary, model has primary
+     *      // primary =&gt; 'id',
+     *      
+     *      $student_model // declaration model firts
+     *      
+     *      $primary = $student_model::setPrimary('name');
+     *      //and primary has change it. became 'name'
+     *      
+     * @param String $primary 
+     */
+    static function setPrimary( $primary = null )
+    {
+        static::prototype()-&gt;set('primary', $primary);
+        return static::class;
+    }
+
+    /**
+     * Get the model that associated with
+     * @return /Roulette/Association
+     */
+    static function getAssociations()
+    {
+        $proto = static::prototype();
+        if(Collection::isNot($proto-&gt;get('associations'))) $proto-&gt;set('associations', new Collection());
+
+        return $proto-&gt;get('associations');
+    }
+
+    /**
+     * Get the model that associated with specified by the association name
+     * 
+     * @param  String $associationName 
+     * @return /Roulette/Association                  
+     */
+    static function getAssociation( $associationName = null )
+    {
+        $associations = static::getAssociations();
+        
+        return $associations-&gt;get($associationName);
+    }
+
+    /**
+     * Get the field name in the model specified by the name
+     * 
+     * @param  string $fieldName 
+     * @return String            
+     */
+    static function getField( $fieldName = null )
+    {
+        $fields = static::getFields();
+
+        if(Field::is($fieldName))
+        {
+            return $fields-&gt;contain($fieldName) ? $fieldName : null;
+        }
+        
+        return $fields-&gt;get($fieldName);
+    }
+
+    /**
+     * Check whether the model have the specified field
+     * 
+     * @param  string  $field 
+     * @return boolean        
+     */
+    static function hasField($field = null)
+    {
+        return (boolean)$fields-&gt;getField($field);
+    }
+
+    /**
+     * Rename the field of the model
+     * 
+     * @param string $fieldName 
+     * @param string $field     
+     */
+    static function setField( $fieldName = null, $field = null )
+    {
+        if (is_string($fieldName))
+        {
+            static::getFields()-&gt;set($fieldName, Field::from($field));
+        }
+        return static::class;
+    }
+
+    /**
+     * Rename the existing field with the specified name
+     * 
+     * @param  string $fieldName 
+     * @return class            
+     */
+    static function removeField($fieldName = null)
+    {
+        if(Field::is($fieldName)){
+            static::getFields()-&gt;remove($fieldName);
+        }else{
+            static::getFields()-&gt;removeOn($fieldName);
+        }
+        return static::class;
+    }
+
+    /**
+     * Add field to the model
+     * 
+     * @param String $field 
+     */
+    static function addField($field = null)
+    {
+        $args = func_get_args();
+        $fields = static::getFields();
+
+        foreach ($args as $i =&gt; $f) {
+            $f = Field::from($f);
+            $fields-&gt;set($f-&gt;name, $f);
+        }
+
+        return static::class;
+    }
+
+    /**
+     * Get the fields of the model
+     * @return array 
+     */
+    static function getFields()
+    {
+        $proto = static::prototype();
+        if(Collection::isNot($proto-&gt;get('fields'))) $proto-&gt;set('fields', new Collection());
+
+        return $proto-&gt;get('fields');
+    }
+
+    /**
+     * Get the attribute for every fields in the model
+     * 
+     * @param  string $attribute 
+     * @param  string|array $fields     
+     * @return array           
+     */
+    static function getFieldsAttribute($attribute = null, $fields = null)
+    {
+        if( is_string($fields) )
+        {
+            $fields = strtolower($fields);
+
+            if( $fields == 'all' )
+            {
+                $collectedAttribute = array();
+
+                I::each(static::findFields(), function($f) use( &amp;$collectedAttribute, $attribute)
+                {
+                    $collectedAttribute[$f-&gt;name] = property_exists($f, $attribute) ? $f-&gt;$attribute : null;
+                });
+
+                return $collectedAttribute;
+            }
+            else if( $fields == 'original')
+            {
+                $collectedAttribute = array();
+
+                I::each(static::findFields(), function($f) use( &amp;$collectedAttribute, $attribute)
+                {
+                    if($f-&gt;extension != true)
+                    {
+                        $collectedAttribute[$f-&gt;name] = property_exists($f, $attribute) ? $f-&gt;$attribute : null;
+                    }
+                });
+
+                return $collectedAttribute;
+            }
+        }
+        elseif( is_array($fields) )
+        {
+            $collectedAttribute = array();
+
+            I::each(static::findFields($fields), function($f) use( &amp;$collectedAttribute, $attribute)
+            {
+                $collectedAttribute[$f-&gt;name] = property_exists($f, $attribute) ? $f-&gt;$attribute : null;
+            });
+
+            return $collectedAttribute;
+        }
+        else
+        {
+            $f = static::getFields()-&gt;get($fields);
+            
+            return $f &amp;&amp; property_exists($f, $attribute) ? $f-&gt;$attribute : null;
+        }
+    }
+
+    /**
+     * Get the attribute from a specified field
+     * 
+     * @param  string $field     
+     * @param  String $attribute 
+     * @return string            
+     */
+    static function getFieldAttribute($field, $attribute)
+    {
+        if(!is_string($attribute)) return;
+        $field = static::getField($field);
+        return ($field and property_exists($field, $attribute)) ? $field-&gt;$attribute : null;  
+    }
+
+    /**
+     * Get the name of the fields of the model
+     * 
+     * @param  string $fields 
+     * @return array
+     */
+    static function getFieldsName($fields = 'all')
+    {
+        return static::getFieldsAttribute('name', $fields);
+    }
+
+    /**
+     * Get the source fields of the model
+     * 
+     * @param string $fields
+     * @return array
+     */
+    static function getFieldsSource($fields = 'all')
+    {
+        return static::getFieldsAttribute('source', $fields);
+    }
+
+    /**
+     * Get the displayed fields of the model
+     * @param  string $fields
+     * @return array
+     */
+    static function getFieldsDisplay($fields = 'all')
+    {
+        return static::getFieldsAttribute('display', $fields);
+    }
+
+    /**
+     * find fields from the model
+     * @return array
+     */
+    static function findFields()
+    {
+        # all fields
+        if(func_num_args() == 0)
+        {
+            return static::getFields()-&gt;getAll();
+        }
+
+
+        $arg1 = func_get_arg(1);
+
+        # if arguments is fields
+        if(Field::is($arg1))
+        {
+            if(static::getFields()-&gt;contain($arg1)) return $arg1;
+        }
+        # if function of condition
+        elseif(is_callable($arg1))
+        {
+            return static::getFields()-&gt;filter($arg1);        
+        }
+        # if bulk of fields
+        elseif(is_array($arg1))
+        {
+            $fields = array();
+            foreach ($arg1 as $i =&gt; $f)
+            {
+                # if field instance
+                if( Field::is($f) and static::getFields()-&gt;contain($f))
+                {
+                    $fields[] = $f;
+                }
+                # if field name string
+                elseif(is_string($f) and $found = static::getFields()-&gt;get($f))
+                {
+                    $fields[] = $found;
+                }
+            }
+        }
+    }
+
+    /**
+     * Find fields of the model that specified by the condition of the parameter
+     * @param  array $condition 
+     * @return boolean            
+     */
+    static function findFieldsIf($condition)
+    {
+        if(is_array($condition))
+        {
+            return static::getFields()-&gt;filter(function($field) use($condition)
+            {
+                $valid = true;
+
+                foreach ($condition as $fKey =&gt; $fValue) {
+                    if(! (property_exists($field, $fKey) and $field-&gt;$fKey === $fValue) )
+                    {
+                        $valid = false;
+                        break;
+                    }
+                }
+
+                return $valid;
+            });
+        }
+    }
+
+    /**
+     * Find the field that have the private property being set to true from the model
+     * @param  boolean $onlyName true to get only name
+     * @return array            
+     */
+    static function findFieldsPrivate($onlyName = false)
+    {
+        $fields = static::findFieldsIf(array(
+            'private' =&gt; true
+        ));
+
+        return ($onlyName !== true) ? $fields : I::map($fields, function($f)
+        {
+            return $f-&gt;name;
+        });
+    }
+
+    /**
+     * Find the field that have the privet property being set to false from the model
+     * @param  boolean $onlyName true to get only name
+     * @return array            
+     */
+    static function findFieldsPublic($onlyName = false)
+    {
+        $fields = static::findFieldsIf(array(
+            'private' =&gt; false
+        ));
+        return ($onlyName !== true) ? $fields : I::map($fields, function($f)
+        {
+            return $f-&gt;name;
+        });
+    }
+
+    /**
+     * Find fields that have property insert being set to true
+     * @param  boolean $onlyName true to get only name
+     * @return array            
+     */
+    static function findFieldsInsert($onlyName = false)
+    {
+        $fields = static::findFieldsIf(array(
+            'insert'=&gt; true
+        ));
+        return ($onlyName !== true) ? $fields : I::map($fields, function($f)
+        {
+            return $f-&gt;name;
+        });
+    }
+
+    /**
+     * Find fields that have property update being set to true
+     * @param  boolean $onlyName true to get only name
+     * @return array            
+     */
+    static function findFieldsUpdate($onlyName = false)
+    {
+        $fields = static::findFieldsIf(array(
+            'update'=&gt; true
+        ));
+        return ($onlyName !== true) ? $fields : I::map($fields, function($f)
+        {
+            return $f-&gt;name;
+        });
+    }
+
+    /**
+     * Find field that have the property select being set to true
+     * @param  boolean $onlyName true to get only name
+     * @return array
+     */
+    static function findFieldsSelect($onlyName = false)
+    {
+        $fields = static::findFieldsIf(array(
+            'select'=&gt; true
+        ));
+        return ($onlyName !== true) ? $fields : I::map($fields, function($f)
+        {
+            return $f-&gt;name;
+        });
+    }
+
+    /**
+     * Find field that have the property delete being set to true
+     * @param  boolean $onlyName true to get only name
+     * @return array            
+     */
+    static function findFieldsDelete($onlyName = false)
+    {
+        $fields = static::findFieldsIf(array(
+            'delete'=&gt; true
+        ));
+        return ($onlyName !== true) ? $fields : I::map($fields, function($f)
+        {
+            return $f-&gt;name;
+        });
+    }
+
+    /**
+     * [mapToSource description]
+     * @param  string|array $data 
+     * @return [type]       
+     */
+    static function mapToSource($data = null)
+    {
+        $fieldsSource = static::getFieldsSource();
+        $mapped = null;
+
+        if(is_string($data))
+        {
+            $mapped = Template::compile($data, $fieldsSource);
+        }
+        if(is_array($data))
+        {
+            $mapped = array();
+            foreach ($data as $key =&gt; $value) 
+            {
+                # compile if key contains source 
+                $key = array_key_exists($key, $fieldsSource) ? $fieldsSource[$key] : Template::compile($key)-&gt;apply($fieldsSource);
+                
+                # compile if value contains source
+                $value = Template::compile($value)-&gt;apply($fieldsSource);
+                
+                # reorder all in new array
+                $mapped[$key] = $value;
+            }
+        }
+
+        return $mapped;
+    }
+
+    /**
+     * Create new record
+     * @param  array  $data     
+     * @param  function $callback 
+     * @return array           
+     */
+    static function create($data = array(), $callback = null)
+    {
+        if(is_object($data)) $data = (array) $data;
+
+        $record = new static($data);
+        
+        Helper::callback($callback, array($record));
+
+        return $record;
+    }
+
+    /**
+     * [genIdCache description]
+     * @param  [type] $id [description]
+     * @return [type]     [description]
+     */
+    static function genIdCache($id)
+    {
+        $format = get_class().static::class.'-'.$id;
+
+        return $format;
+    }
+
+    /**
+     * [storeCache description]
+     * @param  [type] $record [description]
+     * @return [type]         [description]
+     */
+    static function storeCache($record)
+    {
+        if(static::useCache())
+        {
+            Cache::store(static::genIdCache($record-&gt;getId()), $record);
+        }
+        return static::class;
+    }
+
+    /**
+     * [fetchCache description]
+     * @param  [type] $id [description]
+     * @return [type]     [description]
+     */
+    static function fetchCache($id)
+    {
+        if(static::useCache())
+        {
+            if($_c = Cache::fetch(static::genIdCache($id)))
+            {
+                return $_c;
+            }
+        }
+    }
+
+    /**
+     * [load description]
+     * @param  [type] $id [description]
+     * @return [type]     [description]
+     */
+    static function load( $id = null )
+    {
+        # chaching check before goes deep
+        if($_c = static::fetchCache($id))
+        {
+            return $_c;
+        }
+
+        $condition = is_array($id) ? $id : array( static::getPrimary() =&gt; $id );
+
+        $operation = Proxy::selectOne(array(
+            'table' =&gt; static::getTable(),
+            'fields' =&gt; static::getFieldsSource('original'),
+            'condition' =&gt; static::mapToSource($condition),
+        ));
+
+        if( $operation-&gt;getRecord() )
+        {
+            # use __construct instead of create, we need to include `$original = true` in the object  
+            $record = new static((array) $operation-&gt;getRecord(), true);
+            return $record;
+        }
+    }
+
+    /**
+     * [find description]
+     * @param  array   $condition [description]
+     * @param  [type]  $order     [description]
+     * @param  [type]  $take      [description]
+     * @param  integer $start     [description]
+     * @param  [type]  $group     [description]
+     * @param  [type]  $having    [description]
+     * @return [type]             [description]
+     */
+    static function find($condition = array(), $order = null, $take = null, $start = 0, $group = null, $having = null)
+    {
+        $operation = Proxy::select(array(
+            'table' =&gt; static::getTable(),
+            'fields' =&gt; static::getFieldsSource(),
+            'condition' =&gt; static::mapToSource($condition),
+            'take' =&gt; $take,
+            'start' =&gt; $start,
+            'order' =&gt; $order,
+            'group' =&gt; $group,
+            'having' =&gt; $having
+        ));
+        
+        $records = Collection::from($operation-&gt;getRecords());
+        $records-&gt;each(function($v, $k, $all, $c)
+        {
+            $r = new static((array)$v, true);
+            $c-&gt;set($k, $r);
+        });
+
+        return $records-&gt;getAll();
+    }
+
+    /**
+     * [findAll description]
+     * @param  [type] $order  [description]
+     * @param  [type] $group  [description]
+     * @param  [type] $having [description]
+     * @return [type]         [description]
+     */
+    static function findAll($order = null, $group = null, $having = null)
+    {
+        $operation = Proxy::select(array(
+            'table' =&gt; static::getTable(),
+            'fields' =&gt; static::getFieldsSource(),
+            'order' =&gt; $order,
+            'group' =&gt; $group,
+            'having' =&gt; $having
+        ));
+        return $operation-&gt;getRecords();
+    }
+
+    /**
+     * [findFirst description]
+     * @return [type] [description]
+     */
+    static function findFirst()
+    {
+        $operation = Proxy::selectOne(array(
+            'table' =&gt; static::getTable(),
+            'fields' =&gt; static::getFieldsSource(),
+            'condition' =&gt; static::mapToSource($filter),
+            'order' =&gt; $order,
+            'group' =&gt; $group,
+            'having' =&gt; $having
+        ));
+        return $operation-&gt;getRecords();
+    }
+
+    /**
+     * [findLast description]
+     * @return [type] [description]
+     */
+    static function findLast()
+    {
+        $operation = Proxy::selectOne(array(
+            'table' =&gt; static::getTable(),
+            'fields' =&gt; static::getFieldsSource(),
+            'condition' =&gt; static::mapToSource($filter),
+            'order' =&gt; $order,
+            'group' =&gt; $group,
+            'having' =&gt; $having
+        ));
+        return $operation-&gt;getRecords();
+    }
+
+    
+    #############
+    # start for the record #
+    #############
+
+    /**
+     * Stored record in the model
+     * @var array
+     */
+    protected $data = null;
+
+    /**
+     * [$relation description]
+     * @var null
+     */
+    protected $relation = null;
+
+    /**
+     * Indicate if record is exist on the database
+     * @var boolean
+     */
+    protected $alive = false;
+
+    /**
+     * @ignore
+     */
+    function __construct(Array $data = null, $original = false)
+    {
+        # set up all data
+        $this-&gt;initData($data, $original);
+
+        # then make it alive based on original status
+        if($original)
+        {
+            $this-&gt;makeAlive();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Check the record whether it's modified or not
+     * @return boolean 
+     */
+    function isModified()
+    {
+        return $this-&gt;data()-&gt;some(function($data)
+        {
+            return $data-&gt;isModified();
+        });
+    }
+
+    /**
+     * Get the modified field from the record
+     * @return array
+     */
+    function getModified()
+    {
+        $modified = array();
+        $this-&gt;data()-&gt;each(function($data, $fieldName) use(&amp;$modified)
+        {
+            if($data-&gt;isModified()) $modified[] = $fieldName;
+        });
+        return $modified;
+    }
+
+    /**
+     * [getErrorMessages description]
+     * @param  boolean $grouped [description]
+     * @return [type]           [description]
+     */
+    function getErrorMessages($grouped = false)
+    {
+        $errorMessages = array();
+
+        $this-&gt;data()-&gt;each(function($fieldValue, $key) use(&amp;$errorMessages, $grouped)
+        {
+            if(!$fieldValue-&gt;isValid())
+            {
+                if($grouped)
+                {
+                    $errorMessages[$key] = $fieldValue-&gt;getErrorMessages();
+                }
+                else
+                {
+                    $errorMessages = array_merge($errorMessages, $fieldValue-&gt;getErrorMessages());
+                }
+            }
+        });
+
+        return $errorMessages;
+    }
+
+    /**
+     * Check the record whether it's valid or not
+     * @param boolean runvalidate 
+     * @return boolean 
+     */
+    function isValid($runValidate = false)
+    {
+        if($runValidate) $this-&gt;validate();
+        
+        return $this-&gt;data()-&gt;every(function($fieldValue){
+            return $fieldValue-&gt;isValid();
+        });
+    }
+
+    /**
+     * Check whether the record is exist in the database or not
+     * force recheck will not affect any changes on database into object or vise versa, it will only validate if id is exist.
+     * 
+     * @param  boolean $recheck 
+     * @return boolean           
+     */
+    function isAlive($recheck = false)
+    {
+        if ($recheck and $this-&gt;hasId()) # check will be available if only record has an id
+        {
+            # only renew original values from database, but accept user changes
+            $this-&gt;reload($revert = false);
+        }
+
+        return $this-&gt;alive;
+    }
+
+    /**
+     * [makeAlive description]
+     * @param  boolean $alive [description]
+     * @return [type]         [description]
+     */
+    protected function makeAlive($alive = true)
+    {
+        $this-&gt;alive = !!$alive;
+
+        if($this-&gt;alive)
+        {
+            static::storeCache($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Check the record if it has id
+     * @return boolean [description]
+     */
+    function hasId()
+    {
+        $id = $this-&gt;getId();
+        return (is_int($id) || (is_string($id) and !empty($id)));
+    }
+
+    /**
+     * Get the primary field of the record
+     * @return array 
+     */
+    function getId()
+    {
+        return $this-&gt;get(static::getPrimary());
+    }
+
+    /**
+     * Set the value for the primary fiel dof the model
+     * @param string $id 
+     */
+    function setId($id = null)
+    {
+        $this-&gt;set(static::getPrimary(), $id);
+        return $this;
+    }
+    
+    /**
+     * [initData description]
+     * @param  array|null $data     [description]
+     * @param  boolean    $original [description]
+     * @return [type]               [description]
+     */
+    protected function initData(array $data = null, $original = false)
+    {
+        $me = $this;
+    
+        $data = Collection::from($data);
+
+        $this-&gt;getFields()-&gt;each(function($field, $i) use($me, $data, $original)
+        {
+            $value = $data-&gt;get($field-&gt;name);
+
+            # does no need use _set, affect original first then raw instead
+            if( $fieldValue = $me-&gt;_get($field-&gt;name) )
+            {
+                if($original)
+                {
+                    $fieldValue-&gt;setOriginal($value);
+                    $fieldValue-&gt;setValue($fieldValue-&gt;getOriginal()); # set raw equal original;
+                }
+                else
+                {
+                    $fieldValue-&gt;setValue($value);
+                }
+            }
+        });
+        
+        return $this;
+    }
+
+    /**
+     * an existing record or new record on the model
+     * @return [type] [description]
+     */
+    protected function data()
+    {
+        if(Collection::isNot($this-&gt;data)) $this-&gt;data = new Collection();
+        return $this-&gt;data;
+    }
+
+    /**
+     * life cycle of field data
+     *
+     * @see \Roulette\field\Value FieldValue value life cycle
+     * @param [type] $field    [description]
+     * @param [type] $value    [description]
+     * @param boolean $commit   [description]
+     * @param boolean $original [description]
+     */
+    protected function _set($field, $value = null, $commit = false, $original = false)
+    {
+        # bulk operation
+        if(is_object($field)) $field = (array) $field;
+        if (is_array($field))
+        {
+            foreach ($field as $f =&gt; $v)
+            {
+                $this-&gt;_set($f, $v, $commit, $original);
+            }
+            return $this;
+        }
+
+        # single operation
+        if( $fieldValue = $this-&gt;_get($field) )
+        {
+            if($original)
+            {
+                $fieldValue-&gt;setOriginal($value, $revert = false);
+            }
+            else
+            {
+                $fieldValue-&gt;setValue($value, $commit);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the value of the record by specified name
+     * @param string $field 
+     * @param string $value 
+     */
+    function set($field, $value = null)
+    { 
+        # use _set instead, for prevent advanced set
+        $this-&gt;_set($field, $value, $commit = false, $original = false);
+
+        return $this;
+    }
+
+    /**
+     * @ignore
+     */
+    protected function _get($field = null)
+    {
+        if ($foundField = static::getField($field))
+        {
+            $data = $this-&gt;data();
+
+            if (!$data-&gt;hasKey($foundField-&gt;name)) $data-&gt;set($foundField-&gt;name, new FieldValue($this, $foundField));
+
+            return $data-&gt;get($foundField-&gt;name);
+        }
+    }
+
+    /**
+     * get the record from the specified field name
+     * @param  array  $field  
+     * @param  boolean $render 
+     * @return array          
+     */
+    function get($field = null, $render = true)
+    {
+        if(is_array($field))
+        {
+            $data = array();
+            foreach ($field as $i =&gt; $f)
+            {
+                $data[$f] = $this-&gt;get($f, $render);
+            }
+            return $data;
+        }
+
+        if($fieldValue = $this-&gt;_get($field))
+        {
+            return $render ? $fieldValue-&gt;getDisplay() : $fieldValue-&gt;getRaw();
+        }
+    }
+
+    /**
+     * Get the record from the model
+     * @param  string|boolean  $fields 
+     * @param  boolean $render 
+     * @return array         
+     */
+    function getData($fields = null, $render = true)
+    {
+        if(is_bool($fields))
+        {
+            $render = $fields;
+            $fields = null;
+        }
+
+        if (is_string($fields)) {
+            $fields = [$fields];
+        }
+
+        if (empty($fields)) {
+            $fields = static::findFieldsPublic(true);
+        }
+
+        if ( !$fields) return; # only accept get data from registered fields
+
+        $data = array();
+        foreach ($fields as $key =&gt; $fieldName) {
+
+            $data[$fieldName] = $this-&gt;get($fieldName, $render);
+        }
+        return $data;
+    }
+
+    /**
+     * [clear description]
+     * @param  boolean $removeValue [description]
+     * @return [type]               [description]
+     */
+    function clear()
+    {
+        $this-&gt;data()-&gt;reset();
+        return $this;
+    }
+
+    /**
+     * [reset description]
+     * @return [type] [description]
+     */
+    function reset()
+    {
+        return $this-&gt;clear();
+    }
+
+    /**
+     * [revert description]
+     * @return [type] [description]
+     */
+    function revert()
+    {
+        $me = $this; 
+        $this-&gt;data()-&gt;each(function($fieldValue)
+        {
+            $fieldValue-&gt;revert();
+        });
+        return $this;
+    }
+
+    /**
+     * [commit description]
+     * @param boolean $makeAlive [description]
+     * @return  [description]
+     */
+    function commit( $makeAlive = false )
+    {
+        $me = $this; 
+        $this-&gt;data()-&gt;each(function($data){
+            $data-&gt;commit();
+        });
+        if($makeAlive) $this-&gt;makeAlive();
+        return $this;
+    }
+
+    /**
+     * Refetch the record from DB
+     * @param  boolean $revert
+     * @param  function $callback
+     * @return /Roulette/Model          
+     */
+    function reload($revert = true, $callback = null)
+    {
+        if (!$this-&gt;hasId()) return $this;
+
+        # if callback as first param
+        if(is_callable($revert))
+        {
+            $callback = $revert;
+            $revert = true; # as the default of revert
+        }
+
+        # use operation instead of load
+        $condition = array(
+            static::getPrimary() =&gt; $this-&gt;getId()
+        );
+        
+        $operation = Proxy::selectOne(array(
+            'table' =&gt; static::getTable(),
+            'fields' =&gt; static::getFieldsSource('original'),
+            'condition' =&gt; static::mapToSource($condition),
+        ));
+
+        if($operation-&gt;isSuccess())
+        {
+            # changes alive status by the record existense
+            $this-&gt;makeAlive(!!$operation-&gt;getRecord());
+
+            $rawRecord = (array)$operation-&gt;getRecord(); # parse into array for bulk set
+            
+            # update original data with the new from database
+            $this-&gt;_set($rawRecord, $_ignoreit = null, $commit = false, $original = true);
+            
+            # revert if needed
+            if($revert)
+            {
+                $this-&gt;revert();
+            }
+        }
+
+        Helper::callback($callback, array($this));
+
+        return $this;
+    }
+
+    /**
+     * Check the record is valid or not
+     * @param  function $callback 
+     * @return /Roulette/Model           
+     */
+    function validate( $callback = null )
+    {
+        $valid = $this-&gt;data()-&gt;every(function($fieldValue, $fieldName) use(&amp;$error)
+        {
+            $fieldValue-&gt;validate();
+            return $fieldValue-&gt;isValid();
+        });
+
+        Helper::callback($callback, array($valid, $this));
+
+        return $this;
+    }
+
+    /**
+     * [getDataToSave description]
+     * @param  string  $operationMode [description]
+     * @param  boolean $modifiedOnly  [description]
+     * @return [type]                 [description]
+     */
+    function getDataToSave( $operationMode = 'save', $modifiedOnly = false) 
+    {
+        $operationMode = strtolower($operationMode);
+
+        $dataToSave = array();
+        
+        $this-&gt;data()-&gt;each(function($v, $k) use(&amp;$dataToSave, $operationMode, $modifiedOnly)
+        {
+            $f = $v-&gt;getField();
+
+            # exlude any extension field
+            if($f-&gt;isExtension())
+            {
+                return;   
+            }
+
+            # exlude any unchanges if modifiedOnly is true
+            if($modifiedOnly and !$v-&gt;isModified())
+            {
+                return;
+            }
+
+            # fetch by its operationMode
+            if( 
+                ($operationMode == 'save' and ($f-&gt;insertable() or $f-&gt;updateable())) or
+                ($operationMode == 'insert' and $f-&gt;insertable() ) or   
+                ($operationMode == 'update' and $f-&gt;updateable() )
+            )
+            {
+                $dataToSave[$f-&gt;getSource()] = $v-&gt;getWriteValue();
+            }
+        });
+        return $dataToSave;
+    }
+
+    /**
+     * [getDataToInsert description]
+     * @return [type] [description]
+     */
+    function getDataToInsert()
+    {
+        return $this-&gt;getDataToSave('insert', false);
+    }
+
+    /**
+     * [getDataToUpdate description]
+     * @param  boolean $modifiedOnly [description]
+     * @return [type]                [description]
+     */
+    function getDataToUpdate($modifiedOnly = false)
+    {
+        return $this-&gt;getDataToSave('update', $modifiedOnly);
+    }
+
+    /**
+     * Insert record to database
+     * @param  function  $callback 
+     * @param  boolean $validate 
+     * @param  boolean $recheck  
+     * @return [type]            
+     */
+    function save( $callback = null, $validate = true, $recheck = true )
+    {
+        if ($validate) 
+        {
+            if (!$this-&gt;isValid($validate = true))
+            {
+                Helper::callback($callback, array(false, $this));
+                return false;
+            }
+        }
+
+        # check alive for decide to insert/update operation
+        # update
+        if ($this-&gt;isAlive($recheck))
+        {
+            $operation = Proxy::update(array(
+                'table' =&gt; static::getTable(),
+                'data' =&gt; $this-&gt;getDataToUpdate(),
+                'condition' =&gt; static::mapToSource(array( static::getPrimary() =&gt; $this-&gt;getId() ))
+            ));
+        }
+        # insert otherwise
+        else 
+        {
+            $operation = Proxy::insert(array(
+                'table' =&gt; static::getTable(),
+                'data' =&gt; $this-&gt;getDataToInsert()
+            ));
+        }
+
+        $success = $operation-&gt;isSuccess();
+
+        if($success)
+        {
+            $this-&gt;reload($revert = true);
+        }
+
+        Helper::callback($callback, array($success, $this));
+
+        return $success;
+    }
+
+    /**
+     * Destroy a record from the database
+     * @param  function $callback 
+     * @return boolean           
+     */
+    function destroy( $callback = null )
+    {
+        $success = false;
+
+        if($this-&gt;isAlive($recheck = true))
+        {
+            $condition = array(static::getPrimary() =&gt; $this-&gt;getId());
+
+            $operation = Proxy::delete(array(
+                'table' =&gt; static::getTable(),
+                'condition' =&gt; static::mapToSource($condition),
+            ));
+            $success = (boolean)$operation-&gt;affectedRows; # should boolean instead
+
+            # make the record as a ghost if destroyed
+            if($success)
+            {
+                $this-&gt;makeAlive(false);
+            }
+        }
+
+        Helper::callback($callback, array($success, $this));
+
+        return $success;
+    }
+
+    /**
+     * [relation description]
+     * @return [type] [description]
+     */
+    protected function relation()
+    {
+        if(Collection::isNot($this-&gt;relation)) $this-&gt;relation = new Collection();
+        return $this-&gt;relation;
+    }
+
+    /**
+     * [getRelation description]
+     * @return [type] [description]
+     */
+    function getRelation()
+    {
+        return $this-&gt;relation();
+    }
+
+    /**
+     * Get the record/s of associated model
+     * @param  /Roulette/Model  $association 
+     * @param  fn  $callback    [description]
+     * @param  boolean $reload      [description]
+     * @return array               [description]
+     */
+    function associate( $association = null, $callback = null, $reload = true )
+    {
+        $relation = $this-&gt;relation();
+        $association = $this-&gt;getAssociation($association);
+        
+        if ($association) 
+        {
+            return $association-&gt;associate($this, $reload);
+            # Helper::callback($callback, array($association-&gt;getAssociated(), $association, $this));
+        }
+    }
+
+    /**
+     * Get the records of associated model
+     * @param  /Roulette/Model  $association 
+     * @param  boolean $reload      
+     * @return array               
+     */
+    function lookup($association = null, $reload = false)
+    {
+        $assoc = $this-&gt;associate($association, $reload);
+        if($assoc)
+        {
+            return $assoc-&gt;getResource();
+        }
+    }
+}
+
+class_alias('Roulette\Model', 'Roulette\Record' );</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

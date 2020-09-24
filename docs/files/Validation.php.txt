@@ -1,0 +1,209 @@
+<?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette;
+
+use Roulette\Base;
+use Roulette\Validator\Validator;
+use Roulette\Validator\String;
+use Roulette\Validator\Boolean;
+use Roulette\Validator\Numeric;
+use Roulette\Validator\Float;
+use Roulette\Validator\Double;
+use Roulette\Validator\Integer;
+use Roulette\Validator\Above;
+use Roulette\Validator\Below;
+use Roulette\Validator\Exlusion;
+use Roulette\Validator\Inclusion;
+use Roulette\Validator\Maxlength;
+use Roulette\Validator\Maxvalue;
+use Roulette\Validator\Minlength;
+use Roulette\Validator\MinValue;
+use Roulette\Validator\Nullable;
+use Roulette\Validator\Format;
+use Roulette\Validator\Custom;
+
+/**
+ * Validation is the appearance of the message or perform other functions after action
+ * 
+ * @package \Roulette
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ */
+class Validation extends Base
+{
+    // use util\Observable;
+    use Util\Configurable;
+    
+    /**
+     * Default value for validators
+     * @var array
+     */
+    protected $validators = array();
+    
+    /**
+     * Default value for validator message
+     * @var array
+     */
+    protected $validatorsMessage = array();
+
+    /**
+     *@ignore
+     */
+    function __construct($config = null)
+    {        
+        if( is_callable($config) )
+        {
+            $config = array('validators'=>array(
+                'custom'=>$config
+            ));
+        }
+        
+        $this->configure($config);
+
+        // backup affected from config
+        $validators = is_array($this->validators) ? $this->validators : array();
+        // before goes deep, purge any artifact
+        $this->validators = array();
+        // now append each
+        foreach ($validators as $validator => $rule)
+        {
+            if(Validator::is($rule))
+            {
+                $this->addValidator($rule);
+            }
+            else
+            {
+                $this->addValidator($validator, $rule);
+            }
+        }
+        
+        return $this;
+    }
+
+    /**
+     * Take specified validators
+     * @return Array
+     */
+    function getValidators()
+    {
+        return $this->validators;
+    }
+
+    /**
+     * Add new validator
+     * 
+     * @param Array  $validator
+     * @param Array  $rule
+     * @param String $message
+     */
+    function addValidator($validator = null, $rule = null, $message = null)
+    {
+        if (Validator::is($validator))
+        {
+            $this->validators[] = $validator;
+            return $this;
+        }
+
+        // buildin validator
+        $builtinValidators = array(
+            'nullable'  => 'Nullable',
+            'format'    => 'Format',
+            'inclusion' => 'Inclusion',
+            'exclusion' => 'Exclusion',
+            'minvalue'  => 'Minvalue',
+            'maxvalue'  => 'Maxvalue',
+            'above'     => 'Above',
+            'below'     => 'Below',
+            'minlength' => 'Minlength',
+            'maxlength' => 'Maxlength',
+            'custom'    => 'Custom'
+        );
+
+        $validator = strtolower($validator);
+        
+        if(array_key_exists($validator, $builtinValidators))
+        {
+            $validatorClass = "Roulette\\Validator\\".$builtinValidators[$validator];
+
+            if(array_key_exists($validator, $this->validatorsMessage)) $message = $this->validatorsMessage[$validator];
+
+            $this->validators[] = new $validatorClass($rule, $message);
+        }
+        return $this;
+    }
+
+    /**
+     * Reset validors that has been entered
+     * @return array
+     */
+    function reset()
+    {
+        $this->validators = array();
+        return $this;
+    }
+
+    /**
+     * Take specified validator message
+     * 
+     *     Example :
+     *     $message = array(
+     *             'validators'=>array(),
+     *             'validatorMessage'=>array('null'=>'dont null please',
+     *                                       'sing'=>'lalalala'
+     *                                       )
+     *     );
+     *
+     *     $msg = \Roulette\Validation::getValidatorMessage('null') == 'dont null please';
+     *     
+     * @return Array
+     */
+    function getValidatorsMessage()
+    {
+        $args = func_get_args();
+        if (empty($args))
+        {
+            return $this->validatorsMessage;
+        } 
+        else
+        {
+            $key = $args[0];
+            if (array_key_exists($key, $this->validatorsMessage))
+            {
+                return $this->validatorsMessage[$key];
+            }
+        }
+    }
+
+    /**
+     * Matching validator is the same
+     * 
+     * @param  Array $value
+     * @return Array
+     */
+    function validate($value = null)
+    {
+        $isValid = true;
+        $validationMessages = array();
+
+        foreach ( $this->validators as $validator)
+        {
+            if( $validator->test($value) !== true )
+            {
+                $isValid = false;
+                $validationMessages[] = $validator->getMessage(array(
+                    'value'=>$value
+                ));
+            }
+        }
+
+        return $validationMessages;
+    }
+
+}

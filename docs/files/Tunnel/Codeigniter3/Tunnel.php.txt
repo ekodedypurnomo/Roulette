@@ -1,0 +1,164 @@
+<?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+namespace Roulette\tunnel\Codeigniter3;
+
+use Roulette\tunnel\Tunnel as BaseTunnel;
+use Roulette\Operation;
+
+/**
+ * Description Tunnel
+ *
+ * @package Roulette\tunnel\Codeigniter3
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ */
+class Tunnel extends BaseTunnel
+{
+
+	protected $connection = null;
+
+	function __construct($connection = null)
+	{
+		$this->connection = $connection;
+	}
+
+	function operate(Operation $operation, callable $callback = null)
+	{
+		return $this;
+	}
+
+	function select( array $config = null )
+	{
+		if( ! is_array($config) ) $config = array();
+
+		$config = Iterator::applyIfNotExist($config, array(
+			'from'	=> null,
+			'fields'=> '*',
+			'where' => array(),
+			'group' => array(),
+			'having'=> array(),
+			'limit' => null,
+			'start' => 0,
+			'order'	=> null,
+			'result_array' => true
+		));
+
+		$connection = $this->getConnection();
+		
+		$connection->select($config['fields']);
+		
+		if( ! empty($config['where']) ){
+			$connection->where($config['where']);
+		}
+
+		if( ! empty($config['group']) ){
+			$connection->group_by($config['group']);
+		}
+
+		if( ! empty($config['having']) ){
+			$connection->having($config['having']);
+		}
+		
+		$config['limit'] = (int) $config['limit'];
+		$config['start'] = (int) $config['start'];
+		if( ! empty($config['limit']) ){
+			$connection->limit($config['limit'], $config['start']);
+		}
+
+		if( ! empty($config['order']) ){
+			if( is_array($config['order']) ){
+				foreach ($config['order'] as $key => $value) {
+	                if( in_array(strtolower($value), array('asc','desc')) ){
+	                    $connection->order_by($key, $value);
+	                }else{
+	                    $connection->order_by($value, 'asc');
+	                }
+	            }
+			}else{
+				$connection->order_by($config['order'], 'asc');
+			}
+		}
+
+		$query = $connection->get($config['from']);
+
+		if( $config['result_array'] === true ){
+			return $query->result_array();
+		}else{
+			return $query->result();
+		}
+	}
+
+	function insert( array $config = null )
+	{
+		$connection = $this->getConnection();
+		$result = $connection->insert($table, $data);
+
+		$this->debug($connection->last_query());
+
+		return $result;
+	}
+
+	function update( array $config = null )
+	{
+		$connection = $this->getConnection();
+		$result = $connection->update($table, $data, $where);	
+		
+		$this->debug($connection->last_query());
+
+		return $result;
+	}
+
+	function delete( array $config = null )
+	{
+		$connection = $this->getConnection();
+		$result = $connection->delete($table, $where);
+
+		$this->debug($connection->last_query());
+
+		return $result;
+	}
+
+	function query( array $config = null )
+	{
+		$connection = $this->getConnection();
+		$query = $connection->query($query);
+        $result = $result_array === true ? $query->result_array() : $query->result();
+		
+		$this->debug($connection->last_query());
+
+		return $result;
+	}
+
+	function exists( array $config = null )
+	{
+		$connection->from($table);
+		$connection->where($condition);
+		$result = $connection->count_all_results();
+		
+		$this->debug($connection->last_query());
+
+		return $result;
+	}
+
+	function getNumRows()
+	{
+		$connection = $this->getConnection();
+		$result = $connection->num_rows();
+		return $result;
+	}
+
+	function getAffectedRow()
+	{
+		$connection = $this->getConnection();
+		$result = $connection->affected_rows();
+		return $result;
+	}
+
+}

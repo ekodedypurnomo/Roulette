@@ -1,0 +1,445 @@
+<?php
+/**
+ * This file is part of the Roulette package.
+ *
+ * (c) Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/**
+ * Roulette\field\Field Field is part of the model, which is used to declare a field of that model
+ */
+namespace Roulette\field;
+
+use Roulette\Base;
+use Roulette\Collection;
+use Roulette\validation\Validation;
+
+use Roulette\util\Configurable;
+
+/**
+ *  Field is part of the model, which is used to declare a field of that model
+ *  
+ * @package Roulette
+ * @since Version 0.1.0
+ * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
+ */
+class Field extends Base
+{
+    // use util\Observable;
+    use Configurable;
+
+    /**
+     * The name of field by which for references.
+     * 
+     * @var string
+     */
+    public $name = null;
+
+    /**
+     * Name of field from database to access.
+     * 
+     * @var array
+     */
+    public $source = null;
+
+    /**
+     * String to output for message and another user text purpose.
+     * 
+     * @var String
+     */
+    public $display = null;
+
+    /**
+     * Accessibility for getData in model, private is `true` will be ignored for append on it.
+     * 
+     * @var boolean
+     */
+    public $private = false;
+
+    /**
+     * Define if field is puphet will be ignore for insert/update operation.
+     * 
+     * @var boolean
+     */
+    public $extension = false;
+
+    /**
+     * Readonly is `true` will be effect on field as readonly
+     * 
+     * @var boolean
+     */
+    public $readOnly = false;
+
+    /**
+     * Default value for first initializing data in the Model.
+     * 
+     * @var String
+     */
+    public $default = null;
+
+    /**
+     * Make field will be insert on DB, if insert `false` field not be insert on DB
+     * 
+     * @var boolean
+     */
+    public $insert = true;
+
+    /**
+     * Field will be update on DB "Default value is true", if update `false` field can't be update
+     * 
+     * @var boolean
+     */
+    public $update = true;
+
+    /**
+     * Field can be delete from DB "Default value is true", if delete `false` field can't be delete
+     * 
+     * @var boolean
+     */
+    public $delete = true;
+
+    /**
+     * Default value select is true, if select `false` so field can't be select
+     * 
+     * @var boolean
+     */
+    public $select = true;
+
+    /**
+     * writer will enter the field to DB
+     * 
+     * @var array
+     */
+    public $writer = null;
+
+    /**
+     * reader will read Field from DB field
+     * 
+     * @var array
+     */
+    public $reader = null;
+
+    /**
+     * Default value converter is null, can be filled with an array
+     * 
+     * @var array
+     */
+    public $converter = null;
+
+    /**
+     * Default value renderer is null. renderer can be use for field ex: gender->render to Male or boolean
+     * 
+     * @var null
+     */
+    public $renderer = null;
+
+    /**
+     * Field will be vatidate from DB is same on record
+     * 
+     * @var null
+     */
+    public $validation = null;
+
+    /**
+     * __construct for function creates a new object field.
+     * @param object|string|array $config field configuration
+     */
+    function __construct($config = null)
+    {
+        if(is_string($config)) $config = array('name'=>$config);
+        if(is_object($config)) $config = (array) $config; 
+        if(!is_array($config)) $config = array($config);
+
+        $configs = Collection::create($config);
+
+        // set default for source and display
+        $configs->setIfNot(array(
+            'source'=>$configs->get('name'),
+            'display'=>$configs->get('name'),
+        ));
+
+        // config validation
+        $validation = $configs->get('validation');
+        if (Validation::isNot($validation)) {
+            $configs->set('validation', new Validation(array(
+                'validators' => $validation
+            )));
+        }
+
+        $this->configure($configs->getAll());
+
+        return $this;
+    }
+
+    /**
+     * Method allows a class to decide how it will react when it is treated like a string.
+     * Converting objects without __toString() method to string would cause E_RECOVERABLE_ERROR
+     * 
+     * @return string [any string on name]
+     */
+    function __toString()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Take specified Name from field
+     * 
+     * @return String just take the data string
+     */
+    function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Take specified Source from Field
+     * 
+     * @return String     
+     */
+    function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * Take specified Display from Field
+     * 
+     * @return String
+     */
+    function getDisplay()
+    {
+        return $this->display;
+    }
+
+    /**
+     * Take specified Default value from Field
+     * 
+     * @return String
+     */
+    function getDefault()
+    {
+        return $this->default;
+    }
+
+    /**
+     * Field can only view if field isReadOnly is true
+     * 
+     * @return boolean [true / false]
+     */
+    function isReadOnly()
+    {
+        return (bool) $this->readOnly;
+    }
+
+    /**
+     * See what the field can be Update/Insert
+     * 
+     * @return boolean
+     */
+    function isExtension()
+    {
+        return (bool) $this->extension;
+    }
+
+    /**
+     * See what the field is Private or not
+     * 
+     * @return boolean
+     */
+    function isPrivate()
+    {
+        return (bool) $this->private;
+    }
+
+    /**
+     * See what the field is Public or not
+     * 
+     * @return boolean
+     */
+    function isPublic()
+    {
+        return !$this->isPrivate();
+    }
+
+    /**
+     * View the status field, can be select or not
+     * 
+     * @return Boolean
+     */
+    function selectable()
+    {
+        return $this->select;
+    }
+
+    /**
+     * View the status field, can be insert or not
+     * 
+     * @return Boolean
+     */
+    function insertable()
+    {
+        return $this->insert;
+    }
+
+    /**
+     * View the status field, can be update or not
+     * 
+     * @return Boolean
+     */
+    function updateable()
+    {
+        return $this->update;
+    }
+
+    /**
+     * View the status field, can be delete or not
+     * 
+     * @return Boolean
+     */
+    function deleteable()
+    {
+        return $this->delete;
+    }
+
+    /**
+     * Use Renderer for specified fields
+     * 
+     * @return Array
+     */
+    function useRenderer()
+    {
+        return !empty($this->renderer);
+    }
+
+    /**
+     * Use Converter for specified fields
+     * 
+     * @return Array
+     */
+    function useConverter()
+    {
+        return !empty($this->converter);
+    }
+
+    /**
+     * Use Reader for specified fields
+     * 
+     * @return Array
+     */
+    function useReader()
+    {
+        return !empty($this->reader);
+    }
+
+    /**
+     * Use Writer for specified fields
+     * 
+     * @return Array
+     */
+    function useWriter()
+    {
+        return !empty($this->writer);
+    }
+
+    /**
+     * Use Validation for specified fields
+     * 
+     * @return Array
+     */
+    function useValidation()
+    {
+        return !empty($this->validation);
+    }
+
+    /**
+     * Read this field by params value
+     * 
+     * @param  String $value value of this field
+     * @return Object return a value
+     */
+    function read($value = null)
+    {
+        if ($this->useReader() and is_callable($this->reader)) {
+            $value = call_user_func_array($this->reader, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * write description
+     * 
+     * @param  String $value
+     * @return Object return a value
+     */
+    function write($value = null)
+    {
+        if ($this->useWriter() and is_callable($this->writer)) {
+            $value = call_user_func_array($this->writer, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * Convert fields to be displayed
+     * Example : 
+     *      'convert'=>function($value){
+     *          return htmlspecialchars_decode($value);
+     *      }
+     *      
+     * @param  array $value 
+     * @return array
+     */
+    function convert($value = null)
+    {
+        if ($this->useConverter() and is_callable($this->converter)) {
+            $value = call_user_func_array($this->converter, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * Render will reverse field from its original value
+     * 
+     * @param  array $value
+     * @return array
+     */
+    function render($value = null)
+    {
+        if ($this->useRenderer() and is_callable($this->renderer)) {
+            $value = call_user_func_array($this->renderer, func_get_args());
+        }
+        return $value;
+    }
+
+    /**
+     * Validate fields that will be processed
+     * 
+     * @param  array $value
+     * @return array
+     */
+    function validate($value = null)
+    {
+        if($this->useValidation() and Validation::is($this->validation))
+        {
+             /* validation is valid if return is any empty
+                and so the return
+             */
+            return call_user_func_array(array($this->getValidation(), 'validate'), func_get_args());
+        }
+    }
+
+    /**
+     * Take the validation to be processed
+     * 
+     * @return Array
+     */
+    function getValidation()
+    {
+        if(Validation::isNot($this->validation)) $this->validation = new Validation();
+        return $this->validation;
+    }
+}
