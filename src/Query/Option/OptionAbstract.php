@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -20,18 +23,17 @@ use Roulette\Base;
  */
 abstract class OptionAbstract extends Base
 {
-	static $action = 'QUERY';
+    static string $action = 'QUERY';
 
-	static function getAction()
-	{
-		return static::$action;
-	}
+    static function getAction(): string
+    {
+        return static::$action;
+    }
 
-	function __construct($table = null)
-	{
-		$this->table($table);
-		return $this;
-	}
+    function __construct(mixed $table = null)
+    {
+        $this->table($table);
+    }
 
-	abstract function reset();
+    abstract function reset(): static;
 }

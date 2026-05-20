@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -22,15 +25,15 @@ use Roulette\Query\Option\Mixin\HasPatch;
  */
 class Insert extends OptionAbstract
 {
-	use HasTable;
-	use HasPatch;
-	
-	static $action = 'INSERT';
+    use HasTable;
+    use HasPatch;
 
-	function reset()
-	{
-		$this->resetTable();
-		$this->resetPatch();
-		return $this;
-	}
+    static string $action = 'INSERT';
+
+    function reset(): static
+    {
+        $this->resetTable();
+        $this->resetPatch();
+        return $this;
+    }
 }

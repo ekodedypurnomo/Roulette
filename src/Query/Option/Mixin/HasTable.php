@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Roulette\Query\Option\Mixin;
 
 /**
@@ -8,32 +11,32 @@ namespace Roulette\Query\Option\Mixin;
  */
 trait HasTable
 {
-	protected $table = '';
+    protected mixed $table = '';
 
-	function table($table)
-	{
-		return $this->setTable($table);
-	}
+    function table(mixed $table): static
+    {
+        return $this->setTable($table);
+    }
 
-	function hasTable()
-	{
-		return !empty($this->table);
-	}
+    function hasTable(): bool
+    {
+        return !empty($this->table);
+    }
 
-	function setTable($table)
-	{
-		$this->table = $table;
-		return $this;
-	}
+    function setTable(mixed $table): static
+    {
+        $this->table = $table;
+        return $this;
+    }
 
-	function getTable()
-	{
-		return $this->table;
-	}
+    function getTable(): mixed
+    {
+        return $this->table;
+    }
 
-	function resetTable()
-	{
-		$this->table = '';
-		return $this;
-	}
+    function resetTable(): static
+    {
+        $this->table = '';
+        return $this;
+    }
 }

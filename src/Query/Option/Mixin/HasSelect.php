@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Roulette\Query\Option\Mixin;
 
 /**
@@ -8,80 +11,78 @@ namespace Roulette\Query\Option\Mixin;
  */
 trait HasSelect
 {
-	protected $column = "*";
+    protected mixed $column = "*";
 
-	function hasSelect()
-	{
-		return !empty($this->column);
-	}
-	
-	function getSelect()
-	{
-		if (empty($this->column)) return '*'; // as default
+    function hasSelect(): bool
+    {
+        return !empty($this->column);
+    }
 
-		return $this->column;
-	}
+    function getSelect(): mixed
+    {
+        if (empty($this->column)) return '*'; // as default
 
-	function select()
-	{
-		$args = func_get_args();
+        return $this->column;
+    }
 
-		foreach ($args as $select)
-		{
-			$this->addSelect($select);
-		}
+    function select(mixed ...$args): static
+    {
+        foreach ($args as $select)
+        {
+            $this->addSelect($select);
+        }
 
-		return $this;
-	}
+        return $this;
+    }
 
-	function addSelect($fieldName, $fieldAlias = null)
-	{
-		if (is_array($fieldName))
-		{
-			foreach ($fieldName as $f => $a)
-			{
-				$this->addSelect($f, $a);
-			}
-			return $this;
-		}
+    function addSelect(mixed $fieldName, mixed $fieldAlias = null): static
+    {
+        if (is_array($fieldName))
+        {
+            foreach ($fieldName as $f => $a)
+            {
+                $this->addSelect($f, $a);
+            }
+            return $this;
+        }
 
-		if (!is_array($this->column)) $this->column = array();
+        if (!is_array($this->column)) $this->column = [];
 
-		if (empty($fieldAlias)) $fieldAlias = $fieldName;
+        if (empty($fieldAlias)) $fieldAlias = $fieldName;
 
-		$this->column[$fieldAlias] = $fieldName; // alias as key to avoid distinct multiple alias from one field
+        $this->column[$fieldAlias] = $fieldName; // alias as key to avoid distinct multiple alias from one field
 
-		return $this;
-	}
+        return $this;
+    }
 
-	function addSelectMax($fieldName, $fieldAlias)
-	{
-		return $this->addSelect('max('.$fieldName.')', $fieldAlias);		
-	}
+    function addSelectMax(mixed $fieldName, mixed $fieldAlias): static
+    {
+        return $this->addSelect('max(' . $fieldName . ')', $fieldAlias);
+    }
 
-	function addSelectMin($fieldName, $fieldAlias)
-	{
-		return $this->addSelect('min('.$fieldName.')', $fieldAlias);		
-	}
+    function addSelectMin(mixed $fieldName, mixed $fieldAlias): static
+    {
+        return $this->addSelect('min(' . $fieldName . ')', $fieldAlias);
+    }
 
-	function addSelectAvg($fieldName, $fieldAlias)
-	{
-		return $this->addSelect('avg('.$fieldName.')', $fieldAlias);		
-	}
+    function addSelectAvg(mixed $fieldName, mixed $fieldAlias): static
+    {
+        return $this->addSelect('avg(' . $fieldName . ')', $fieldAlias);
+    }
 
-	function addSelectSum($fieldName, $fieldAlias)
-	{
-		return $this->addSelect('sum('.$fieldName.')', $fieldAlias);		
-	}
+    function addSelectSum(mixed $fieldName, mixed $fieldAlias): static
+    {
+        return $this->addSelect('sum(' . $fieldName . ')', $fieldAlias);
+    }
 
-	function addSelectCount($fieldName, $fieldAlias)
-	{
-		return $this->addSelect('count('.$fieldName.')', $fieldAlias);		
-	}
+    function addSelectCount(mixed $fieldName, mixed $fieldAlias): static
+    {
+        return $this->addSelect('count(' . $fieldName . ')', $fieldAlias);
+    }
 
-	function resetSelect()
-	{
-		$this->column = "*";
-		return $this;
-	}
+    function resetSelect(): static
+    {
+        $this->column = "*";
+        return $this;
+    }
 }

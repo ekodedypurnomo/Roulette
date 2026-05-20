@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Roulette\Query\Option\Mixin;
 
 /**
@@ -8,57 +11,57 @@ namespace Roulette\Query\Option\Mixin;
  */
 trait HasLimit
 {
-	protected $limit = false;
+    protected mixed $limit = false;
 
-	protected $skip = 0;
+    protected mixed $skip = 0;
 
-	function hasLimit()
-	{
-		return is_numeric($this->limit);
-	}
+    function hasLimit(): bool
+    {
+        return is_numeric($this->limit);
+    }
 
-	function getLimit()
-	{
-		return $this->limit;
-	}
+    function getLimit(): mixed
+    {
+        return $this->limit;
+    }
 
-	function limit($limit)
-	{
-		$this->limit = $limit;
+    function limit(mixed $limit): static
+    {
+        $this->limit = $limit;
 
-		return $this;	
-	}
+        return $this;
+    }
 
-	function take()
-	{
-		return call_user_func_array(array($this, 'limit'), func_get_args());
-	}
+    function take(mixed ...$args): static
+    {
+        return $this->limit(...$args);
+    }
 
-	function hasOffset()
-	{
-		return !empty($this->skip);
-	}
+    function hasOffset(): bool
+    {
+        return !empty($this->skip);
+    }
 
-	function getOffset()
-	{
-		return (int) $this->skip;
-	}
+    function getOffset(): int
+    {
+        return (int) $this->skip;
+    }
 
-	function offset($skip = 0)
-	{
-		$this->skip = $skip;
+    function offset(mixed $skip = 0): static
+    {
+        $this->skip = $skip;
 
-		return $this;	
-	}
+        return $this;
+    }
 
-	function skip()
-	{
-		return call_user_func_array(array($this, 'offset'), func_get_args());
-	}
+    function skip(mixed ...$args): static
+    {
+        return $this->offset(...$args);
+    }
 
-	function resetLimit()
-	{
-		$this->limit = false;
-		$this->skip = false;
-	}
+    function resetLimit(): void
+    {
+        $this->limit = false;
+        $this->skip = false;
+    }
 }

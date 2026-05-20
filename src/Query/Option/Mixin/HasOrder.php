@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Roulette\Query\Option\Mixin;
 
 /**
@@ -8,60 +11,58 @@ namespace Roulette\Query\Option\Mixin;
  */
 trait HasOrder
 {
+    protected array $order = [];
 
-	protected $order = [];
+    function hasOrder(): bool
+    {
+        return !empty($this->order);
+    }
 
-	function hasOrder()
-	{
-		return !empty($this->order);
-	}
+    function getOrder(): array
+    {
+        return $this->order;
+    }
 
-	function getOrder()
-	{
-		return $this->order;
-	}
+    function orderBy(mixed $field = null, string $direction = "ASC"): static
+    {
+        if (empty($field)) return $this;
 
-	function orderBy($field = null, $direction = "ASC")
-	{
-		if (empty($field)) return $this;
+        if (is_array($field))
+        {
+            foreach ($field as $f => $d)
+            {
+                if (is_numeric($f)) $f = $d;
+                $this->orderBy($f, $d);
+            }
+            return $this;
+        }
 
-		if (is_array($field))
-		{
-			foreach ($field as $f => $d)
-			{
-				if (is_numeric($f)) $f = $d;
-				$this->orderBy($f, $d);	
-			}
-			return $this;
-		}
+        if (!is_array($this->order)) $this->order = [];
 
-		if (!is_array($this->order)) $this->order = array();
+        $direction = strtoupper($direction);
+        if (!in_array($direction, ['ASC', 'DESC'])) $direction = 'ASC'; // ascending as default
 
-		$direction = strtoupper($direction);
-		if (!in_array($direction, array('ASC','DESC')) ) $direction = 'ASC'; // ascending as default
+        // remove first to reorder position
+        if (array_key_exists($field, $this->order)) unset($this->order[$field]);
 
-		// remove first to reorder position
-		if (array_key_exists($field, $this->order)) unset($this->order[$field]);
+        $this->order[$field] = $direction;
 
-		$this->order[$field] = $direction;
+        return $this;
+    }
 
-		return $this;
-	}
+    function order(mixed ...$args): static
+    {
+        return $this->orderBy(...$args);
+    }
 
-	function order()
-	{
-		return call_user_func_array(array($this, 'orderBy'), func_get_args());
-	}
+    function sort(mixed ...$args): static
+    {
+        return $this->orderBy(...$args);
+    }
 
-	function sort()
-	{
-		return call_user_func_array(array($this, 'orderBy'), func_get_args());
-	}
-
-	function resetOrder()
-	{
-		$this->order = array();
-		return $this;
-	}
-
+    function resetOrder(): static
+    {
+        $this->order = [];
+        return $this;
+    }
 }

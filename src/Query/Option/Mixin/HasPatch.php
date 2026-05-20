@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Roulette\Query\Option\Mixin;
 
 /**
@@ -8,33 +11,39 @@ namespace Roulette\Query\Option\Mixin;
  */
 trait HasPatch
 {
-	protected $patch = [];
-	
-	function set($column, $value = null)
-	{
-		if (is_object($column))
-		{
-			$column = (array) $column;
-		}
-		if (!is_array($column))
-		{
-			$column = array($column => $value);
-		}
+    protected array $patch = [];
 
-		foreach ($column as $c => $v)
-		{
-			$this->patch[$c] = $v;
-		}
-		return $this;
-	}
+    function set(mixed $column, mixed $value = null): static
+    {
+        if (is_object($column))
+        {
+            $column = (array) $column;
+        }
+        if (!is_array($column))
+        {
+            $column = [$column => $value];
+        }
 
-	function addPatch()
-	{
-		return call_user_func_array(array($this, 'set'), func_get_args());
-	}
+        foreach ($column as $c => $v)
+        {
+            $this->patch[$c] = $v;
+        }
+        return $this;
+    }
 
-	function getPatch()
-	{
-		return $this->patch;
-	}
+    function addPatch(mixed ...$args): static
+    {
+        return $this->set(...$args);
+    }
+
+    function getPatch(): array
+    {
+        return $this->patch;
+    }
+
+    function resetPatch(): static
+    {
+        $this->patch = [];
+        return $this;
+    }
 }

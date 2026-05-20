@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -36,45 +39,45 @@ class Operation extends Base
      * Logged operation
      * @var null
      */
-    static protected $operations = [];
+    static protected array $operations = [];
 
     /**
      * Set to true to keep operation logged
      * @var boolean
      */
-    static protected $isLogging = false;
+    static protected bool $isLogging = false;
 
     /**
      * Tunel to be used by operation to communicate with DB
      * @var null
      */
-    static protected $operationTunel = null;
+    static protected ?TunelAbstract $operationTunel = null;
 
     /**
      * Framework that being used by the server application
      * @var null
      */
-    static protected $frameworkInfo = null;
+    static protected mixed $frameworkInfo = null;
 
     /**
      * [$frameworks description]
      * @var null
      */
-    protected static $frameworks = null;
+    protected static mixed $frameworks = null;
 
     /**
      * [getAll description]
      * @return [type] [description]
      */
-    static function getDefinedFrameworks()
+    static function getDefinedFrameworks(): array
     {
         if (is_null(static::$frameworks))
         {
-            $tunelDir = dirname(__DIR__).'/tunels.php';
+            $tunelDir = dirname(__DIR__) . '/tunels.php';
 
             static::$frameworks = require_once(str_replace('/', DIRECTORY_SEPARATOR, $tunelDir));
 
-            if (!is_array(static::$frameworks)) static::$frameworks = array();
+            if (!is_array(static::$frameworks)) static::$frameworks = [];
         }
         return static::$frameworks;
     }
@@ -83,16 +86,16 @@ class Operation extends Base
      * Get the framework that being used as a server application
      * @return [type] [description]
      */
-    static function getFrameworkInfo()
+    static function getFrameworkInfo(): mixed
     {
         if (static::$frameworkInfo) return static::$frameworkInfo;
 
         foreach (static::getDefinedFrameworks() as $key => $definer)
         {
-            if (class_exists($definer) and is_callable(array($definer, 'check')))
+            if (class_exists($definer) && is_callable([$definer, 'check']))
             {
                 $valid = $definer::check();
-                if ($valid and is_callable(array($definer, 'info')))
+                if ($valid && is_callable([$definer, 'info']))
                 {
                     return $definer::info();
                 }
@@ -100,22 +103,24 @@ class Operation extends Base
                 break;
             }
         }
+
+        return null;
     }
 
     /**
      * Get the tunel of the framework that being used
      * @return [type] [description]
      */
-    static function getFrameworkTunel()
+    static function getFrameworkTunel(): mixed
     {
         return Collection::create(self::getFrameworkInfo())->get('tunel');
     }
 
-    /** 
+    /**
      * Set the tunel from framework that being used, to the proxy
      * @return [type] [description]
      */
-    static function useFrameworkTunel()
+    static function useFrameworkTunel(): void
     {
         static::setOperationTunel(static::getFrameworkTunel());
     }
@@ -124,7 +129,7 @@ class Operation extends Base
      * retrieve data on a model
      * @param Tunel $tunel [description]
      */
-    static function setOperationTunel(TunelAbstract $tunel)
+    static function setOperationTunel(TunelAbstract $tunel): string
     {
         static::$operationTunel = $tunel;
         return static::class;
@@ -132,9 +137,9 @@ class Operation extends Base
 
     /**
      * Get the tunel that being used by the proxy
-     * @return /Roulette/tunel 
+     * @return /Roulette/tunel
      */
-    static function getOperationTunel()
+    static function getOperationTunel(): ?TunelAbstract
     {
         if (!static::$operationTunel) static::useFrameworkTunel();
         return static::$operationTunel;
@@ -144,10 +149,9 @@ class Operation extends Base
      * Set or get the tunel
      * @return [type] [description]
      */
-    static function tunel()
+    static function tunel(mixed ...$args): mixed
     {
-        $args = func_get_args();
-        return empty($args) ? static::getOperationTunel() : static::setOperationTunel(func_get_arg(0));
+        return empty($args) ? static::getOperationTunel() : static::setOperationTunel($args[0]);
     }
 
     /**
@@ -155,7 +159,7 @@ class Operation extends Base
      * @param  [type] $model [description]
      * @return [type]        [description]
      */
-    static function getModel($model = null)
+    static function getModel(mixed $model = null): mixed
     {
         $tunel = static::tunel();
         return $tunel::model($model);
@@ -165,27 +169,27 @@ class Operation extends Base
      * Get Logged Operation
      * @return Operation
      */
-    static function getLog()
+    static function getLog(): array
     {
-        if (!is_array(static::$operations)) static::$operations = array();
+        if (!is_array(static::$operations)) static::$operations = [];
         return static::$operations;
     }
 
     /**
      * Get the last added operation of the proxy
-     * @return array 
+     * @return array
      */
-    static function getLastLog()
+    static function getLastLog(): mixed
     {
         $operation = static::getLog();
-        return empty($operation) ? null: end($operation);
+        return empty($operation) ? null : end($operation);
     }
 
-    /** 
+    /**
      * Get isLogging
-     * @return boolean 
+     * @return boolean
      */
-    static function isLogging()
+    static function isLogging(): bool
     {
         return static::$isLogging;
     }
@@ -193,7 +197,7 @@ class Operation extends Base
     /**
      * Set isLogging to true
      */
-    static function enableLog()
+    static function enableLog(): string
     {
         static::$isLogging = true;
         return static::class;
@@ -202,13 +206,13 @@ class Operation extends Base
     /**
      * Set isLogging to false
      */
-    static function disableLog()
+    static function disableLog(): string
     {
         static::$isLogging = false;
         return static::class;
     }
 
-    static function remove(Operation $operation)
+    static function remove(Operation $operation): string
     {
         foreach (static::$operations as $i => $o)
         {
@@ -219,7 +223,7 @@ class Operation extends Base
                 # reindex array
                 static::$operations = array_values(static::$operations);
                 break;
-            }    
+            }
         }
         return static::class;
     }
@@ -228,7 +232,7 @@ class Operation extends Base
      * Add Operation
      * @param Operation|null $operation [description]
      */
-    static function add(Operation $operation = null)
+    static function add(Operation $operation = null): string
     {
         if (static::$isLogging === true)
         {
@@ -245,10 +249,10 @@ class Operation extends Base
      * @param  boolean $execute [description]
      * @return Operation
      */
-    static function create($operationMode = null, $executeImmedietly = false, $appendToLog = false)
+    static function create(mixed $operationMode = null, bool $executeImmedietly = false, bool $appendToLog = false): static
     {
         $operation = new Operation(static::tunel(), $operationMode);
-        
+
         if ($appendToLog) static::add($operation);
 
         if ($executeImmedietly) $operation->execute();
@@ -266,71 +270,72 @@ class Operation extends Base
      * [$tunnel description]
      * @var null
      */
-    protected $tunnel = null;
+    protected ?TunelAbstract $tunnel = null;
 
     /**
      * create a function with the number of parameter that can change
      * @var null
      */
-    protected $option = null;
+    protected mixed $option = null;
 
     /**
      * notification that an action has been successful
      * @var null
      */
-    public $success = null;
+    public mixed $success = null;
 
     /**
      * notification that an action has occurred error
      * @var null
      */
-    public $error = null;
+    public mixed $error = null;
 
     /**
      * Last query executed
      * @var null
      */
-    public $query = null;
+    public mixed $query = null;
 
     /**
-     * Original last query from framework 
+     * Original last query from framework
      * @var null
      */
-    public $queryRaw = null;
+    public mixed $queryRaw = null;
 
     /**
      * The result fo the operation
      * @var null
      */
-    public $result = null;
+    public mixed $result = null;
 
     /**
      * Rows that affected by last operation
      * @var null
      */
-    public $affectedRows = null;
+    public mixed $affectedRows = null;
 
     /**
      * [$executeAt description]
      * @var null
      */
-    public $executeTime = null;
+    public mixed $executeTime = null;
 
-    public $onSuccess = null;
-    public $onFailure = null;
-    public $onExecuted = null;
+    public mixed $onSuccess = null;
+    public mixed $onFailure = null;
+    public mixed $onExecuted = null;
 
     /**
      * @ignore
      */
-    function __construct( TunelAbstract $tunnel, $operationMode = 'query' )
+    function __construct(TunelAbstract $tunnel, mixed $operationMode = 'query')
     {
         $this->tunnel = $tunnel;
-        
+
         if ($operationMode instanceof OptionAbstract)
         {
             $this->option = $operationMode;
-        }else
+        }
+        else
         {
             switch (strtoupper($operationMode))
             {
@@ -338,14 +343,12 @@ class Operation extends Base
                 case 'INSERT': $this->option = new Insert(); break;
                 case 'UPDATE': $this->option = new Update(); break;
                 case 'DELETE': $this->option = new Delete(); break;
-                case 'QUERY': default: $this->option = new Option(); break; 
+                case 'QUERY': default: $this->option = new Option(); break;
             }
         }
-        
-        return $this;
     }
 
-    function getMode()
+    function getMode(): mixed
     {
         $option = $this->option;
 
@@ -353,18 +356,20 @@ class Operation extends Base
         {
             return $option->getAction();
         }
+
+        return null;
     }
-    
+
     /**
      * the process of processing data to be sent to DB
      * @return [type] [description]
      */
-    function getTunel()
+    function getTunel(): ?TunelAbstract
     {
         return $this->tunnel;
     }
 
-    function getOption()
+    function getOption(): mixed
     {
         if (!($this->option instanceof OptionAbstract))
         {
@@ -373,31 +378,31 @@ class Operation extends Base
 
         return $this->option;
     }
-    
+
     /**
      * send or retrieve data
      * @return Array
      */
-    function getRecord()
+    function getRecord(): mixed
     {
-        return ( is_array($this->result) and !empty($this->result) ) ? $this->result[0] : null;
+        return (is_array($this->result) && !empty($this->result)) ? $this->result[0] : null;
     }
 
     /**
      * Get the records from the operation
      * @return Array
      */
-    function getRecords()
+    function getRecords(): array
     {
         if (!is_array($this->result))
         {
-            return array();
+            return [];
         }
 
         return $this->result;
     }
 
-    function getResult()
+    function getResult(): mixed
     {
         return $this->result;
     }
@@ -406,7 +411,7 @@ class Operation extends Base
      * check whether the data error
      * @return [type] [description]
      */
-    function getError()
+    function getError(): mixed
     {
         return $this->error;
     }
@@ -415,7 +420,7 @@ class Operation extends Base
      * Check whether the operation is a success
      * @return boolean [description]
      */
-    function isSuccess()
+    function isSuccess(): bool
     {
         return (bool) $this->success;
     }
@@ -424,15 +429,15 @@ class Operation extends Base
      * Check Whether the operation is ececuted or not
      * @return boolean [description]
      */
-    function isExecuted()
+    function isExecuted(): bool
     {
         return !is_null($this->executed);
     }
 
-    function buildQuery(callable $callback)
+    function buildQuery(callable $callback): static
     {
-        call_user_func_array($callback, array($this->getOption(), $this));
-        
+        call_user_func_array($callback, [$this->getOption(), $this]);
+
         return $this;
     }
 
@@ -440,101 +445,100 @@ class Operation extends Base
      * function performs a process with database
      * @return [type] [description]
      */
-    function execute()
+    function execute(): static
     {
         # will execute if only has a tunnel
         $tunnel = $this->getTunel();
         if (!$tunnel) return $this;
 
         # initializing
-        $this->executeTime = array(microtime(true), null, null); // [startAt, finnishAt, speed] in microtime
+        $this->executeTime = [microtime(true), null, null]; // [startAt, finnishAt, speed] in microtime
         $this->result = null;
         $this->success = null;
         $this->query = null;
         $this->queryRaw = null;
         $this->affectedRows = null;
-        
+
         # make sure inserted to the log and reorder by last executed
         $this->submit();
 
         $tunnel->operate($this, function($t, $o)
         {
             $o->executeTime[1] = microtime(true);
-            $o->executeTime[2] = round( ((double)$o->executeTime[1]) - ((double)$o->executeTime[0]), 4);
+            $o->executeTime[2] = round(((double)$o->executeTime[1]) - ((double)$o->executeTime[0]), 4);
 
             $this->callListeners();
         });
-        
+
         return $this;
     }
 
-    function submit()
+    function submit(): static
     {
         static::add($this);
         return $this;
     }
 
-    function release()
+    function release(): static
     {
         static::remove($this);
         return $this;
     }
 
-    protected function callListeners()
+    protected function callListeners(): static
     {
-        if (is_callable($this->onExecuted)) call_user_func_array($this->onExecuted, array($this));
+        if (is_callable($this->onExecuted)) call_user_func_array($this->onExecuted, [$this]);
 
-        if (is_callable($this->onSuccess) and $this->isSuccess()) call_user_func_array($this->onSuccess, array($this));
-        if (is_callable($this->onFailure) and ! $this->isSuccess()) call_user_func_array($this->onFailure, array($this));
+        if (is_callable($this->onSuccess) && $this->isSuccess()) call_user_func_array($this->onSuccess, [$this]);
+        if (is_callable($this->onFailure) && !$this->isSuccess()) call_user_func_array($this->onFailure, [$this]);
 
         return $this;
     }
 
     /**
      * function sends that an action has been successful
-     * 
+     *
      * @param  callable|null $callback [description]
      * @return [type]                  [description]
      */
-    function success(callable $callback = null)
+    function success(callable $callback = null): static
     {
         if (!$this->isExecuted()) return $this;
 
         if ($this->isSuccess())
-            call_user_func_array($callback, array($this));
+            call_user_func_array($callback, [$this]);
 
         return $this;
     }
 
     /**
      * function sends that an action has failed
-     * 
+     *
      * @param  callable|null $callback [description]
      * @return [type]                  [description]
      */
-    function failure(callable $callback = null)
+    function failure(callable $callback = null): static
     {
         if (!$this->isExecuted()) return $this;
 
-        if (!$this->isSuccess()) 
-            call_user_func_array($callback, array($this));
+        if (!$this->isSuccess())
+            call_user_func_array($callback, [$this]);
 
         return $this;
     }
 
     /**
      * function displays a notification after the previous effect
-     * 
+     *
      * @param  callable|null $callback [description]
      * @return function                [description]
      */
-    function callback(callable $callback = null)
+    function callback(callable $callback = null): static
     {
         if (!$this->isExecuted()) return $this;
 
-        call_user_func_array($callback, array($this, $this->isSuccess()));
+        call_user_func_array($callback, [$this, $this->isSuccess()]);
 
         return $this;
     }
-
 }

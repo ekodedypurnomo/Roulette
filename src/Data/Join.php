@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -22,86 +25,84 @@ use Roulette\Mixin\Configurable;
 /**
  * Assosiation was a description of a relationship between a model one with the other models
  * which in this function there-many relationship model or one model
- * 
+ *
  * @package \Roulette\Data
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Join extends Base
 {
-	use Configurable;
+    use Configurable;
 
-	protected $source = null;
+    protected mixed $source = null;
 
-    protected $association = null;
+    protected mixed $association = null;
 
     /**
      * Regex|callable to identify field name is a part of joined field
      * @var null
      */
-    protected $identifier = null;
+    protected mixed $identifier = null;
 
     /**
      * array(Regex,replacer)|callable|Roulete\Template to resolve the real fieldname to call `get` function on Model
      * @var null
      */
-    protected $resolver = null;
+    protected mixed $resolver = null;
 
-    function __construct($config = null)
+    function __construct(mixed $config = null)
     {
         $configs = Collection::create($config);
 
         $this->configure($configs->getAll());
+    }
 
+    function setSource(Source $source): static
+    {
+        $this->source = $source;
         return $this;
     }
 
-    function setSource(Source $source)
+    function getSource(): mixed
     {
-    	$this->source = $source;
-    	return $this;
+        return $this->source;
     }
 
-    function getSource()
+    function setAssociation(Association $association): static
     {
-    	return $this->source;
+        $this->association = $association;
+        return $this;
     }
 
-    function setAssociation(Association $association)
+    function getAssociation(mixed $apply = false): mixed
     {
-    	$this->association = $association;
-    	return $this;
-    }
-
-    function getAssociation($apply = false)
-    {
-    	$model = $this->getSource()->getModel();
-    	$assoc = $model::getAssociation($this->association);
+        $model = $this->getSource()->getModel();
+        $assoc = $model::getAssociation($this->association);
         return $assoc;
     }
 
-    function identify($rawData = null, $continueResolve = false)
+    function identify(mixed $rawData = null, bool $continueResolve = false): mixed
     {
-    	if (!is_array($rawData)) return;
+        if (!is_array($rawData)) return null;
 
-    	$identifier = $this->identifier;
-    	$identified = array();
-    	
+        $identifier = $this->identifier;
+        $identified = [];
+
         # indicate a custom identifer
         if (is_callable($identifier))
-    	{
-    		foreach ($rawData as $key => $value)
-    		{
-    			if ( call_user_func_array($identifier, array($key, $value, $rawData, $this)) )
-    			{
-    				$identified[$key] = $value;
-    			}
-    		}
+        {
+            foreach ($rawData as $key => $value)
+            {
+                if (call_user_func_array($identifier, [$key, $value, $rawData, $this]))
+                {
+                    $identified[$key] = $value;
+                }
+            }
             return $identified;
-    	}
-	
+        }
+
         # indicate use regex string
-		if (is_string($identifier))
+        if (is_string($identifier))
         {
             $identifier = new Regexp($identifier);
         }
@@ -109,11 +110,11 @@ class Join extends Base
         # indicate use regex
         if ($identifier instanceof Regexp)
         {
-            foreach ($rawData as $key => $value) 
+            foreach ($rawData as $key => $value)
             {
                 // skip unmatch field
-                if ( ! $identifier->test($key)) continue;
-                
+                if (!$identifier->test($key)) continue;
+
                 $identified[$key] = $value;
             }
         }
@@ -123,12 +124,12 @@ class Join extends Base
             $identified = $this->resolve($identified);
         }
 
-    	return $identified;
+        return $identified;
     }
 
-    function resolve($rawData = null, $identifyFirst = false)
+    function resolve(mixed $rawData = null, bool $identifyFirst = false): mixed
     {
-        if (!is_array($rawData)) return;
+        if (!is_array($rawData)) return null;
 
         if ($identifyFirst)
         {
@@ -136,29 +137,29 @@ class Join extends Base
         }
 
         $resolver = $this->resolver;
-        $resolved = array();
-        
+        $resolved = [];
+
         # indicate a custom resolver
         if (is_callable($resolver))
         {
             foreach ($rawData as $key => $value)
             {
-                $resolvedFieldString = call_user_func_array($resolver, array($key, $value, $rawData, $this));
+                $resolvedFieldString = call_user_func_array($resolver, [$key, $value, $rawData, $this]);
                 $resolved[$resolvedFieldString] = $value;
             }
             return $resolved;
         }
-    
+
         # indicate use Roulette\Template
         if (is_string($resolver))
         {
             $resolver = new Template($resolver);
         }
-        if($resolver instanceof Template)
+        if ($resolver instanceof Template)
         {
-            foreach ($rawData as $key => $value) 
+            foreach ($rawData as $key => $value)
             {
-                $resolvedFieldString = $resolver->apply(array('field'=>$key, 'value'=>$value));
+                $resolvedFieldString = $resolver->apply(['field' => $key, 'value' => $value]);
                 $resolved[$resolvedFieldString] = $value;
             }
         }
@@ -173,7 +174,7 @@ class Join extends Base
         }
         if ($resolver instanceof Regexp)
         {
-            foreach ($rawData as $key => $value) 
+            foreach ($rawData as $key => $value)
             {
                 $resolvedFieldString = $resolver->replace($key);
                 $resolved[$resolvedFieldString] = $value;
@@ -183,7 +184,7 @@ class Join extends Base
         return $resolved;
     }
 
-    function fetchData($rawData = null)
+    function fetchData(mixed $rawData = null): mixed
     {
         return $this->resolve($this->identify($rawData));
     }

@@ -7,6 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+declare(strict_types=1);
+
 namespace Roulette\Tunel;
 
 use Roulette\Tunel\TunelAbstract;
@@ -22,150 +25,148 @@ use Roulette\Query\Operation;
 class Codeigniter3 extends TunelAbstract
 {
 
-	static $frameworkInfo = null;
+    static mixed $frameworkInfo = null;
 
-	static function check()
-	{
-		return;
-	}
+    static function check(): bool
+    {
+        return false;
+    }
 
-	protected $connection = null;
+    function __construct(mixed $connection = null)
+    {
+        $this->connection = $connection;
+    }
 
-	function __construct($connection = null)
-	{
-		$this->connection = $connection;
-	}
+    function operate(Operation $operation, ?callable $callback = null): mixed
+    {
+        return $this;
+    }
 
-	function operate(Operation $operation, callable $callback = null)
-	{
-		return $this;
-	}
+    function select(array $config = null): mixed
+    {
+        if (!is_array($config)) $config = [];
 
-	function select( array $config = null )
-	{
-		if ( ! is_array($config) ) $config = array();
+        $config = Collection::applyIfNot($config, [
+            'from'         => null,
+            'fields'       => '*',
+            'where'        => [],
+            'group'        => [],
+            'having'       => [],
+            'limit'        => null,
+            'start'        => 0,
+            'order'        => null,
+            'result_array' => true
+        ]);
 
-		$config = Collection::applyIfNot($config, array(
-			'from'	=> null,
-			'fields'=> '*',
-			'where' => array(),
-			'group' => array(),
-			'having'=> array(),
-			'limit' => null,
-			'start' => 0,
-			'order'	=> null,
-			'result_array' => true
-		));
+        $connection = $this->getConnection();
 
-		$connection = $this->getConnection();
-		
-		$connection->select($config['fields']);
-		
-		if ( ! empty($config['where']) ){
-			$connection->where($config['where']);
-		}
+        $connection->select($config['fields']);
 
-		if ( ! empty($config['group']) ){
-			$connection->group_by($config['group']);
-		}
+        if (!empty($config['where'])) {
+            $connection->where($config['where']);
+        }
 
-		if ( ! empty($config['having']) ){
-			$connection->having($config['having']);
-		}
-		
-		$config['limit'] = (int) $config['limit'];
-		$config['start'] = (int) $config['start'];
-		if ( ! empty($config['limit']) ){
-			$connection->limit($config['limit'], $config['start']);
-		}
+        if (!empty($config['group'])) {
+            $connection->group_by($config['group']);
+        }
 
-		if ( ! empty($config['order']) ){
-			if ( is_array($config['order']) ){
-				foreach ($config['order'] as $key => $value) {
-	                if ( in_array(strtolower($value), array('asc','desc')) ){
-	                    $connection->order_by($key, $value);
-	                }else{
-	                    $connection->order_by($value, 'asc');
-	                }
-	            }
-			}else{
-				$connection->order_by($config['order'], 'asc');
-			}
-		}
+        if (!empty($config['having'])) {
+            $connection->having($config['having']);
+        }
 
-		$query = $connection->get($config['from']);
+        $config['limit'] = (int) $config['limit'];
+        $config['start'] = (int) $config['start'];
+        if (!empty($config['limit'])) {
+            $connection->limit($config['limit'], $config['start']);
+        }
 
-		if ( $config['result_array'] === true ){
-			return $query->result_array();
-		}else{
-			return $query->result();
-		}
-	}
+        if (!empty($config['order'])) {
+            if (is_array($config['order'])) {
+                foreach ($config['order'] as $key => $value) {
+                    if (in_array(strtolower($value), ['asc', 'desc'])) {
+                        $connection->order_by($key, $value);
+                    } else {
+                        $connection->order_by($value, 'asc');
+                    }
+                }
+            } else {
+                $connection->order_by($config['order'], 'asc');
+            }
+        }
 
-	function insert( array $config = null )
-	{
-		$connection = $this->getConnection();
-		$result = $connection->insert($table, $data);
+        $query = $connection->get($config['from']);
 
-		$this->debug($connection->last_query());
+        if ($config['result_array'] === true) {
+            return $query->result_array();
+        } else {
+            return $query->result();
+        }
+    }
 
-		return $result;
-	}
+    function insert(array $config = null): mixed
+    {
+        $connection = $this->getConnection();
+        $result = $connection->insert($table, $data);
 
-	function update( array $config = null )
-	{
-		$connection = $this->getConnection();
-		$result = $connection->update($table, $data, $where);	
-		
-		$this->debug($connection->last_query());
+        $this->debug($connection->last_query());
 
-		return $result;
-	}
+        return $result;
+    }
 
-	function delete( array $config = null )
-	{
-		$connection = $this->getConnection();
-		$result = $connection->delete($table, $where);
+    function update(array $config = null): mixed
+    {
+        $connection = $this->getConnection();
+        $result = $connection->update($table, $data, $where);
 
-		$this->debug($connection->last_query());
+        $this->debug($connection->last_query());
 
-		return $result;
-	}
+        return $result;
+    }
 
-	function query( array $config = null )
-	{
-		$connection = $this->getConnection();
-		$query = $connection->query($query);
+    function delete(array $config = null): mixed
+    {
+        $connection = $this->getConnection();
+        $result = $connection->delete($table, $where);
+
+        $this->debug($connection->last_query());
+
+        return $result;
+    }
+
+    function query(array $config = null): mixed
+    {
+        $connection = $this->getConnection();
+        $query = $connection->query($query);
         $result = $result_array === true ? $query->result_array() : $query->result();
-		
-		$this->debug($connection->last_query());
 
-		return $result;
-	}
+        $this->debug($connection->last_query());
 
-	function exists( array $config = null )
-	{
-		$connection->from($table);
-		$connection->where($condition);
-		$result = $connection->count_all_results();
-		
-		$this->debug($connection->last_query());
+        return $result;
+    }
 
-		return $result;
-	}
+    function exists(array $config = null): mixed
+    {
+        $connection->from($table);
+        $connection->where($condition);
+        $result = $connection->count_all_results();
 
-	function getNumRows()
-	{
-		$connection = $this->getConnection();
-		$result = $connection->num_rows();
-		return $result;
-	}
+        $this->debug($connection->last_query());
 
-	function getAffectedRow()
-	{
-		$connection = $this->getConnection();
-		$result = $connection->affected_rows();
-		return $result;
-	}
+        return $result;
+    }
+
+    function getNumRows(): mixed
+    {
+        $connection = $this->getConnection();
+        $result = $connection->num_rows();
+        return $result;
+    }
+
+    function getAffectedRow(): mixed
+    {
+        $connection = $this->getConnection();
+        $result = $connection->affected_rows();
+        return $result;
+    }
 
 }

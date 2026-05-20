@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -22,15 +25,15 @@ use Roulette\Query\Option\Mixin\HasWhere;
  */
 class Delete extends OptionAbstract
 {
-	use HasTable;
-	use HasWhere;
-	
-	static $action = 'DELETE';
+    use HasTable;
+    use HasWhere;
 
-	function reset()
-	{
-		$this->resetTable();
-		$this->resetWhere();
-		return $this;
-	}
+    static string $action = 'DELETE';
+
+    function reset(): static
+    {
+        $this->resetTable();
+        $this->resetWhere();
+        return $this;
+    }
 }

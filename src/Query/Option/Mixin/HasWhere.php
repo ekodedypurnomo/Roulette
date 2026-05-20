@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Roulette\Query\Option\Mixin;
 
 use Roulette\Query\Condition;
@@ -10,133 +13,133 @@ use Roulette\Query\Condition;
  */
 trait HasWhere
 {
-	protected $where = [];
-	
-	function hasWhere()
-	{
-		return !empty($this->where);
-	}
+    protected array $where = [];
 
-	function getWhere()
-	{
-		return $this->where;
-	}
+    function hasWhere(): bool
+    {
+        return !empty($this->where);
+    }
 
-	function where($field = null, $operatorOrCondition = null, $value = null, $hook = 'AND')
-	{
-		if (is_array($field))
-		{
-			foreach ($field as $f => $v)
-			{
-				$this->where($f, $v);
-			}
-			return $this;
-		}
+    function getWhere(): array
+    {
+        return $this->where;
+    }
 
-		# logic
+    function where(mixed $field = null, mixed $operatorOrCondition = null, mixed $value = null, string $hook = 'AND'): static
+    {
+        if (is_array($field))
+        {
+            foreach ($field as $f => $v)
+            {
+                $this->where($f, $v);
+            }
+            return $this;
+        }
 
-		if (empty($field)) return $this;
+        # logic
 
-		if (!is_array($this->where)) $this->where = array();
+        if (empty($field)) return $this;
 
-		$hook = strtoupper($hook);
+        if (!is_array($this->where)) $this->where = [];
 
-		if (is_callable($field))
-		{
-			$builder = new $this($this->table);
-			$where = call_user_func_array($field, array($builder));
-			$this->where[] = Condition::create(array(
-				'hook'=> $hook, 
-				'field'=> $builder->getWhere()
-				));
-		}
-		else
-		{
-			$condition = Condition::create(array(
-				'hook'=> $hook, 
-				'field'=> $field, 
-				'operator'=> $operatorOrCondition,
-				'value'=> $value
-				));
-			$this->where[] = $condition;
-		}
-		
-		return $this;
-	}
+        $hook = strtoupper($hook);
 
-	function andWhere($field, $operatorOrCondition = null, $condition = null)
-	{
-		return call_user_func_array(array($this, 'where'), array($field, $operatorOrCondition, $condition, 'AND'));
-	}
+        if (is_callable($field))
+        {
+            $builder = new $this($this->table);
+            $where = call_user_func_array($field, [$builder]);
+            $this->where[] = Condition::create([
+                'hook'  => $hook,
+                'field' => $builder->getWhere()
+            ]);
+        }
+        else
+        {
+            $condition = Condition::create([
+                'hook'     => $hook,
+                'field'    => $field,
+                'operator' => $operatorOrCondition,
+                'value'    => $value
+            ]);
+            $this->where[] = $condition;
+        }
 
-	function orWhere($field, $operatorOrCondition = null, $condition = null)
-	{
-		return call_user_func_array(array($this, 'where'), array($field, $operatorOrCondition, $condition, 'OR'));
-	}
+        return $this;
+    }
 
-	function whereNull($field)
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'IS','NULL', 'AND'));
-	}
+    function andWhere(mixed $field, mixed $operatorOrCondition = null, mixed $condition = null): static
+    {
+        return $this->where($field, $operatorOrCondition, $condition, 'AND');
+    }
 
-	function whereNotNull($field)
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'IS NOT','NULL', 'AND'));
-	}
+    function orWhere(mixed $field, mixed $operatorOrCondition = null, mixed $condition = null): static
+    {
+        return $this->where($field, $operatorOrCondition, $condition, 'OR');
+    }
 
-	function orWhereNull($field)
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'IS','NULL', 'OR'));
-	}
+    function whereNull(mixed $field): static
+    {
+        return $this->where($field, 'IS', 'NULL', 'AND');
+    }
 
-	function orWhereNotNull($field)
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'IS NOT','NULL', 'OR'));
-	}
+    function whereNotNull(mixed $field): static
+    {
+        return $this->where($field, 'IS NOT', 'NULL', 'AND');
+    }
 
-	function whereBetween($field, $range = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'BETWEEN', $range, 'AND'));	
-	}
+    function orWhereNull(mixed $field): static
+    {
+        return $this->where($field, 'IS', 'NULL', 'OR');
+    }
 
-	function whereNotBetween($field, $range = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'NOT BETWEEN', $range, 'AND'));	
-	}
+    function orWhereNotNull(mixed $field): static
+    {
+        return $this->where($field, 'IS NOT', 'NULL', 'OR');
+    }
 
-	function orWhereBetween($field, $range = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'BETWEEN', $range, 'OR'));	
-	}
+    function whereBetween(mixed $field, mixed $range = []): static
+    {
+        return $this->where($field, 'BETWEEN', $range, 'AND');
+    }
 
-	function orWhereNotBetween($field, $range = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'NOT BETWEEN', $range, 'OR'));	
-	}
+    function whereNotBetween(mixed $field, mixed $range = []): static
+    {
+        return $this->where($field, 'NOT BETWEEN', $range, 'AND');
+    }
 
-	function whereIn($field, $inclusion = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'IN', $inclusion, 'AND'));	
-	}
+    function orWhereBetween(mixed $field, mixed $range = []): static
+    {
+        return $this->where($field, 'BETWEEN', $range, 'OR');
+    }
 
-	function whereNotIn($field, $inclusion = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'NOT IN', $inclusion, 'AND'));	
-	}
+    function orWhereNotBetween(mixed $field, mixed $range = []): static
+    {
+        return $this->where($field, 'NOT BETWEEN', $range, 'OR');
+    }
 
-	function orWhereIn($field, $inclusion = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'IN', $inclusion, 'OR'));	
-	}
+    function whereIn(mixed $field, mixed $inclusion = []): static
+    {
+        return $this->where($field, 'IN', $inclusion, 'AND');
+    }
 
-	function orWhereNotIn($field, $inclusion = array())
-	{
-		return call_user_func_array(array($this,'where'), array($field, 'NOT IN', $inclusion, 'OR'));	
-	}
+    function whereNotIn(mixed $field, mixed $inclusion = []): static
+    {
+        return $this->where($field, 'NOT IN', $inclusion, 'AND');
+    }
 
-	function resetWhere()
-	{
-		$this->where = array();
-		return $this;
-	}
+    function orWhereIn(mixed $field, mixed $inclusion = []): static
+    {
+        return $this->where($field, 'IN', $inclusion, 'OR');
+    }
+
+    function orWhereNotIn(mixed $field, mixed $inclusion = []): static
+    {
+        return $this->where($field, 'NOT IN', $inclusion, 'OR');
+    }
+
+    function resetWhere(): static
+    {
+        $this->where = [];
+        return $this;
+    }
 }

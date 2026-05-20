@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Roulette\Query\Option\Mixin;
 
 use Roulette\Query\Condition;
@@ -10,77 +13,77 @@ use Roulette\Query\Condition;
  */
 trait HasGroup
 {
-	protected $group = [];
-	protected $having = [];
+    protected array $group = [];
+    protected array $having = [];
 
-	function hasGroup()
-	{
-		return !empty($this->group);
-	}
+    function hasGroup(): bool
+    {
+        return !empty($this->group);
+    }
 
-	function getGroup()
-	{
-		return $this->group;
-	}
+    function getGroup(): array
+    {
+        return $this->group;
+    }
 
-	function groupBy($group = null)
-	{
-		if (empty($field)) return $this;
+    function groupBy(mixed $group = null): static
+    {
+        if (empty($field)) return $this;
 
-		if (!is_array($this->group)) $this->group = array();
+        if (!is_array($this->group)) $this->group = [];
 
-		$this->group[] = $group;
+        $this->group[] = $group;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	function group()
-	{
-		return call_user_func_array(array($this, 'groupBy'), func_get_args());
-	}
+    function group(mixed ...$args): static
+    {
+        return $this->groupBy(...$args);
+    }
 
-	function resetGroup()
-	{
-		$this->group = array();
-		return $this;
-	}
+    function resetGroup(): static
+    {
+        $this->group = [];
+        return $this;
+    }
 
-	function hasHaving()
-	{
-		return !empty($this->having);
-	}
+    function hasHaving(): bool
+    {
+        return !empty($this->having);
+    }
 
-	function getHaving()
-	{
-		return $this->having;
-	}
+    function getHaving(): array
+    {
+        return $this->having;
+    }
 
-	function having($field, $operatorOrValue = null, $value = null, $hook = 'AND')
-	{
-		if (!is_array($this->having)) $this->having = array();
+    function having(mixed $field, mixed $operatorOrValue = null, mixed $value = null, string $hook = 'AND'): static
+    {
+        if (!is_array($this->having)) $this->having = [];
 
-		if (is_callable($field))
-		{
-			$builder = new $this($this->model);
-			$having = call_user_func_array($field, [$builder]);
-			$this->having[] = ['AND', $builder->having];
-			return $this;
-		}
-		
-		$condition = Condition::create(array(
-			'boolean'=> $hook,
-			'field'=> $field,
-			'operator'=> $operatorOrValue,
-			'value'=> $value,
-			));
-		$this->having[] = $condition;
+        if (is_callable($field))
+        {
+            $builder = new $this($this->model);
+            $having = call_user_func_array($field, [$builder]);
+            $this->having[] = ['AND', $builder->having];
+            return $this;
+        }
 
-		return $this;
-	}
+        $condition = Condition::create([
+            'boolean'  => $hook,
+            'field'    => $field,
+            'operator' => $operatorOrValue,
+            'value'    => $value,
+        ]);
+        $this->having[] = $condition;
 
-	function resetHaving()
-	{
-		$this->having = array();
-		return $this;
-	}
+        return $this;
+    }
+
+    function resetHaving(): static
+    {
+        $this->having = [];
+        return $this;
+    }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -32,64 +35,64 @@ use Roulette\Query\Option\Delete;
  */
 class Option extends OptionAbstract
 {
-	use HasTable;
-	use HasSelect;
-	use HasWhere;
-	use HasOrder;
-	use HasGroup;
-	use HasLimit;
-	use HasPatch;
-	
-	static $action = 'QUERY';
+    use HasTable;
+    use HasSelect;
+    use HasWhere;
+    use HasOrder;
+    use HasGroup;
+    use HasLimit;
+    use HasPatch;
 
-	function reset()
-	{
-		$this->resetTable();
-		$this->resetSelect();
-		$this->resetWhere();
-		$this->resetOrder();
-		$this->resetGroup();
-		$this->resetLimit();
-		$this->resetPatch();
-		return $this;
-	}
+    static string $action = 'QUERY';
 
-	function toSelect()
-	{
-		$select = new Select();
-		return $select
-			->table($this->getTable())
-			->select($this->getSelect())
-			->where($this->getWhere())
-			->group($this->getGroup())
-			->having($this->getHaving())
-			->order($this->getHaving())
-			->take($this->getLimit())
-			->skip($this->getOffset());
-	}
+    function reset(): static
+    {
+        $this->resetTable();
+        $this->resetSelect();
+        $this->resetWhere();
+        $this->resetOrder();
+        $this->resetGroup();
+        $this->resetLimit();
+        $this->resetPatch();
+        return $this;
+    }
 
-	function toUpdate()
-	{
-		$update = new Update();
-		return $update
-			->table($this->getTable())
-			->where($this->getWhere())
-			->set($this->getPatch());
-	}
+    function toSelect(): Select
+    {
+        $select = new Select();
+        return $select
+            ->table($this->getTable())
+            ->select($this->getSelect())
+            ->where($this->getWhere())
+            ->group($this->getGroup())
+            ->having($this->getHaving())
+            ->order($this->getHaving())
+            ->take($this->getLimit())
+            ->skip($this->getOffset());
+    }
 
-	function toDelete()
-	{
-		$delete = new Delete();
-		return $delete
-			->table($this->getTable())
-			->where($this->getWhere());
-	}
+    function toUpdate(): Update
+    {
+        $update = new Update();
+        return $update
+            ->table($this->getTable())
+            ->where($this->getWhere())
+            ->set($this->getPatch());
+    }
 
-	function toInsert()
-	{
-		$insert = new Insert();
-		return $insert
-			->table($this->getTable())
-			->set($this->getPatch());
-	}
+    function toDelete(): Delete
+    {
+        $delete = new Delete();
+        return $delete
+            ->table($this->getTable())
+            ->where($this->getWhere());
+    }
+
+    function toInsert(): Insert
+    {
+        $insert = new Insert();
+        return $insert
+            ->table($this->getTable())
+            ->set($this->getPatch());
+    }
 }

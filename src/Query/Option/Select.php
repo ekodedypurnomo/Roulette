@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -26,24 +29,24 @@ use Roulette\Query\Option\Mixin\HasLimit;
  */
 class Select extends OptionAbstract
 {
-	use HasTable;
-	use HasSelect;
-	use HasWhere;
-	use HasOrder;
-	use HasGroup;
-	use HasLimit;
-	
-	static $action = 'SELECT';
+    use HasTable;
+    use HasSelect;
+    use HasWhere;
+    use HasOrder;
+    use HasGroup;
+    use HasLimit;
 
-	function reset()
-	{
-		$this->resetTable();
-		$this->resetSelect();
-		$this->resetWhere();
-		$this->resetOrder();
-		$this->resetGroup();
-		$this->resetHaving();
-		$this->resetLimit();
-		return $this;
-	}
+    static string $action = 'SELECT';
+
+    function reset(): static
+    {
+        $this->resetTable();
+        $this->resetSelect();
+        $this->resetWhere();
+        $this->resetOrder();
+        $this->resetGroup();
+        $this->resetHaving();
+        $this->resetLimit();
+        return $this;
+    }
 }

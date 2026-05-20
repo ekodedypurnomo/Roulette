@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -23,17 +26,17 @@ use Roulette\Query\Option\Mixin\HasWhere;
  */
 class Update extends OptionAbstract
 {
-	use HasTable;
-	use HasPatch;
-	use HasWhere;
-	
-	static $action = 'UPDATE';
+    use HasTable;
+    use HasPatch;
+    use HasWhere;
 
-	function reset()
-	{
-		$this->resetTable();
-		$this->resetPatch();
-		$this->resetWhere();
-		return $this;
-	}
+    static string $action = 'UPDATE';
+
+    function reset(): static
+    {
+        $this->resetTable();
+        $this->resetPatch();
+        $this->resetWhere();
+        return $this;
+    }
 }

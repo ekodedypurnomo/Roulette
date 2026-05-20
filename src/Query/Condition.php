@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -23,58 +26,58 @@ use Roulette\Collection;
  */
 class Condition extends Base
 {
-	static protected $definedOperator = array(
-		'=', '<','<=','>','>=', '<>',
-		'IS', 'IS NOT',
-		'BETWEEN', 'NOT BETWEEN',
-		'LIKE', 'NOT LIKE',
-		'IN', 'NOT IN'
-		);
+    static protected array $definedOperator = [
+        '=', '<', '<=', '>', '>=', '<>',
+        'IS', 'IS NOT',
+        'BETWEEN', 'NOT BETWEEN',
+        'LIKE', 'NOT LIKE',
+        'IN', 'NOT IN'
+    ];
 
-	public $hook = 'AND';
-	public $field = null;
-	public $operator = null;
-	public $value = null;
+    public string $hook = 'AND';
+    public mixed $field = null;
+    public mixed $operator = null;
+    public mixed $value = null;
 
-	function __construct($hook = null, $field = null, $operator = null, $value = null)
-	{
-		if(!is_string($hook))
-		{
-			$config = Collection::create($hook);
-			$hook = $config->get('hook'); 
-			$field = $config->get('field');
-			$operator = $config->get('operator');
-			$value = $config->get('value');
-		}
+    function __construct(mixed $hook = null, mixed $field = null, mixed $operator = null, mixed $value = null)
+    {
+        if (!is_string($hook))
+        {
+            $config = Collection::create($hook);
+            $hook = $config->get('hook');
+            $field = $config->get('field');
+            $operator = $config->get('operator');
+            $value = $config->get('value');
+        }
 
-		# init hook
-		$this->hook = $hook;
-		$hook = strtoupper($hook);
-		if (!in_array($hook, array('AND','OR')) )
-		{
-			$hook = 'AND';
-		}
+        # init hook
+        $this->hook = $hook;
+        $hook = strtoupper($hook);
+        if (!in_array($hook, ['AND', 'OR']))
+        {
+            $hook = 'AND';
+        }
 
-		$this->field = $field;
+        $this->field = $field;
 
-		# init operator
-		$this->operator = $operator;
-		$_operator = strtoupper($operator);
-		if (in_array($_operator, static::$definedOperator))
-		{
-			$this->operator = $_operator;
-		}
+        # init operator
+        $this->operator = $operator;
+        $_operator = strtoupper($operator);
+        if (in_array($_operator, static::$definedOperator))
+        {
+            $this->operator = $_operator;
+        }
 
-		# init value
-		$this->value = $value;
-		$value = $config->get('value');
-		if (is_string($value))
-		{
-			$value = strtoupper($value);
-			if ($value == 'NULL')
-			{
-				$this->value = $value;
-			}
-		}
-	}
+        # init value
+        $this->value = $value;
+        $value = $config->get('value');
+        if (is_string($value))
+        {
+            $value = strtoupper($value);
+            if ($value == 'NULL')
+            {
+                $this->value = $value;
+            }
+        }
+    }
 }

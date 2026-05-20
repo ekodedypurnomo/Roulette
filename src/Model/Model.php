@@ -7,6 +7,9 @@
  * For the full copyright and license information, please source the LICENSE
  * file that was distributed with this source code.
  */
+
+declare(strict_types=1);
+
 namespace Roulette\Model;
 
 use Roulette\Base;
@@ -47,24 +50,24 @@ class Model extends Base
     /**
      * @ignore
      */
-    static protected $prototype = null;
+    static protected ?Prototype $prototype = null;
 
     /**
      * @ignore
      */
-    static function prototype()
+    static function prototype(mixed ...$args): mixed
     {
-        if (func_num_args() == 0)
+        if (empty($args))
         {
             return static::getPrototype();
         }
         else
         {
-            return static::init(func_get_args());
+            return static::init($args);
         }
     }
 
-    static function getPrototype($config = array())
+    static function getPrototype(array $config = []): Prototype
     {
         if (!(static::$prototype instanceof Prototype))
         {
@@ -73,11 +76,11 @@ class Model extends Base
         return static::$prototype;
     }
 
-    static function init(array $initConfig = null)
+    static function init(?array $initConfig = null): string
     {
         # prototyping by config
         $prototype = static::getPrototype($initConfig);
-        
+
         # need to reconfigure several configs
         $config = Collection::create($initConfig);
 
@@ -94,12 +97,12 @@ class Model extends Base
     /**
      * @ignore
      */
-    static protected $useCache = true;
+    static protected bool $useCache = true;
 
     /**
      * @ignore
      */
-    static function isUseCache()
+    static function isUseCache(): bool
     {
         return !!static::$useCache;
     }
@@ -109,7 +112,7 @@ class Model extends Base
      * @param  [type] $id [description]
      * @return [type]     [description]
      */
-    static function formatCacheId($id)
+    static function formatCacheId(mixed $id): string
     {
         return get_class().'\\'.static::class.'-'.$id;
     }
@@ -119,10 +122,10 @@ class Model extends Base
      * @param  [type] $record [description]
      * @return [type]         [description]
      */
-    static function storeToCache(Model $record)
+    static function storeToCache(Model $record): string
     {
         # only approve for record from database (hasId)
-        if (static::isUseCache() and $record->hasId())
+        if (static::isUseCache() && $record->hasId())
         {
             Cache::store(static::formatCacheId($record->getId()), $record);
         }
@@ -134,20 +137,20 @@ class Model extends Base
      * @param  [type] $id [description]
      * @return [type]     [description]
      */
-    static function fetchFromCache($recordId)
+    static function fetchFromCache(mixed $recordId): mixed
     {
-        if (!static::isUseCache()) return;
-        
-        if ( !(is_string($recordId) || is_numeric($recordId)) ) return; 
-        
+        if (!static::isUseCache()) return null;
+
+        if (!(is_string($recordId) || is_numeric($recordId))) return null;
+
         return Cache::fetch(static::formatCacheId($recordId));
     }
 
     /**
-     * Get the name of table from DB that associated to the model 
-     * @return String 
+     * Get the name of table from DB that associated to the model
+     * @return String
      */
-    static function getTable()
+    static function getTable(): mixed
     {
         return static::prototype()->get('table');
     }
@@ -156,7 +159,7 @@ class Model extends Base
      * Set the table name to assocate the model from DB
      * @param [type] $table [description]
      */
-    static function setTable( $table = null )
+    static function setTable(mixed $table = null): string
     {
         static::prototype()->set('table', $table);
         return static::class;
@@ -165,14 +168,14 @@ class Model extends Base
     /**
      * Get the primary field of the model
      *
-     *      Example: 
+     *      Example:
      *      $student_model //declaration model firts
-     *      
+     *
      *      $primary = $student_model::getPrimary() === 'id';
-     *      
-     * @return String 
+     *
+     * @return String
      */
-    static function getPrimary()
+    static function getPrimary(): mixed
     {
         return static::prototype()->get('primary');
     }
@@ -180,18 +183,18 @@ class Model extends Base
     /**
      * Set the primary field of the model
      *
-     *      Example: 
+     *      Example:
      *      // before set primary, model has primary
      *      // primary => 'id',
-     *      
+     *
      *      $student_model // declaration model firts
-     *      
+     *
      *      $primary = $student_model::setPrimary('name');
      *      //and primary has change it. became 'name'
-     *      
-     * @param String $primary 
+     *
+     * @param String $primary
      */
-    static function setPrimary( $primary = null )
+    static function setPrimary(mixed $primary = null): string
     {
         static::prototype()->set('primary', $primary);
         return static::class;
@@ -201,22 +204,22 @@ class Model extends Base
     // FIELD //
     ///////////
 
-    static protected function initFields(Collection $config)
+    static protected function initFields(Collection $config): string
     {
         $class = static::class;
         $fields = static::getFields()->reset();
 
         Collection::create($config->get('fields'))->each(function($value, $i, $all) use($class, $fields)
         {
-            if (! ($value instanceof Field))
+            if (!($value instanceof Field))
             {
-                if(is_string($value))
+                if (is_string($value))
                 {
-                    $value = array('name'=>$value);
+                    $value = ['name' => $value];
                 }
                 $value = Collection::with($value, function($c) use($i)
                 {
-                    if(!$c->has('name') and !empty($i))
+                    if (!$c->has('name') && !empty($i))
                     {
                         $c->set('name', $i);
                     }
@@ -230,34 +233,34 @@ class Model extends Base
         return $class;
     }
 
-    static function getField( $field = null )
+    static function getField(mixed $field = null): mixed
     {
         return static::getFields()->get($field);
     }
 
-    static function addField()
+    static function addField(mixed ...$args): string
     {
-        call_user_func_array(array(static::getFields(), 'add'), func_get_args());
-    
+        static::getFields()->add(...$args);
+
         return static::class;
     }
 
-    static function removeField()
+    static function removeField(mixed ...$args): string
     {
-        call_user_func_array(array(static::getFields(), 'remove'), func_get_args());
-    
-        return static::class;    
+        static::getFields()->remove(...$args);
+
+        return static::class;
     }
 
     /**
      * Get the fields of the model
-     * @return array 
+     * @return array
      */
-    static function getFields()
+    static function getFields(): Fields
     {
         $prototype = static::prototype();
 
-        if (!($prototype->get('fields') instanceof Fields)) 
+        if (!($prototype->get('fields') instanceof Fields))
         {
             $prototype->set('fields', new Fields());
         }
@@ -265,7 +268,7 @@ class Model extends Base
         return $prototype->get('fields');
     }
 
-    static function generateId($salt = "")
+    static function generateId(mixed $salt = ""): mixed
     {
         $prototype = static::prototype();
 
@@ -274,19 +277,19 @@ class Model extends Base
             $idGenerator = $prototype->get('idGenerator');
             $generatedId = null;
 
-            if ( is_callable($idGenerator) )
+            if (is_callable($idGenerator))
             {
-                $generatedId = call_user_func_array($idGenerator, array($salt, static::class));
+                $generatedId = $idGenerator($salt, static::class);
             }
 
             return $generatedId;
         }
-        
+
         # default id generator
         return md5(static::class . microtime(true) . mt_rand() . $salt);
     }
 
-    static function isUseAutoId()
+    static function isUseAutoId(): bool
     {
         $prototype = static::prototype();
         return (bool) $prototype->get('autoId');
@@ -297,10 +300,10 @@ class Model extends Base
      * @param  [type] $id [description]
      * @return [type]     [description]
      */
-    static function load( $id = null )
+    static function load(mixed $id = null): mixed
     {
         # load from cache
-        if ( $_c = static::fetchFromCache($id) )
+        if ($_c = static::fetchFromCache($id))
         {
             return $_c;
         }
@@ -309,23 +312,23 @@ class Model extends Base
         $table = static::getTable();
         $field = array_flip(static::getFields()->filterSelectable()->getSource());
         $condition = static::getFields()->mapToSource(
-            is_array($id) ? $id : array( static::getPrimary() => $id )
+            is_array($id) ? $id : [static::getPrimary() => $id]
             );
 
-        $operation = Operation::create('select')->buildQuery(function($qop)use($table, $field, $condition)
+        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $field, $condition)
         {
             $qop->table($table)
                 ->select($field)
                 ->where($condition);
         })->execute();
 
-        if ( $operation->getRecord() )
+        if ($operation->getRecord())
         {
-            # use __construct instead of create, we need to include `$original = true` in the object  
+            # use __construct instead of create, we need to include `$original = true` in the object
             return new static((array) $operation->getRecord(), $original=true);
         }
 
-        return;
+        return null;
     }
 
     /**
@@ -338,7 +341,7 @@ class Model extends Base
      * @param  [type]  $having    [description]
      * @return [type]             [description]
      */
-    static function find($condition = null, $order = null, $take = null, $skip = null, $group = null, $having = null)
+    static function find(mixed $condition = null, mixed $order = null, mixed $take = null, mixed $skip = null, mixed $group = null, mixed $having = null): Store
     {
         $class = static::class;
         $store = new Store(null, $class);
@@ -368,20 +371,20 @@ class Model extends Base
     }
 
 
-    static function query($mode = null)
+    static function query(mixed $mode = null): QueryBuilder
     {
         $builder = new QueryBuilder(static::getTable(), $mode);
         return $builder;
     }
 
     // see laravel eloquent scope for this use of
-    static function filter($registeredFilter = null)
+    static function filter(mixed $registeredFilter = null): string
     {
         return static::class;
     }
 
 
-    
+
     ////////////
     // RECORD //
     ////////////
@@ -390,32 +393,32 @@ class Model extends Base
      * Indicate if record is exist on the database
      * @var boolean
      */
-    protected $alive = false;
+    protected bool $alive = false;
 
     /**
      * Stored record in the model
      * @var array
      */
-    protected $data = null;
+    protected ?Collection $data = null;
 
     /**
      * [$relation description]
      * @var null
      */
-    protected $relations = null;
+    protected ?Collection $relations = null;
 
     /**
      * @ignore
      */
-    function __construct($data = null, $original = false)
+    function __construct(mixed $data = null, bool $original = false)
     {
         if (is_object($data)) $data = (array) $data;
-        if (is_string($data)) $data = array(static::getPrimary() => $data);
+        if (is_string($data)) $data = [static::getPrimary() => $data];
 
         # set up all data
         $this->initData($data, $original);
 
-        if ((!$original) and static::isUseAutoId() and !$this->hasId())
+        if ((!$original) && static::isUseAutoId() && !$this->hasId())
         {
             $this->renewId();
         }
@@ -425,11 +428,9 @@ class Model extends Base
         {
             $this->makeAlive();
         }
-
-        return $this;
     }
 
-    function __toString()
+    function __toString(): string
     {
         return $this->getId();
     }
@@ -440,10 +441,10 @@ class Model extends Base
      * @param  boolean    $original [description]
      * @return [type]               [description]
      */
-    protected function initData(array $data = null, $original = false)
+    protected function initData(?array $data = null, bool $original = false): static
     {
         $me = $this;
-    
+
         $data = Collection::create($data);
 
         static::getFields()->each(function($f, $i) use($me, $data, $original)
@@ -451,7 +452,7 @@ class Model extends Base
             $value = $data->get($f->getName());
 
             # does no need use _set, affect original first then revert it instead
-            if ( $fieldValue = $me->getValue($f->getName()) )
+            if ($fieldValue = $me->getValue($f->getName()))
             {
                 if ($original)
                 {
@@ -465,7 +466,7 @@ class Model extends Base
                 }
             }
         });
-        
+
         return $this;
     }
 
@@ -473,32 +474,32 @@ class Model extends Base
      * Check the record if it has id
      * @return boolean [description]
      */
-    function hasId()
+    function hasId(): bool
     {
         $id = $this->getId();
-        return (is_int($id) || (is_string($id) and !empty($id)));
+        return (is_int($id) || (is_string($id) && !empty($id)));
     }
 
     /**
      * Get the primary field of the record
-     * @return array 
+     * @return array
      */
-    function getId()
+    function getId(): mixed
     {
         return $this->get(static::getPrimary());
     }
 
     /**
      * Set the value for the primary fiel dof the model
-     * @param string $id 
+     * @param string $id
      */
-    function setId($id = null)
+    function setId(mixed $id = null): static
     {
         $this->set(static::getPrimary(), $id);
         return $this;
     }
 
-    function renewId($salt = "")
+    function renewId(mixed $salt = ""): static
     {
         return $this->setId(self::generateId($salt));
     }
@@ -507,7 +508,7 @@ class Model extends Base
      * an existing record or new record on the model
      * @return [type] [description]
      */
-    protected function data()
+    protected function data(): Collection
     {
         if (!($this->data instanceof Collection))
         {
@@ -518,11 +519,11 @@ class Model extends Base
 
     /**
      * Set the value of the record by specified name
-     * @param string $field 
-     * @param string $value 
+     * @param string $field
+     * @param string $value
      */
-    function set($field, $value = null, $commit = false, $original = false)
-    { 
+    function set(mixed $field, mixed $value = null, bool $commit = false, bool $original = false): static
+    {
         # bulk operation
         if (is_object($field)) $field = (array) $field;
         if (is_array($field))
@@ -535,7 +536,7 @@ class Model extends Base
         }
 
         # single operation
-        if ( $fieldValue = $this->getValue($field) )
+        if ($fieldValue = $this->getValue($field))
         {
             if ($original)
             {
@@ -550,7 +551,7 @@ class Model extends Base
         return $this;
     }
 
-    function getValue($field = null)
+    function getValue(mixed $field = null): mixed
     {
         if ($f = static::getFields()->get($field))
         {
@@ -564,15 +565,15 @@ class Model extends Base
 
     /**
      * get the record from the specified field name
-     * @param  array  $field  
-     * @param  boolean $render 
-     * @return array          
+     * @param  array  $field
+     * @param  boolean $render
+     * @return array
      */
-    function get($field = null, $render = true)
+    function get(mixed $field = null, bool $render = true): mixed
     {
         if (is_array($field))
         {
-            $data = array();
+            $data = [];
             foreach ($field as $key => $alias)
             {
                 if (is_numeric($key))
@@ -592,11 +593,11 @@ class Model extends Base
 
     /**
      * Get the record from the model
-     * @param  array|string|boolean  $options If `Array` or `String` will be assume as options collection, if `Boolean` will be set the render 
+     * @param  array|string|boolean  $options If `Array` or `String` will be assume as options collection, if `Boolean` will be set the render
      * @param  boolean $render Set `false` to get plain value without render
-     * @return array         
+     * @return array
      */
-    function getData($options = null, $render = true)
+    function getData(mixed $options = null, bool $render = true): array
     {
         $record = $this;
         $options = DataOption::create($options);
@@ -611,7 +612,7 @@ class Model extends Base
             $option = DataOption::create($option);
             $associatedResource = $record->lookup($key, $option->isAutoLoad());
             $relatedData = null;
-            $display = (empty($option->getDisplay()) ) ? $key : $option->getDisplay();
+            $display = (empty($option->getDisplay())) ? $key : $option->getDisplay();
 
             # get data from it record/store
             if ($associatedResource)
@@ -620,20 +621,20 @@ class Model extends Base
             }
 
             # patch into data
-            if ( $option->isInline() )
+            if ($option->isInline())
             {
                 $data[$display] = $relatedData;
                 return;
             }
-            if ( $option->isMerge() )
+            if ($option->isMerge())
             {
                 // if user use mergeMask insteadOf field alias
                 $mergeMask = $option->getMergeMask();
                 $mergeData = [];
                 foreach ((array)$relatedData as $k => $v)
                 {
-                    $k = Template::parse($mergeMask, ['field'=>$k, 'value'=>$v]);
-                    $mergeData[$k] = $v; 
+                    $k = Template::parse($mergeMask, ['field' => $k, 'value' => $v]);
+                    $mergeData[$k] = $v;
                 }
 
                 $data = array_merge($data, $mergeData);
@@ -641,9 +642,9 @@ class Model extends Base
             }
             else
             {
-                if ( ! isset($data['relations']) )
+                if (!isset($data['relations']))
                 {
-                    $data['relations'] = array();
+                    $data['relations'] = [];
                 }
 
                 $data['relations'][$display] = $relatedData;
@@ -659,27 +660,27 @@ class Model extends Base
      * @param  boolean $modifiedOnly  [description]
      * @return [type]                 [description]
      */
-    function getDataToSave( $operationMode = 'save', $modifiedOnly = false) 
+    function getDataToSave(string $operationMode = 'save', bool $modifiedOnly = false): array
     {
         $operationMode = strtolower($operationMode);
 
-        $dataToSave = array();
-        
+        $dataToSave = [];
+
         $this->data()->each(function($v, $k) use(&$dataToSave, $operationMode, $modifiedOnly)
         {
             $f = $v->getField();
 
             # exlude any unchanges if modifiedOnly is true
-            if ($modifiedOnly and !$v->isModified())
+            if ($modifiedOnly && !$v->isModified())
             {
                 return;
             }
 
             # fetch by its operationMode
-            if ( 
-                ($operationMode == 'save' and ($f->isInsertable() or $f->isUpdatable())) or
-                ($operationMode == 'insert' and $f->isInsertable() ) or   
-                ($operationMode == 'update' and $f->isUpdatable() )
+            if (
+                ($operationMode == 'save' && ($f->isInsertable() || $f->isUpdatable())) ||
+                ($operationMode == 'insert' && $f->isInsertable()) ||
+                ($operationMode == 'update' && $f->isUpdatable())
             )
             {
                 $dataToSave[$f->getSource()] = $v->getWriteValue();
@@ -692,7 +693,7 @@ class Model extends Base
      * [getDataToInsert description]
      * @return [type] [description]
      */
-    function getDataToInsert()
+    function getDataToInsert(): array
     {
         return $this->getDataToSave('insert', false);
     }
@@ -702,16 +703,16 @@ class Model extends Base
      * @param  boolean $modifiedOnly [description]
      * @return [type]                [description]
      */
-    function getDataToUpdate($modifiedOnly = false)
+    function getDataToUpdate(bool $modifiedOnly = false): array
     {
         return $this->getDataToSave('update', $modifiedOnly);
     }
 
     /**
      * Check the record whether it's modified or not
-     * @return boolean 
+     * @return boolean
      */
-    function isModified()
+    function isModified(): bool
     {
         return $this->data()->some(function($data)
         {
@@ -723,9 +724,9 @@ class Model extends Base
      * Get the modified field from the record
      * @return array
      */
-    function getModified()
+    function getModified(): array
     {
-        $modified = array();
+        $modified = [];
         $this->data()
         ->filter(function($fieldValue, $fieldName)
         {
@@ -743,9 +744,9 @@ class Model extends Base
      * @param  boolean $grouped [description]
      * @return [type]           [description]
      */
-    function getErrorMessages($grouped = false)
+    function getErrorMessages(bool $grouped = false): array
     {
-        $errorMessages = array();
+        $errorMessages = [];
 
         $this->data()
         ->filter(function($fieldValue, $fieldName)
@@ -769,16 +770,16 @@ class Model extends Base
 
     /**
      * Check the record whether it's valid or not
-     * @param boolean runvalidate 
-     * @return boolean 
+     * @param boolean runvalidate
+     * @return boolean
      */
-    function isValid($runValidate = false)
+    function isValid(bool $runValidate = false): bool
     {
         if ($runValidate)
         {
             $this->validate();
         }
-        
+
         $valid = $this->data()->every(function($fieldValue)
         {
             return $fieldValue->isValid();
@@ -790,14 +791,14 @@ class Model extends Base
     /**
      * Check whether the record is exist in the database or not
      * force recheck will not affect any changes on database into object or vise versa, it will only validate if id is exist.
-     * 
-     * @param  boolean $recheck 
-     * @return boolean           
+     *
+     * @param  boolean $recheck
+     * @return boolean
      */
-    function isAlive($recheck = false)
+    function isAlive(bool $recheck = false): bool
     {
         # check will be available if only record has an id
-        if ($this->hasId() and $recheck)
+        if ($this->hasId() && $recheck)
         {
             # only renew original values from database, but accept user changes (revert == false)
             $this->reload($revert = false);
@@ -811,7 +812,7 @@ class Model extends Base
      * @param  boolean $alive [description]
      * @return [type]         [description]
      */
-    protected function makeAlive($alive = true)
+    protected function makeAlive(bool $alive = true): static
     {
         $this->alive = !!$alive;
 
@@ -827,7 +828,7 @@ class Model extends Base
      * [reset description]
      * @return [type] [description]
      */
-    function reset()
+    function reset(): static
     {
         $this->data()->reset();
         return $this;
@@ -837,9 +838,9 @@ class Model extends Base
      * [revert description]
      * @return [type] [description]
      */
-    function revert()
+    function revert(): static
     {
-        $me = $this; 
+        $me = $this;
         $this->data()->each(function($fieldValue)
         {
             $fieldValue->revert();
@@ -852,7 +853,7 @@ class Model extends Base
      * @param boolean $makeAlive [description]
      * @return  [description]
      */
-    function commit( $makeAlive = false )
+    function commit(bool $makeAlive = false): static
     {
         $this->data()->each(function($data)
         {
@@ -860,7 +861,7 @@ class Model extends Base
         });
 
         if ($makeAlive) $this->makeAlive();
-        
+
         return $this;
     }
 
@@ -868,9 +869,9 @@ class Model extends Base
      * Refetch the record from DB
      * @param  boolean $revert
      * @param  function $callback
-     * @return \Roulette/Model          
+     * @return \Roulette/Model
      */
-    function reload($revert = true)
+    function reload(mixed $revert = true): static
     {
         if (!$this->hasId()) return $this;
 
@@ -884,9 +885,9 @@ class Model extends Base
         # use operation instead of load to avoid any caching
         $table = static::getTable();
         $field = array_flip(static::getFields()->filterSelectable()->getSource());
-        $condition = static::getFields()->mapToSource(array(
+        $condition = static::getFields()->mapToSource([
             static::getPrimary() => $this->getId()
-        ));
+        ]);
 
         $operation = Operation::create('select')->buildQuery(function($opt) use($table, $field, $condition)
         {
@@ -901,10 +902,10 @@ class Model extends Base
             $this->makeAlive(!!$operation->getRecord());
 
             $rawRecord = (array)$operation->getRecord(); # parse into array for bulk set
-            
+
             # update original data with the new from database
             $this->set($rawRecord, $_ignoreit = null, $commit = false, $original = true);
-            
+
             # revert if needed
             if ($revert)
             {
@@ -917,19 +918,19 @@ class Model extends Base
 
     /**
      * Check the record is valid or not
-     * @param  function $callback 
-     * @return \Roulette/Model           
+     * @param  function $callback
+     * @return \Roulette/Model
      */
-    function validate( $callback = null )
+    function validate(mixed $callback = null): static
     {
         $valid = $this->data()->every(function($fieldValue, $fieldName)
         {
             return $fieldValue->validate()->isValid();
         });
 
-        if(is_callable($callback))
+        if (is_callable($callback))
         {
-            call_user_func_array($callback, array($valid, $this));
+            $callback($valid, $this);
         }
 
         return $this;
@@ -937,21 +938,21 @@ class Model extends Base
 
     /**
      * Insert record to database
-     * @param  function  $callback 
-     * @param  boolean $validate 
-     * @param  boolean $recheck  
-     * @return [type]            
+     * @param  function  $callback
+     * @param  boolean $validate
+     * @param  boolean $recheck
+     * @return [type]
      */
-    function save( $callback = null, $validate = true, $recheck = true )
+    function save(mixed $callback = null, bool $validate = true, bool $recheck = true): mixed
     {
         # validate
         if ($validate)
         {
             if (!$this->validate()->isValid())
             {
-                if(is_callable($callback))
+                if (is_callable($callback))
                 {
-                    call_user_func_array($callback, array($valid = false, $this));
+                    $callback(false, $this);
                 }
 
                 return false;
@@ -963,9 +964,9 @@ class Model extends Base
         $table = static::getTable();
         $dataUpdate = $this->getDataToUpdate();
         $dataInsert = $this->getDataToInsert();
-        $condition = static::getFields()->mapToSource(array( 
-                static::getPrimary() => $this->getId() 
-            ));
+        $condition = static::getFields()->mapToSource([
+            static::getPrimary() => $this->getId()
+        ]);
 
         # check alive to decide insert/update operation
         # update
@@ -979,7 +980,7 @@ class Model extends Base
             })->execute();
         }
         # insert otherwise
-        else 
+        else
         {
             $operation = Operation::create('insert')->buildQuery(function($qop) use($table, $dataInsert, $condition)
             {
@@ -995,9 +996,9 @@ class Model extends Base
             $this->reload($revert = true);
         }
 
-        if(is_callable($callback))
+        if (is_callable($callback))
         {
-            call_user_func_array($callback, array($success, $operation, $this));
+            $callback($success, $operation, $this);
         }
 
         return $success;
@@ -1005,16 +1006,16 @@ class Model extends Base
 
     /**
      * Destroy a record from the database
-     * @param  function $callback 
-     * @return boolean           
+     * @param  function $callback
+     * @return boolean
      */
-    function destroy( $callback = null )
+    function destroy(mixed $callback = null): mixed
     {
         $success = false;
         $table = static::getTable();
-        $condition = $this->getFields()->mapToSource(array(
+        $condition = $this->getFields()->mapToSource([
             $this->getPrimary() => $this->get(static::getPrimary(), false)
-            ));
+        ]);
 
         if ($this->isAlive($recheck = true))
         {
@@ -1034,9 +1035,9 @@ class Model extends Base
             }
         }
 
-        if(is_callable($callback))
+        if (is_callable($callback))
         {
-            call_user_func_array($callback, array($success, $operation, $this));
+            $callback($success, $operation, $this);
         }
 
         return $success;
@@ -1047,8 +1048,8 @@ class Model extends Base
     ////////////////
     // ASSOCIATON //
     ////////////////
-    
-    static protected function initAssociations(Collection $config)
+
+    static protected function initAssociations(Collection $config): string
     {
         $class = static::class;
         $associations = static::getAssociations()->reset();
@@ -1056,21 +1057,21 @@ class Model extends Base
         Collection::create($config->get('associations'))->each(function($v, $name, $all) use($class, $associations)
         {
             $a = null;
-            if(!($v instanceof AssociationAbstract))
+            if (!($v instanceof AssociationAbstract))
             {
-                $v = Collection::create($v)->setIfNot(array(
-                    'name'=> $name,
-                    'type'=> 'hasOne'
-                    ));
+                $v = Collection::create($v)->setIfNot([
+                    'name' => $name,
+                    'type' => 'hasOne'
+                ]);
                 $type = $v->get('type');
 
-                if ($type == 'hasMany' or $type == AssociationAbstract::HASMANY)
+                if ($type == 'hasMany' || $type == AssociationAbstract::HASMANY)
                 {
-                    $a = HasMany::create($v->getAll(array('except'=>array('type'))));
+                    $a = HasMany::create($v->getAll(['except' => ['type']]));
                 }
-                elseif ($type == 'hasOne' or $type == AssociationAbstract::HASONE)
+                elseif ($type == 'hasOne' || $type == AssociationAbstract::HASONE)
                 {
-                    $a = HasOne::create($v->getAll(array('except'=>array('type'))));
+                    $a = HasOne::create($v->getAll(['except' => ['type']]));
                 }
             }
 
@@ -1085,7 +1086,7 @@ class Model extends Base
      * Get the model that associated with
      * @return \Roulette\Association
      */
-    static function getAssociations()
+    static function getAssociations(): Collection
     {
         $prototype = static::prototype();
 
@@ -1099,14 +1100,14 @@ class Model extends Base
 
     /**
      * Get the model that associated with specified by the association name
-     * 
-     * @param  String $associationName 
-     * @return \Roulette\Association                  
+     *
+     * @param  String $associationName
+     * @return \Roulette\Association
      */
-    static function getAssociation( $associationName = null )
+    static function getAssociation(mixed $associationName = null): mixed
     {
         $associations = static::getAssociations();
-        
+
         return $associations->get($associationName);
     }
 
@@ -1114,7 +1115,7 @@ class Model extends Base
      * [getRelation description]
      * @return [type] [description]
      */
-    function getRelations()
+    function getRelations(): Collection
     {
         if (!($this->relations instanceof Collection))
         {
@@ -1123,22 +1124,22 @@ class Model extends Base
         return $this->relations;
     }
 
-    function getRelation($associationName = null)
+    function getRelation(mixed $associationName = null): mixed
     {
         return $this->getRelations()->get($associationName);
     }
 
     /**
      * Get the record/s of associated model
-     * @param  \Roulette/Model  $association 
+     * @param  \Roulette/Model  $association
      * @param  fn  $callback    [description]
      * @param  boolean $reload      [description]
      * @return array               [description]
      */
-    function associate( $association = null, $reload = true, $options = null )
+    function associate(mixed $association = null, mixed $reload = true, mixed $options = null): mixed
     {
         $association = $this->getAssociation($association, $options);
-        
+
         if ($association)
         {
             return $association->associate($this, $reload);
@@ -1151,10 +1152,10 @@ class Model extends Base
      * @param  boolean $reload
      * @return array
      */
-    function lookup( $association = null, $reload = false, $options = null )
+    function lookup(mixed $association = null, mixed $reload = false, mixed $options = null): mixed
     {
         $assoc = $this->associate($association, $reload, $options);
-           
+
         if ($assoc)
         {
             return $assoc->getResource();
@@ -1163,12 +1164,12 @@ class Model extends Base
 
 
 
-    
+
     ////////////
     // SOURCE //
     ////////////
 
-    static protected function initSources(Collection $config)
+    static protected function initSources(Collection $config): string
     {
         $class = static::class;
         $dataSource = static::getDataSources()->reset();
@@ -1176,20 +1177,20 @@ class Model extends Base
         Collection::create($config->get('sources'))->each(function($value, $i, $all) use($class, $dataSource)
         {
             $name = $i;
-            if (! ($value instanceof Source))
+            if (!($value instanceof Source))
             {
-                if(is_string($value))
+                if (is_string($value))
                 {
-                    $value = array('table'=>$value);
+                    $value = ['table' => $value];
                 }
                 $value = Collection::with($value, function($c) use(&$name)
                 {
-                    if(!$c->has('table') and !empty($name))
+                    if (!$c->has('table') && !empty($name))
                     {
                         $c->set('table', $name);
                     }
 
-                    if($c->has('name'))
+                    if ($c->has('name'))
                     {
                         $name = $c->get('name');
                         $c->reject('name');
@@ -1203,7 +1204,7 @@ class Model extends Base
 
         // create default with its 'table' as source
         // placed after each source, prevent overrided by user
-        $defaultSource = new Source(array('table'=>static::getTable()));
+        $defaultSource = new Source(['table' => static::getTable()]);
         $defaultSource->setModel($class);
         $dataSource->set($defaultSource->getTable(), $defaultSource);
 
@@ -1214,11 +1215,11 @@ class Model extends Base
      * Get the model that associated with
      * @return \Roulette\Model\DataSource
      */
-    static function getDataSources()
+    static function getDataSources(): Collection
     {
         $prototype = static::prototype();
 
-        if (!($prototype->get('sources') instanceof Collection)) 
+        if (!($prototype->get('sources') instanceof Collection))
         {
             $prototype->set('sources', new Collection());
         }
@@ -1228,18 +1229,18 @@ class Model extends Base
 
     /**
      * Get the model that associated with specified by the association name
-     * 
-     * @param  String $associationName 
+     *
+     * @param  String $associationName
      * @return \Roulette\Model\Source
      */
-    static function getDataSource( $sourceName = null )
+    static function getDataSource(mixed $sourceName = null): mixed
     {
         $dataSource = static::getDataSources();
-        
+
         $source = $dataSource->get($sourceName);
 
         // patch for return default source if null value
-        if (is_null($sourceName) and !is_null(static::getTable()))
+        if (is_null($sourceName) && !is_null(static::getTable()))
         {
             return $dataSource->get(static::getTable());
         }
@@ -1247,17 +1248,17 @@ class Model extends Base
         return $source;
     }
 
-    static function source()
+    static function source(mixed ...$args): mixed
     {
-        return forward_static_call_array(array(static::class, 'getDataSource'), func_get_args());
+        return static::getDataSource(...$args);
     }
 
 
     ////////////
     // RIGHTS //
     ////////////
-    
-    static protected function initPolicies(Collection $config)
+
+    static protected function initPolicies(Collection $config): string
     {
         $class = static::class;
         $policies = static::getPolicies()->reset();
@@ -1275,12 +1276,12 @@ class Model extends Base
         return static::class;
     }
 
-    static function getPolicies()
+    static function getPolicies(): Collection
     {
         $prototype = static::prototype();
         $policies = $prototype->get('policies');
 
-        if (!$policies or !($policies instanceof Collection))
+        if (!$policies || !($policies instanceof Collection))
         {
             $policies = new Collection($policies);
             $prototype->set('policies', $policies);
@@ -1289,12 +1290,12 @@ class Model extends Base
         return $policies;
     }
 
-    static function getPolicy($name = null)
+    static function getPolicy(mixed $name = null): mixed
     {
         return static::getPolicies()->get($name);
     }
 
-    static function setPolicy($name, $function = null)
+    static function setPolicy(mixed $name, mixed $function = null): string
     {
         $policies = static::getPolicies();
 
@@ -1304,7 +1305,7 @@ class Model extends Base
         return static::class;
     }
 
-    static function isUsePolicy()
+    static function isUsePolicy(): bool
     {
         return !static::getPolicies()->isEmpty();
     }
@@ -1314,8 +1315,8 @@ class Model extends Base
     //////////////
     // DATAVIEW //
     //////////////
-    
-    static function initViews(Collection $config)
+
+    static function initViews(Collection $config): string
     {
         $class = static::class;
         $views = static::getDataViews()->reset();
@@ -1323,15 +1324,15 @@ class Model extends Base
         Collection::create($config->get('views'))->each(function($value, $i, $all) use($class, $views)
         {
             $name = $i;
-            if (! ($value instanceof ViewOption))
+            if (!($value instanceof ViewOption))
             {
                 $view = new ViewOption($value);
-                if(property_exists($view, 'name'))
+                if (property_exists($view, 'name'))
                 {
                     $name = $view->name;
                     unset($view->name);
                 }
-                if(is_numeric($name) and is_string($value))
+                if (is_numeric($name) && is_string($value))
                 {
                     $name = $value;
                 }
@@ -1347,11 +1348,11 @@ class Model extends Base
      * Get the model that associated with
      * @return \Roulette\Model\DataSource
      */
-    static function getDataViews()
+    static function getDataViews(): Collection
     {
         $prototype = static::prototype();
 
-        if (!($prototype->get('views') instanceof Collection)) 
+        if (!($prototype->get('views') instanceof Collection))
         {
             $prototype->set('views', new Collection());
         }
@@ -1360,24 +1361,24 @@ class Model extends Base
     }
 
     /**
-     * @param  String $associationName 
+     * @param  String $associationName
      * @return \Roulette\Model\DataSource
      */
-    static function getDataView( $viewName = null )
+    static function getDataView(mixed $viewName = null): mixed
     {
         $dataView = static::getDataViews();
-        
+
         $view = $dataView->get($viewName);
 
         return $view;
     }
 
-    static function view ($viewName = null)
+    static function view(mixed $viewName = null): mixed
     {
         return static::getDataView($viewName);
     }
 
-    static function setDataView($name, View $view)
+    static function setDataView(mixed $name, mixed $view): string
     {
         $dataviews = static::getDataViews();
 
@@ -1389,8 +1390,8 @@ class Model extends Base
     ////////////////
     // PROPERTIES //
     ////////////////
-    
-    static function initProperties(Collection $config)
+
+    static function initProperties(Collection $config): string
     {
         if ($config->has('properties'))
         {
@@ -1402,5 +1403,5 @@ class Model extends Base
         return static::class;
     }
 
-    static function getProperties(){}
+    static function getProperties(): void {}
 }
