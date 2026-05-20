@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -40,7 +43,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param mixed $array Array
      * @return Boolean if the variable is association array
      */ 
-    static function isAssoc(array $array = null)
+    static function isAssoc(?array $array = null): bool
     {
         return ( is_array($array) and array_keys($array) !== range(0, count($array) - 1) );
     }
@@ -51,7 +54,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param  mixed  $items
      * @return array
      */
-    static function iterable($iterable = null)
+    static function iterable(mixed $iterable = null): array
     {
     	if (is_null($iterable))
     	{
@@ -98,7 +101,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param boolean $strict 
      * @return Mixed 
      */
-    static function enum($var, $list, $default = null, $strict = false)
+    static function enum(mixed $var, array $list, mixed $default = null, bool $strict = false): mixed
     {
         if (is_array($list) and in_array($var, $list, $strict))
         {
@@ -108,7 +111,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
         }
     }
 
-    static function with($iterable = null, callable $callback = null)
+    static function with(mixed $iterable = null, ?callable $callback = null): array
     {
     	$collection = new static($iterable);
 
@@ -126,13 +129,13 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Default value items collection
 	 * @var array
 	 */
-	protected $items = array();
+	protected array $items = [];
 
 	/**
 	 * [__construct description]
 	 * @param [type] $iterable [description]
 	 */
-	function __construct($iterable = null, $map = null)
+	function __construct(mixed $iterable = null, ?array $map = null)
 	{
 		$iterable = static::iterable($iterable);
 
@@ -157,7 +160,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 		return $this;
 	}
 
-	function __toString()
+	function __toString(): string
 	{
 		return $this->toJson();
 	}
@@ -182,7 +185,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get Items with specified value
 	 * @return array
 	 */
-	protected function &items()
+	protected function &items(): array
 	{
 		if ( !is_array($this->items) )
 		{
@@ -195,7 +198,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get the number of item in the collection
 	 * @return number the number of items on
 	 */
-	function getCount()
+	function getCount(): int
 	{
 		return count($this->items());
 	}
@@ -204,7 +207,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Check whether the items is empty or not
 	 * @return boolean true if there is no item in the collection
 	 */
-	function isEmpty()
+	function isEmpty(): bool
 	{
 		return $this->getCount() == 0;
 	}
@@ -255,7 +258,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  array $default 
 	 * @return array          
 	 */
-	function get($key = null, $default = null, $skipNull = true)
+	function get(mixed $key = null, mixed $default = null, bool $skipNull = true): mixed
 	{
 		$items = $this->items();
 
@@ -294,7 +297,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  nul  $default default value
 	 * @return Collection
 	 */
-	function getAt($at = 0, $default = null)
+	function getAt(int $at = 0, mixed $default = null): mixed
 	{
 		$items = $this->items();
 		$keys = array_keys($items);
@@ -315,7 +318,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * put first value in items collection
 	 * @return Collection
 	 */
-	function getFirst()
+	function getFirst(): mixed
 	{
 		$items = $this->items();
 		return reset($items);
@@ -325,7 +328,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * put last value in items Collection
 	 * @return Collection
 	 */
-	function getLast()
+	function getLast(): mixed
 	{
 		$items = $this->items();
 		return end($items);
@@ -335,7 +338,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get the key of the items in the collection
 	 * @return array 
 	 */
-	function getKeys()
+	function getKeys(): array
 	{
 		return array_keys($this->items());
 	}
@@ -344,7 +347,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get the values of the items in the collection
 	 * @return array 
 	 */
-	function getValues()
+	function getValues(): array
 	{
 		return array_values($this->items());
 	}
@@ -353,7 +356,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get all items in the collection
 	 * @return array
 	 */
-	function getAll($config = null)
+	function getAll(mixed $config = null): array
 	{	
 		if(is_array($config))
 		{
@@ -392,7 +395,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get the item from the collection in array format
 	 * @return array
 	 */
-	function toArray()
+	function toArray(): array
 	{
 		return call_user_func_array(array($this,'getAll'), func_get_args());
 	}
@@ -404,7 +407,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  integer $options 
 	 * @return boject           
 	 */
-	function toJson($assoc = false, $depth = 512, $options = 0)
+	function toJson(int $options = 0, int $depth = 512, bool $assoc = false): string
 	{
 		return json_encode($this->getAll(), $options, $depth);
 	}
@@ -415,7 +418,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param object|array|string $key [description]
 	 * @param object $value [description]
 	 */
-	function set($key = null, $value = null)
+	function set(mixed $key = null, mixed $value = null): static
 	{
 		if (is_object($key))
 		{
@@ -436,7 +439,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	}
 
 	// this function is overridable
-	protected function _set($key = null, $value = null)
+	protected function _set(mixed $key = null, mixed $value = null): static
 	{
 		$items =& $this->items();
 
@@ -452,7 +455,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param [type]  $value  [description]
 	 * @param boolean $strict [description]
 	 */
-	function setIf($key = null, $value = null, $strict = false)
+	function setIf(mixed $key = null, mixed $value = null, bool $strict = false): static
 	{
 		if (is_object($key))
 		{
@@ -483,7 +486,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param [type]  $value  [description]
 	 * @param boolean $strict [description]
 	 */
-	function setIfNot($key = null, $value = null, $strict = true)
+	function setIfNot(mixed $key = null, mixed $value = null, bool $strict = true): static
 	{
 		if (is_object($key))
 		{
@@ -537,7 +540,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param Array $value value to fill each defined key/property on list
      * @return Iterable $source
      */
-    function fill($value = null, $keys = null)
+    function fill(mixed $value = null, string|array|null $keys = null): static
     {
         if (is_string($keys))
         {
@@ -576,7 +579,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param Array $value value to fill each defined key/property on list
      * @return Iterable $source
      */
-    function fillIf($value = null, $keys = null, $strict = false)
+    function fillIf(mixed $value = null, string|array|null $keys = null, bool $strict = false): static
     {
         if (is_string($keys))
         {
@@ -606,7 +609,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param  array|object $value
      * @return array
      */
-    function fillIfNot($value = null, $keys = null, $strict = true)
+    function fillIfNot(mixed $value = null, string|array|null $keys = null, bool $strict = true): static
     {
         if (is_string($keys))
         {
@@ -651,7 +654,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * ```
 	 * @return Collection
 	 */
-	function add()
+	function add(): static
 	{
 		$args = func_get_args();
 
@@ -664,7 +667,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	}
 
 	// this function is overridable
-	protected function _add($value = null)
+	protected function _add(mixed $value = null): static
 	{
 		$items =& $this->items();
 		$items[] = $value;
@@ -675,7 +678,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Adds all elements of an Array or an Object to the collection.
 	 * @param array $items an array of item
 	 */
-	function addAll($items = null)
+	function addAll(mixed $items = null): static
 	{
 		if (!is_array($items))
 		{
@@ -689,7 +692,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Set collection items into an empty array.
 	 * @return Collection
 	 */
-	function reset()
+	function reset(): static
 	{
 		$this->items = array();
 
@@ -700,7 +703,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Set value to `null` on each items
 	 * @return Collection
 	 */
-	function clear()
+	function clear(): static
 	{
 		$items =& $this->items();
 		
@@ -716,7 +719,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Remove null item on the Collection
 	 * @return Collection
 	 */
-	function clean()
+	function clean(): static
 	{
 		$items =& $this->items();
 
@@ -735,7 +738,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean 	$strict Set `true` will compare with `===` operator and `==` otherwise
 	 * @return boolean         	Existense status
 	 */
-	function contain($value = null, $strict = false)
+	function contain(mixed $value = null, bool $strict = false): bool
 	{
 		$items = &$this->items();
 
@@ -749,7 +752,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean 		$strict Set `true` will compare with `===` operator and `==` otherwise
 	 * @return boolean		Anymatch status
 	 */
-	function containIn(array $anyMatchItems = null, $strict = false)
+	function containIn(?array $anyMatchItems = null, bool $strict = false): bool
 	{
 		if (empty($anyMatchItems)) return false;
 
@@ -767,7 +770,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean 		$strict
 	 * @return boolean        
 	 */
-	function has($key = null, $strict = true)
+	function has(mixed $key = null, bool $strict = true): bool
 	{
 		if (is_array($key))
 		{
@@ -803,7 +806,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  string|array  $key retrieve data on has
 	 * @return boolean      [description]
 	 */
-	function hasKey($key = null)
+	function hasKey(mixed $key = null): bool
 	{
 		return $this->has($key, false);
 	}
@@ -815,7 +818,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean $strict [description]
 	 * @return boolean         [description]
 	 */
-	function hasItem($item = null, $strict = false)
+	function hasItem(mixed $item = null, bool $strict = false): bool
 	{
 		return $this->contain($item, $strict);
 	}
@@ -824,7 +827,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get the first item in the collection
 	 * @return array [description]
 	 */
-	function first()
+	function first(): mixed
 	{
 		$items = $this->items();
 
@@ -835,7 +838,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Get the last item in the collection
 	 * @return array [description]
 	 */
-	function last()
+	function last(): mixed
 	{
 		$items = $this->items();
 		
@@ -846,7 +849,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Returns the maximum value in the Collection.
 	 * @return number Maximum value in the Collection.
 	 */	
-	function max()
+	function max(): mixed
 	{
 		$items = $this->items();
 
@@ -860,7 +863,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Returns the minimum value in the Collection.
 	 * @return number Minimum value in the Collection.
 	 */
-	function min()
+	function min(): mixed
 	{
 		$items = $this->items();
 		
@@ -874,7 +877,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Calculates the sum of items in the Collection.
 	 * @return number Sum value.
 	 */
-	function sum()
+	function sum(): int|float
 	{
 		$items = $this->items();
 
@@ -885,20 +888,20 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Returns average value from the Collection.
 	 * @return number Average value.
 	 */
-	function average()
+	function average(): int|float|null
 	{
 		if (!$this->isEmpty())
 		{
 			return $this->sum() / $this->getCount();
 		}
-		return;
+		return null;
 	}
 
 	/**
 	 * Return the generate sorting results from items
 	 * @return Array
 	 */
-	function sort()
+	function sort(): static
 	{
 		sort($this->items());
 
@@ -909,7 +912,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * Return the randomize results from items
 	 * @return Array
 	 */
-	function shuffle()
+	function shuffle(): static
 	{
 		shuffle($this->items());
 
@@ -922,7 +925,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param  mixed  $items
      * @return static
      */
-	function diff($items = null)
+	function diff(mixed $items = null): static
 	{
 		return new static(array_diff($this->items, $this::iterable($items)));
 	}
@@ -933,7 +936,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param  mixed  $items
      * @return static
      */
-	function diffKeys($items = null)
+	function diffKeys(mixed $items = null): static
 	{
 		return new static(array_diff_key($this->items, $this::iterable($items)));
 	}
@@ -945,7 +948,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean  $reverse
 	 * @return boolean
 	 */
-	function each(callable $callback, $reverse = false)
+	function each(callable $callback, bool $reverse = false): bool
 	{
 		$items =& $this->items();
 
@@ -968,7 +971,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean  $reverse
 	 * @return boolean
 	 */
-	function invoke(callable $callback, $reverse = false)
+	function invoke(callable $callback, bool $reverse = false): static
 	{
 		$items =& $this->items();
 
@@ -989,7 +992,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  callable $callback
 	 * @return Boolean
 	 */
-	function every(callable $callback)
+	function every(callable $callback): bool
 	{
 		$items =& $this->items();
 
@@ -1010,7 +1013,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  callable $callback
 	 * @return Boolean
 	 */
-	function some(callable $callback)
+	function some(callable $callback): bool
 	{
 		$items =& $this->items();
 
@@ -1065,7 +1068,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean 	$strict
 	 * @return \Roulette\Collection new Collection of filtered items
 	 */
-	function filter($filter, $strict = false)
+	function filter(mixed $filter, bool $strict = false): static
 	{
 		$items =& $this->items();
 		
@@ -1127,7 +1130,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  callable $condition
 	 * @return Array
 	 */
-	function reject($condition = null)
+	function reject(mixed $condition = null): array
 	{
 		$rejected = array();
 		$items =& $this->items();
@@ -1167,22 +1170,22 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  [type] $glue [description]
 	 * @return [type]       [description]
 	 */
-	function implode($glue)
+	function implode(string $glue): string
 	{
 		return implode($glue, $this->items());
 	}
 
-	function intersect($items = null)
+	function intersect(mixed $items = null): static
 	{
 		return new static(array_intersect($this->items, $this->iterable($items)));
 	}
 
-	function intersectKey($items = null)
+	function intersectKey(mixed $items = null): static
 	{
 		return new static(array_intersect($this->items, $this->iterable($items)));
 	}
 
-	function pipe(callable $callback = null)
+	function pipe(?callable $callback = null): static
 	{
 		if(is_callable($callback))
 		{
@@ -1198,12 +1201,12 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param  string|null  $key
      * @return static
      */
-    function pluck($value, $key = null)
+    function pluck(string $value, ?string $key = null): static
     {
         return new static(Arr::pluck($this->items, $value, $key));
     }
 
-	function reverse()
+	function reverse(): static
 	{
 		return new static(array_reverse($this->items, true));
 	}
@@ -1222,7 +1225,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      * @param  boolean $strict 
      * @return mixed          
      */
-    function search($value, $strict = false)
+    function search(mixed $value, bool $strict = false): mixed
     {
 
     }
@@ -1258,7 +1261,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean $strict [description]
 	 * @return Array
 	 */
-	function remove($item, $strict = false)
+	function remove(mixed $item, bool $strict = false): mixed
 	{
 		$removed = $this->removeIf($item, $strict, true);
 
@@ -1279,7 +1282,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean $firstFound
 	 * @return array
 	 */
-	function removeIf($item, $strict = false, $firstFound = false)
+	function removeIf(mixed $item, bool $strict = false, bool $firstFound = false): array
 	{
 		$removed = array();
 		$items =& $this->items();
@@ -1314,7 +1317,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean $strict
 	 * @return array
 	 */
-	function removeIfNot($item, $strict = false)
+	function removeIfNot(mixed $item, bool $strict = false): array
 	{
 		$removed = array();
 		$items =& $this->items();
@@ -1346,7 +1349,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  array $key
 	 * @return array
 	 */
-	function removeOn($key = null)
+	function removeOn(mixed $key = null): mixed
 	{
 		$removedValue = null;
 		$items =& $this->items();
@@ -1359,7 +1362,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 		return $removedValue;
 	}
 
-	function removeKey()
+	function removeKey(): mixed
 	{
 		return call_user_func_array(array($this, 'removeOn'), func_get_args());
 	}
@@ -1371,7 +1374,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean $strict
 	 * @return array
 	 */
-	function removeIn($condition = array(), $strict = false)
+	function removeIn(mixed $condition = [], bool $strict = false): array
 	{
 		if (!is_array($condition)) $condition = array($condition);
 
@@ -1397,7 +1400,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  boolean $strict
 	 * @return array
 	 */
-	function removeEx($condition = array(), $strict = false)
+	function removeEx(mixed $condition = [], bool $strict = false): array
 	{
 		if ((!is_array($condition)) or empty($condition))
 		{
@@ -1426,7 +1429,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  callable $condition it's contents will be inserted condition
 	 * @return array
 	 */
-	function removeBy($condition = array(), $strict = false)
+	function removeBy(mixed $condition = [], bool $strict = false): array
 	{
 		if (!is_array($condition)) $condition = array($condition);
 
@@ -1475,7 +1478,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
 	 * @param  array  $map A set of key map
 	 * @return array
 	 */
-	function remap(array $map)
+	function remap(array $map): static
 	{
 		$items =& $this->items();
 
@@ -1506,7 +1509,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      *
      * @return \ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): \ArrayIterator
     {
         return new ArrayIterator($this->items);
     }
@@ -1515,7 +1518,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
     // Countable //
     ///////////////
     
-    public function count()
+    public function count(): int
     {
     	return count($this->items);
     }
@@ -1529,7 +1532,7 @@ class Collection extends Base implements IteratorAggregate, JsonSerializable, Co
      *
      * @return array
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return array_map(function ($value) {
             if ($value instanceof JsonSerializable) {

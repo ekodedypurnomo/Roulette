@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -12,7 +15,7 @@ namespace Roulette\Mixin;
 /**
  * ##Observable
  * A class inherit to \Roulette\Base will be able to has one or more events
- * 
+ *
  *      $person = new Person(array(
  *          'listener'=>array(
  *              'sing'=>function(){
@@ -20,10 +23,10 @@ namespace Roulette\Mixin;
  *              }
  *          )
  *      ));
- *      
+ *
  *      // easy to trigger it
  *      $person->trigger('sing'); // will echo 'la la la laa la ~';
- *      
+ *
  *      // easy to add listener or remove it
  *      $singing = function(){
  *          echo "you are the one that i loved ~";
@@ -37,86 +40,77 @@ namespace Roulette\Mixin;
  */
 trait Observable
 {
-	/**
+    /**
      * Array of listeners in this class
-     *
-     * @property    Array $listeners A list of listener 
-     * @access      protected
+     * @var array
      */
-    protected $listeners = array();
+    protected array $listeners = [];
 
     /**
      * Array of event to be captured
-     *
-     * @property    Array $events A list of events 
-     * @access      protected
+     * @var array
      */
-    protected $events = array();
+    protected array $events = [];
 
     /**
      * Event capturing status, `false` mean disable event capturing
-     *
-     * @property    Array $runEvents 
-     * @access      protected
+     * @var bool
      */
-    protected $runEvents = true;
-    
-	/**
+    protected bool $runEvents = true;
+
+    /**
      * Sorthand for \Roulette\Base::addListener()
-     * 
-     * @param String $eventName Event name or an Array event listener pairs
-     * @param Mixed $listener A callable function
-     * @return \Roulette\Base
+     *
+     * @param string|null $eventName Event name or an Array event listener pairs
+     * @param mixed $listener A callable function
+     * @return static
      */
-    function on($eventName = null, $listener = null)
+    function on(?string $eventName = null, mixed $listener = null): static
     {
         return $this->addListener($eventName, $listener);
     }
 
     /**
      * Sorthand for \Roulette\Base::removeListener()
-     * 
-     * @param String|Array $eventName Events which listener exists
-     * @param Object $listener Listener (reference to the listener) to be removed from event listeners
-     * @return Mixed Removed listener
+     *
+     * @param string|array|null $eventName Events which listener exists
+     * @param mixed $listener Listener to be removed from event listeners
+     * @return static
      */
-    function un($eventName = null, $listener = null)
+    function un(string|array|null $eventName = null, mixed $listener = null): static
     {
         return $this->removeListener($eventName, $listener);
     }
 
     /**
-     * Trigger an event to be executed 
-     * 
+     * Trigger an event to be executed
+     *
      *      Example:
      *      class Person extends \Roulette\Base
      *      {
      *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing'); 
+     *              $this->addEvent('sing');
      *          }
      *      }
-     * 
+     *
      *      $person = new Person();
      *      $person->trigger('sing'); // will executed any `sing` listeners
-     * 
-     * @param String $eventName String event name to be triggered
-     * @param Array $params Array of arguments will pass to listeners
-     * @return Boolean `true` if the listeners executed, `false` if the listeners return false
+     *
+     * @param string|null $eventName String event name to be triggered
+     * @param array $params Array of arguments will pass to listeners
+     * @return bool `true` if the listeners executed, `false` if the listeners return false
      */
-    function trigger($eventName = null, $params = array())
+    function trigger(?string $eventName = null, array $params = []): bool
     {
-        if ( ! is_array($params) ){
-            $params = array($params);
-        }
-        if ( $this->hasEvent($eventName) and $this->eventEnabled($eventName) ){
-            if ( array_key_exists($eventName, $this->listeners) and is_array($this->listeners[$eventName]) ){
-                foreach ($this->listeners[$eventName] as $i => $listener) {
-                    if (is_callable($listener)){
-                        $listener_result = call_user_func_array($listener, $params);
-                        if ($listener_result === false){
-                            return $listener_result;
-                        }
+        if ($this->hasEvent($eventName) && $this->eventEnabled($eventName))
+        {
+            if (array_key_exists($eventName, $this->listeners) && is_array($this->listeners[$eventName]))
+            {
+                foreach ($this->listeners[$eventName] as $listener)
+                {
+                    if (is_callable($listener))
+                    {
+                        if (call_user_func_array($listener, $params) === false) return false;
                     }
                 }
             }
@@ -126,90 +120,67 @@ trait Observable
 
     /**
      * Fire the specified event with the passed parameter list
-     * @param  string $eventName 
-     * @param  array $params    
-     * @return mixed           
+     * @param string|null $eventName
+     * @param array|null $params
+     * @return bool
      */
-    function fireEventArgs($eventName = null, $params = null)
+    function fireEventArgs(?string $eventName = null, ?array $params = null): bool
     {
-        return call_user_func_array(array($this, 'trigger'), array($eventName, $params));
+        return $this->trigger($eventName, $params ?? []);
     }
 
     /**
      * Fire the specified event
-     * @param  string $eventName 
-     * @return mixed            
+     * @param string|null $eventName
+     * @return bool
      */
-    function fireEvent($eventName = null)
+    function fireEvent(?string $eventName = null): bool
     {
         $args = func_get_args();
         array_shift($args);
-        return call_user_func_array(array($this, 'trigger'), array($eventName, $params));
+        return $this->trigger($eventName, $args);
     }
 
     /**
      * Add one or more events to the events list
-     * 
+     *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *          }
-     *      }
-     * 
-     *      $person = new Person();
      *      $person->addEvent('sing'); // return array('sing')
-     *      $person->addEvent(array(
-     *          'run','dance','swim'
-     *      ));
+     *      $person->addEvent(array('run','dance','swim'));
      *      // return array('run','swim'), because event `dance` is already registered
-     * 
-     * @param String|Array $event String event name or array of events name
-     * @return Array Added events, registered event will not returned
+     *
+     * @param string|array|null $event String event name or array of events name
+     * @return array Added events
      */
-    function addEvent($event = null)
+    function addEvent(string|array|null $event = null): array
     {
-        $events_added = array();
+        $added = [];
+        if (!is_array($event)) $event = [$event];
 
-        if ( ! is_array($event) ){
-            $event = array($event);
-        }
+        foreach ($event as $eventName)
+        {
+            if (array_key_exists($eventName, $this->events) || !is_string($eventName)) continue;
 
-        foreach($event as $eventName){
-            
-            if ( array_key_exists($eventName, $this->events) || !is_string($eventName) ) continue;
-            
-            $eventName;
-            $this->events[$eventName] = true;
-            $this->listeners[$eventName] = array();
-            $events_added[] = $eventName;
+            $this->events[$eventName]    = true;
+            $this->listeners[$eventName] = [];
+            $added[] = $eventName;
         }
-        return $events_added;
+        return $added;
     }
 
     /**
-     * Check if an event is already exist. 
-     * Disabled event mean exist  
-     * 
+     * Check if an event is already exist.
+     * Disabled event mean exist
+     *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *          }
-     *      }
-     * 
-     *      $person = new Person();
      *      $person->hasEvent('sing'); // return false;
-     *      // add a `sing` event
      *      $person->addEvent('sing');
      *      $person->hasEvent('sing'); // return true;
-     * 
-     * @param String $eventName Event name
-     * @return Boolean Has event status
+     *
+     * @param string|null $eventName Event name
+     * @return bool Has event status
      */
-    function hasEvent($eventName = null)
+    function hasEvent(?string $eventName = null): bool
     {
         return array_key_exists($eventName, $this->events);
     }
@@ -218,131 +189,78 @@ trait Observable
      * Remove event from its events capturing
      *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing','dance');
-     *          }
-     *      }
-     * 
-     *      $person = new Person(array(
-     *          'listeners'=>array(
-     *              'sing'=>function() use($person){
-     *                  echo "i would'n sing anymore if the event removed";
-     *              }
-     *          )
-     *      ));
-     *      $person->trigger('sing');
-     *      // echo: i would'n sing anymore if the event removed     
-     * 
      *      $person->removeEvent('sing');
      *      // person no longer can 'sing'
      *      $person->trigger('sing');
      *      // do nothing
-     *  
+     *
      *      // using array
-     *      $person->removeEvent(array(
-     *          'event1', 'event2'
-     *      ));
-     * 
-     * @param String $event A name of event to be remove from its object
-     * @return \Roulette\Base
+     *      $person->removeEvent(array('event1', 'event2'));
+     *
+     * @param string|array|null $event A name of event to be remove from its object
+     * @return array Removed event names
      */
-    function removeEvent($event = null)
+    function removeEvent(string|array|null $event = null): array
     {
-        $removedEvents = array();
-        if (!is_array($event)){
-            $event = array($event);
-        }
-        foreach ($event as $eventName) {
-            if ( is_string($eventName) && array_key_exists($eventName, $this->events) ) {
+        $removed = [];
+        if (!is_array($event)) $event = [$event];
+
+        foreach ($event as $eventName)
+        {
+            if (is_string($eventName) && array_key_exists($eventName, $this->events))
+            {
                 unset($this->events[$eventName]);
-                $removedEvents[] = $eventName;
+                $removed[] = $eventName;
             }
         }
-        return $removedEvents;
+        return $removed;
     }
 
     /**
      * Check if class using events capturing (is enabled or not)
-     * 
-     * @return Boolean enabled status
+     * @return bool enabled status
      */
-    function isObservable()
+    function isObservable(): bool
     {
-        return (boolean) $this->runEvents;
+        return $this->runEvents;
     }
 
     /**
-     * Enabling events capturing
+     * Enabling/disabling events capturing
      *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing','dance');
-     *          }
-     *      }
-     *      
-     *      $person->enableEvents(false); // disable all event capturing
-     *      $person->trigger('sing');
-     *      // do nothing
-     *      
-     *      // enable all event capturing
-     *      // it doesnt affect from disabled event
-     *      // only change the capturing status
-     *      $person->enableEvents(true);
-     *      $person->trigger('sing');
-     *      // doing 'sing' function
-     *       
-     * @param String $observable Enabled status, default `true`
-     * @return \Roulette\Base
+     *      $person->setObservable(false); // disable all event capturing
+     *      $person->trigger('sing'); // do nothing
+     *      $person->setObservable(true);
+     *      $person->trigger('sing'); // doing 'sing' function
+     *
+     * @param bool $observable Enabled status, default `true`
+     * @return static
      */
-    function setObservable($observable = true)
+    function setObservable(bool $observable = true): static
     {
-        $this->runEvents = (boolean) $observable;
+        $this->runEvents = $observable;
         return $this;
     }
 
     /**
-     * Enable capturing of the event 
+     * Enable capturing of the event
      *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing','dance');
-     *          }
-     *      }
-     * 
-     *      $person = new Person(array(
-     *          'listeners'=>array(
-     *              'sing'=>function() use($person){
-     *                  echo "i would'n sing anymore if the event removed";
-     *              }
-     *          )
-     *      ))
-     *      
-     *      $person->enableEvent('sing',false); // person no longer can 'sing' till the event enabled
-     *      $person->trigger('sing');
-     *      // do nothing
-     * 
-     *      $person->enableEvent('sing',true); // now person can sing anymore
-     *      $person->trigger('sing');
-     *      // echo: i would'n sing anymore if the event removed
-     *       
-     * @param String $eventName A name of event to be enabled
-     * @param String $enable Enabled status, default `true`
-     * @return \Roulette\Base
+     *      $person->enableEvent('sing', false); // person no longer can 'sing'
+     *      $person->trigger('sing'); // do nothing
+     *      $person->enableEvent('sing', true); // now person can sing
+     *      $person->trigger('sing'); // executes
+     *
+     * @param string|null $eventName A name of event to be enabled
+     * @param bool $enable Enabled status, default `true`
+     * @return static
      */
-     
-    function enableEvent($eventName = null, $enable = true)
+    function enableEvent(?string $eventName = null, bool $enable = true): static
     {
-        if (array_key_exists($eventName, $this->events)){
-            $this->events[$eventName] = (boolean)$enable;
+        if (array_key_exists($eventName, $this->events))
+        {
+            $this->events[$eventName] = $enable;
         }
         return $this;
     }
@@ -351,140 +269,88 @@ trait Observable
      * Get enabled status of an event.
      *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing');
-     *          }
-     *      }
-     *      
      *      $person->enableEvent('sing');
      *      $person->eventEnabled('sing'); // return: true
      *      $person->eventEnabled('walk'); // return: false, because event `walk` doesnt exist
-     * 
-     * @param String $eventName Event name
-     * @return Boolean Disabled status, return `false` if event doesnt exist
+     *
+     * @param string|null $eventName Event name
+     * @return bool Enabled status, return `false` if event doesnt exist
      */
-    function eventEnabled($eventName = null)
+    function eventEnabled(?string $eventName = null): bool
     {
-        $enabled = false;
-        if ( $this->hasEvent($eventName) ){
-            $enabled = (boolean) $this->events[$eventName];
-        }
-        return $enabled;
+        return $this->hasEvent($eventName) && (bool) $this->events[$eventName];
     }
-    
+
     /**
      * Disable capturing of the event
      *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing','dance');
-     *          }
-     *      }
-     * 
-     *      $person = new Person(array(
-     *          'listeners'=>array(
-     *              'sing'=>function() use($person){
-     *                  echo "i would'n sing anymore if the event removed";
-     *              }
-     *          )
-     *      ))
-     *      
      *      $person->disableEvent('sing'); // person no longer can 'sing' till the event enabled
-     *      $person->trigger('sing');
-     *      // do nothing
-     * 
-     *      $person->disableEvent('sing',false); // now person can sing anymore
-     *      $person->trigger('sing');
-     *      // echo: i would'n sing anymore if the event removed
-     *       
-     * @param String $eventName A name of event to be enabled
-     * @param String $disable Disabled status, default `true`
-     * @return \Roulette\Base
+     *      $person->trigger('sing'); // do nothing
+     *      $person->disableEvent('sing', false); // now person can sing
+     *      $person->trigger('sing'); // executes
+     *
+     * @param string|null $eventName A name of event to be disabled
+     * @param bool $disable Disabled status, default `true`
+     * @return static
      */
-    function disableEvent($eventName = null, $disable = true)
+    function disableEvent(?string $eventName = null, bool $disable = true): static
     {
-        if ($this->events[$eventName]){
-            $this->events[$eventName] = ! (boolean)$disable;
+        if ($this->hasEvent($eventName))
+        {
+            $this->events[$eventName] = !$disable;
         }
         return $this;
     }
-
 
     /**
      * Get disabled status of an event.
      *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing');
-     *          }
-     *      }
-     *      
-     *      $person->disableEvent('sing',true);
+     *      $person->disableEvent('sing', true);
      *      $person->eventDisabled('sing'); // return: true
      *      $person->eventDisabled('walk'); // return: true, because event `walk` doesnt exist
-     * 
-     * @param String $eventName Event name
-     * @return Boolean Disabled status, return `true` if event doesnt exist
+     *
+     * @param string|null $eventName Event name
+     * @return bool Disabled status, return `true` if event doesnt exist
      */
-    function eventDisabled($eventName = null)
+    function eventDisabled(?string $eventName = null): bool
     {
-        $disabled = true;
-        if ( $this->hasEvent($eventName) ){
-            $disabled = ! $this->events[$eventName];
-        }
-        return $disabled;
+        return !$this->eventEnabled($eventName);
     }
 
     /**
      * Add listener on one or more events
      * will add event if event doesnt exist on event list
-     * 
+     *
      *      Example:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *          }
-     *          function lazy(){
-     *              echo 'i dont want do anything at this time'
-     *          }
-     *      }
-     *      $person = new Person();
      *      $person->addListener('walk', $person->lazy);
      *      $person->addListener(array(
      *          'walk' => $person->lazy,
      *          'dance' => $person->lazy
      *      ));
-     * 
-     * @param String $eventName Event name or an Array event listener pairs
-     * @param Mixed $listener A callable function
-     * @return \Roulette\Base
+     *
+     * @param string|array|null $eventName Event name or an Array event listener pairs
+     * @param mixed $listener A callable function
+     * @return static
      */
-    function addListener($eventName = null, $listener = null){
-        if ( (is_array($eventName) or is_string($eventName)) ){
-            if (!is_array($eventName)){
-                $eventName = array($eventName => $listener);
-            }
-            foreach ($eventName as $event => $event_listener) {
-                if ( ! is_callable($event_listener) ) continue;
+    function addListener(string|array|null $eventName = null, mixed $listener = null): static
+    {
+        if (is_string($eventName)) $eventName = [$eventName => $listener];
 
-                if ( ! array_key_exists($event, $this->events) ) $this->events[$event] = true;
-                if ( ! array_key_exists($event, $this->listeners) ) $this->listeners[$event] = array();
+        if (is_array($eventName))
+        {
+            foreach ($eventName as $event => $eventListener)
+            {
+                if (!is_callable($eventListener)) continue;
 
-                if ( ! is_array($this->listeners[$event]) ){
-                    $this->listeners[$event] = array();
-                }
-                if ( ! in_array($listener, $this->listeners[$event]) ){
-                    array_push($this->listeners[$event], $event_listener);
+                if (!array_key_exists($event, $this->events))    $this->events[$event]    = true;
+                if (!array_key_exists($event, $this->listeners)) $this->listeners[$event] = [];
+                if (!is_array($this->listeners[$event]))         $this->listeners[$event] = [];
+
+                if (!in_array($eventListener, $this->listeners[$event]))
+                {
+                    $this->listeners[$event][] = $eventListener;
                 }
             }
         }
@@ -494,100 +360,72 @@ trait Observable
     /**
      * Remove attached listener from event listeners
      * if listener attaced on any events, it will be removed too unless the $eventName is described
-     * 
+     *
      *      Examples:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing','dance','walk');
-     *          }
-     *          function lazy(){
-     *              echo 'i dont want do anything at this time'
-     *          }
-     *      }
-     *  
-     *      $person = new Person();
-     *      $person->on('sing',$peson->lazy);
-     *      $person->on('dance',$peson->lazy);
-     *      $person->on('walk',$peson->lazy);
-     * 
-     *      $person->remove_listner('sing',$person->lazy);
+     *      $person->remove_listner('sing', $person->lazy);
      *      // person will not 'lazy' when 'sing'
      *      // person still 'lazy' if 'walk' or 'dance'
-     * 
-     *      $person->remove_listner(array('walk'),$person->lazy);
-     *      // person will not 'lazy' when 'walk'
-     *      // person still 'lazy' in 'dance'
-     *      
-     *      $person->removeListener(null, $person->lazy); // will remove any listener on each events that have $person->lazy function
+     *
+     *      $person->removeListener(null, $person->lazy); // will remove any listener on each events
      *      // person will not 'lazy' anymore
-     *      
-     * @param String|Array $eventName Events which listener exists
-     * @param Object $listener Listener (reference to the listener) to be removed from event listeners
-     * @return Mixed Removed listener
+     *
+     * @param string|array|null $eventName Events which listener exists
+     * @param mixed $listener Listener to be removed from event listeners
+     * @return static
      */
-    function removeListener($eventName = null, $listener = null){
-        
-        // null eventName mean to remove attached listener on any events
-        if (is_null($eventName)){
-            foreach ($this->listeners as $event => $listeners) {
+    function removeListener(string|array|null $eventName = null, mixed $listener = null): static
+    {
+        if (is_null($eventName))
+        {
+            foreach ($this->listeners as $event => $_)
+            {
                 $this->removeListener($event, $listener);
             }
-            return;
+            return $this;
         }
 
-        // array eventName mean event listener pairs mode
-        if ( is_array($eventName) ){
-            foreach ($this->listeners as $event => $listeners) {
-                if (in_array($event, $eventName)){
-                    $this->removeListener($event, $listener);
-                }
+        if (is_array($eventName))
+        {
+            foreach ($this->listeners as $event => $_)
+            {
+                if (in_array($event, $eventName)) $this->removeListener($event, $listener);
             }
-            return;
+            return $this;
         }
 
-        if ( array_key_exists($eventName, $this->listeners) ) {
-            if ( ! is_array($this->listeners[$eventName]) ){
-                $this->listeners[$eventName] = array($this->listeners[$eventName]);
+        if (array_key_exists($eventName, $this->listeners))
+        {
+            if (!is_array($this->listeners[$eventName]))
+            {
+                $this->listeners[$eventName] = [$this->listeners[$eventName]];
             }
-            foreach ($this->listeners[$eventName] as $i => $event_listener) {
-                if ($event_listener === $listener){
-                    unset($this->listeners[$eventName][$i]);
-                }
+            foreach ($this->listeners[$eventName] as $i => $eventListener)
+            {
+                if ($eventListener === $listener) unset($this->listeners[$eventName][$i]);
             }
         }
         return $this;
     }
 
     /**
-     * Remove attached listener from event listeners
-     * if listener attaced on any events, it will be removed too unless the $eventName is described
-     * 
-     *      Examples:
-     *      class Person extends \Roulette\Base
-     *      {
-     *          function __construct($config){
-     *              function __construct($config)
-     *              $this->addEvent('sing','dance','walk');
-     *          }
-     *      }
-     *  
-     *      $person = new Person();
-     *      $person->on('sing',$peson->lazy);
+     * Clear all listeners from an event
+     *
+     *      Example:
+     *      $person->on('sing', $peson->lazy);
      *      $person->clearListener('sing');
-     *      // sing listeners are removed     
-     * 
+     *      // sing listeners are removed
+     *
      *      $person->clearListener();
      *      // person have no any single listener on each event
-     *      
-     * @param String|Array $eventName Events want to clear the listeners
-     * @return \Roulette\Base
+     *
+     * @param string|null $eventName Events want to clear the listeners
+     * @return static
      */
-    function clearListener($eventName = null)
+    function clearListener(?string $eventName = null): static
     {
-        if ( array_key_exists($eventName, $this->listeners) ){
-            $this->listeners[$eventName] = array();
+        if (array_key_exists($eventName, $this->listeners))
+        {
+            $this->listeners[$eventName] = [];
         }
         return $this;
     }
@@ -595,12 +433,12 @@ trait Observable
     /**
      * Check if an event has one or more listeners
      * return `false` if event doesn't exist
-     * 
-     * @param String $eventName Events name to be checked
-     * @return Boolean Has listener status
+     *
+     * @param string|null $eventName Events name to be checked
+     * @return bool Has listener status
      */
-    function hasListener($eventName = null)
+    function hasListener(?string $eventName = null): bool
     {
-        return $this->hasEvent($eventName) and ! empty($this->listeners[$eventName]);
+        return $this->hasEvent($eventName) && !empty($this->listeners[$eventName]);
     }
 }
