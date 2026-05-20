@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -15,20 +18,20 @@ use Roulette\Mixin\HasModel;
 
 /**
  * Is a class for helps in manipulating array in a single object.
- * 
+ *
  * @package \Roulette\Model
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Store extends BaseCollection
 {
-	use HasModel;
+    use HasModel;
 
     /**
      * [__construct description]
      * @param [type] $iterable [description]
      */
-    function __construct($iterable = null, $model = null)
+    function __construct(mixed $iterable = null, mixed $model = null)
     {
         parent::__construct();
 
@@ -40,19 +43,16 @@ class Store extends BaseCollection
         {
             $me->add($v);
         });
-
-        return $this;
     }
 
     /**
      * Add field to the model
      */
-    function add()
+    function add(mixed ...$args): static
     {
-        $args = func_get_args();
         $model = $this->getModel();
 
-        foreach ($args as $i => $r)
+        foreach ($args as $r)
         {
             $r = $model::create($r);
             $this->set($r->getId(), $r);
@@ -61,7 +61,7 @@ class Store extends BaseCollection
         return $this;
     }
 
-    function commit()
+    function commit(): static
     {
         $this->each(function($id, $record)
         {
@@ -70,7 +70,7 @@ class Store extends BaseCollection
         return $this;
     }
 
-    function revert()
+    function revert(): static
     {
         $this->each(function($id, $record)
         {
@@ -79,7 +79,7 @@ class Store extends BaseCollection
         return $this;
     }
 
-    function save()
+    function save(): static
     {
         $this->each(function($id, $record)
         {
@@ -88,7 +88,7 @@ class Store extends BaseCollection
         return $this;
     }
 
-    function destroy()
+    function destroy(): static
     {
         $this->each(function($id, $record)
         {
@@ -97,18 +97,17 @@ class Store extends BaseCollection
         return $this;
     }
 
-	/**
-	 * [getData description]
-	 * @return [type] [description]
-	 */
-	function getData($fields = null)
+    /**
+     * [getData description]
+     * @return [type] [description]
+     */
+    function getData(mixed $fields = null): array
     {
-    	$me = $this;
-    	$data = array();
-        
-        $this->each(function($record, $i) use(&$data, $fields, $me)
+        $data = [];
+
+        $this->each(function($record, $i) use(&$data, $fields)
         {
-        	$data[] = $record->getData($fields);
+            $data[] = $record->getData($fields);
         });
 
         return $data;

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -20,7 +23,7 @@ use Roulette\Model;
 /**
  * Assosiation was a description of a relationship between a model one with the other models
  * which in this function there-many relationship model or one model
- * 
+ *
  * @package \Roulette\Model\Association
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -29,7 +32,7 @@ class HasMany extends AssociationAbstract
 {
     const TYPE = 'HASMANY';
 
-    function loadRelation(Relation $relation)
+    function loadRelation(Relation $relation): static
     {
         $model = $this->getModel();
         $field = $this->getField();
@@ -37,12 +40,12 @@ class HasMany extends AssociationAbstract
         $recordId = $record->getId();
 
         $relation->associated = true;
-        $relation->resource = $model::find(array($field => $recordId));
+        $relation->resource = $model::find([$field => $recordId]);
 
         return $this;
     }
 
-    function patchRelation(Relation $relation, $data = null)
+    function patchRelation(Relation $relation, mixed $data = null): static
     {
         $modelCollection = new Store();
         $model = $this->getModel();

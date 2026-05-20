@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -19,96 +22,94 @@ use Roulette\Model;
 
 /**
  * AssociationValue is a subsidiary of the association
- * 
+ *
  * @package \Roulette\Model\Association
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Relation extends Base
 {
-	/**
-	 * expresses the relationship between the different models
-	 * 
-	 * @var null
-	 */
-	public $association = null;
+    /**
+     * expresses the relationship between the different models
+     *
+     * @var null
+     */
+    public mixed $association = null;
 
-	/**
-	 * Check is true or false model has association
-	 * @var boolean
-	 */
-	public $associated = false;
+    /**
+     * Check is true or false model has association
+     * @var boolean
+     */
+    public bool $associated = false;
 
-	/**
-	 * a collection of some of the fields are complete
-	 * @var null
-	 */
-	public $record = null;
+    /**
+     * a collection of some of the fields are complete
+     * @var null
+     */
+    public mixed $record = null;
 
-	/**
-	 * link data from record
-	 * @var null
-	 */
-	public $resource = null;
-	
-	/**
-	 * __construct for function creates a new object field
-	 * 
-	 * @param Association $association expresses the relationship between the different models
-	 * @param Model       $record      models represent multiple objects
-	 */
-	function __construct(AssociationAbstract $association, Model $record)
-	{		
-		$this->association = $association;
-		$this->record = $record;
+    /**
+     * link data from record
+     * @var null
+     */
+    public mixed $resource = null;
 
-		return $this;
-	}
+    /**
+     * __construct for function creates a new object field
+     *
+     * @param Association $association expresses the relationship between the different models
+     * @param Model       $record      models represent multiple objects
+     */
+    function __construct(AssociationAbstract $association, Model $record)
+    {
+        $this->association = $association;
+        $this->record = $record;
+    }
 
-	/**
-	 * Take an existing associations
-	 * 
-	 * @return array model name that associated with
-	 */
-	function getAssociation()
-	{
-		return $this->association;
-	}
+    /**
+     * Take an existing associations
+     *
+     * @return array model name that associated with
+     */
+    function getAssociation(): mixed
+    {
+        return $this->association;
+    }
 
-	/**
-	 * Take an existing record
-	 * 
-	 * @return array record
-	 */
-	function getRecord()
-	{
-		return $this->record;
-	}
+    /**
+     * Take an existing record
+     *
+     * @return array record
+     */
+    function getRecord(): mixed
+    {
+        return $this->record;
+    }
 
-	/**
-	 * retrieve data existing associations
-	 * 
-	 * @return boolean true if it's associated
-	 */
-	function isAssociated()
-	{
-		return (boolean) $this->associated;
-	}
+    /**
+     * retrieve data existing associations
+     *
+     * @return boolean true if it's associated
+     */
+    function isAssociated(): bool
+    {
+        return (bool) $this->associated;
+    }
 
-	/**
-	 * Get the associated data from the record
-	 * 
-	 * @return array associated record 
-	 */
-	function getResource()
-	{
-		return $this->resource;
-	}
+    /**
+     * Get the associated data from the record
+     *
+     * @return array associated record
+     */
+    function getResource(): mixed
+    {
+        return $this->resource;
+    }
 
-	function reset()
-	{
-		$this->associated = false;
+    function reset(): static
+    {
+        $this->associated = false;
         $this->resource = null;
         return $this;
-	}
+    }
 }

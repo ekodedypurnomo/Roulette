@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -22,78 +25,80 @@ use Roulette\Tunel\Definer;
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class FrameworkCheckers extends Base
-{	
-	/**
-	 * [$frameworks description]
-	 * @var null
-	 */
-	protected static $frameworks = null;
-	
-	/**
-	 * [$configLoaded description]
-	 * @var boolean
-	 */
-	protected static $configLoaded = false;
+{
+    /**
+     * [$frameworks description]
+     * @var null
+     */
+    protected static mixed $frameworks = null;
 
-	/**
-	 * [getAll description]
-	 * @return [type] [description]
-	 */
-	static function getAll()
-	{
-		if (!static::$configLoaded)
-		{
-			$tunnelDir = __DIR__.'/tunnels.php';
+    /**
+     * [$configLoaded description]
+     * @var boolean
+     */
+    protected static bool $configLoaded = false;
 
-			static::$frameworks = require_once(str_replace('/', DIRECTORY_SEPARATOR, $tunnelDir));
-			static::$configLoaded = true;
-			
-			if (!is_array(static::$frameworks)) static::$frameworks = array();
-		}
-		return static::$frameworks;
-	}
+    /**
+     * [getAll description]
+     * @return [type] [description]
+     */
+    static function getAll(): array
+    {
+        if (!static::$configLoaded)
+        {
+            $tunnelDir = __DIR__ . '/tunnels.php';
 
-	/**
-	 * [has description]
-	 * @param  [type]  $frameworkName [description]
-	 * @return boolean                [description]
-	 */
-	static function has($frameworkName = null)
-	{
-		$has = false;
-		if (empty($frameworkName)) return false;
+            static::$frameworks = require_once(str_replace('/', DIRECTORY_SEPARATOR, $tunnelDir));
+            static::$configLoaded = true;
 
-		foreach (static::getAll() as $key => $value) 
-		{
-			$has = preg_match('/'.strtolower($frameworkName).'/', strtolower($key));
-			if ($has)break;
-		}
-		return $has;
-	}
+            if (!is_array(static::$frameworks)) static::$frameworks = [];
+        }
+        return static::$frameworks;
+    }
 
-	/**
-	 * [getInfo description]
-	 * @return [type] [description]
-	 */
-	static function getInfo()
-	{
-		foreach (static::getAll() as $key => $definer)
-		{
-			if (!class_exists($definer) and !empty($definer))
-			{
-				include_once(dirname(__DIR__)."\\".$definer.".php");
-			}
+    /**
+     * [has description]
+     * @param  [type]  $frameworkName [description]
+     * @return boolean                [description]
+     */
+    static function has(mixed $frameworkName = null): bool
+    {
+        $has = false;
+        if (empty($frameworkName)) return false;
 
-			if (class_exists($definer) and is_callable("$definer::check"))
-			{
-				$valid = $definer::check();
-				if ($valid and is_callable("$definer::info"))
-				{
-					return $definer::info();
-				}
-				// break manualy if info return is uncallable
-				break;
-			}
-		}
-	}
+        foreach (static::getAll() as $key => $value)
+        {
+            $has = preg_match('/' . strtolower($frameworkName) . '/', strtolower($key));
+            if ($has) break;
+        }
+        return (bool) $has;
+    }
+
+    /**
+     * [getInfo description]
+     * @return [type] [description]
+     */
+    static function getInfo(): mixed
+    {
+        foreach (static::getAll() as $key => $definer)
+        {
+            if (!class_exists($definer) && !empty($definer))
+            {
+                include_once(dirname(__DIR__) . DIRECTORY_SEPARATOR . $definer . '.php');
+            }
+
+            if (class_exists($definer) && is_callable("$definer::check"))
+            {
+                $valid = $definer::check();
+                if ($valid && is_callable("$definer::info"))
+                {
+                    return $definer::info();
+                }
+                // break manualy if info return is uncallable
+                break;
+            }
+        }
+
+        return null;
+    }
 }

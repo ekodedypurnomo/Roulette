@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -19,67 +22,61 @@ use Roulette\Callback;
  */
 class Policy extends Base
 {
-	protected $name = null;
+    protected ?string $name = null;
 
-	protected $assertions = array();
+    protected array $assertions = [];
 
-	static function create($config = null)
-	{
-		return new static($config);
-	}
+    static function create(mixed $config = null): static
+    {
+        return new static($config);
+    }
 
-	function __construct($name = null)
-	{
-		$functions = func_get_args(); array_shift($functions);
-		$this->name = $name;
+    function __construct(?string $name = null, callable ...$fns)
+    {
+        $this->name = $name;
 
-		if (!empty($functions))
-		{
-			foreach ($functions as $i => $func)
-			{
-				if (is_callable($func))
-				{
-					$this->addAssertion($func);
-				}	
-			}
-		}
-	}
+        foreach ($fns as $func)
+        {
+            if (is_callable($func))
+            {
+                $this->addAssertion($func);
+            }
+        }
+    }
 
-	function addAssertion(callable $assertion)
-	{
-		if (!is_array($this->assertions)) $this->assertions = array();
+    function addAssertion(callable $assertion): void
+    {
+        if (!is_array($this->assertions)) $this->assertions = [];
 
-		$this->assertions[] = $assertion;
-	}
+        $this->assertions[] = $assertion;
+    }
 
-	function reset()
-	{
-		$this->assertions = array();
-	}
+    function reset(): void
+    {
+        $this->assertions = [];
+    }
 
-	function getAssetions()
-	{
-		if (!is_array($this->assertions))
-		{
-			$this->assertions = array();
-		}
-		return $this->assertions;
-	}
+    function getAssetions(): array
+    {
+        if (!is_array($this->assertions))
+        {
+            $this->assertions = [];
+        }
+        return $this->assertions;
+    }
 
-	function assert()
-	{
-		$args = func_get_args();
-
-		foreach ($this->assertions as $i => $assertion)
-		{
-			if(is_callable($assertion))
-	        {
-	            if(call_user_func_array($assertion, $args))
-	            {
-	            	return false;
-	            }
-	        }
-		}
-		return true;
-	}
+    function assert(mixed ...$args): bool
+    {
+        foreach ($this->assertions as $assertion)
+        {
+            if (is_callable($assertion))
+            {
+                if (call_user_func_array($assertion, $args))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

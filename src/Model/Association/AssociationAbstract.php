@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -26,62 +29,60 @@ use Roulette\Mixin\HasModel;
 /**
  * Assosiation was a description of a relationship between a model one with the other models
  * which in this function there-many relationship model or one model
- * 
+ *
  * @package \Roulette\Model\Association
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 abstract class AssociationAbstract extends Base
-{   
+{
     use Configurable;
     use HasModel;
 
     /**
-     * Type of the Association 
+     * Type of the Association
      * only HASMANY | HASONE
      * @var string
      */
     const TYPE = null;
 
     const HASONE = 1;
-    
+
     const HASMANY = 2;
 
     /**
      * name of the Association
      * @var String
      */
-    protected $name = null;
+    protected ?string $name = null;
 
-    protected $pivot = null;
-    
+    protected mixed $pivot = null;
+
     /**
      * Foreign field of the associated model
      * @var null
      */
-    protected $field = null;
+    protected mixed $field = null;
 
     /**
      * [__construct description]
-     * 
+     *
      * @param [type] $config [description]
      */
-    function __construct($config = null)
+    function __construct(mixed $config = null)
     {
-        if (is_string($config)) $config = array('name'=>$config);
+        if (is_string($config)) $config = ['name' => $config];
 
         $configs = Collection::create($config);
 
-        $configs->setIfNot(array(
+        $configs->setIfNot([
             'name' => $configs->get('model')
-        ));
+        ]);
 
         $this->configure($configs->getAll());
-
-        return $this;
     }
 
-    function setPivot($class = null)
+    function setPivot(mixed $class = null): void
     {
         $this->pivot = $class;
     }
@@ -90,7 +91,7 @@ abstract class AssociationAbstract extends Base
      * get the Name fo the Association
      * @return String
      */
-    function getName()
+    function getName(): ?string
     {
         return $this->name;
     }
@@ -99,12 +100,12 @@ abstract class AssociationAbstract extends Base
      * get the foreign field of the assocaited model
      * @return String [description]
      */
-    function getField()
+    function getField(): mixed
     {
         return $this->field;
     }
 
-    protected function getRelationFrom(Model $record)
+    protected function getRelationFrom(Model $record): Relation
     {
         $name = $this->getName();
         $recordRelations = $record->getRelations();
@@ -114,7 +115,7 @@ abstract class AssociationAbstract extends Base
         if (!$relation)
         {
             $relation = new Relation($this, $record);
-            
+
             $recordRelations->set($name, $relation);
         }
 
@@ -123,12 +124,12 @@ abstract class AssociationAbstract extends Base
 
     /**
      * Get record/s from the model that being associated with
-     * 
+     *
      * @param  array  $record retrieve data on a model
      * @param  boolean $reload choice whether or not to refresh
      * @return array [description]
      */
-    function associate( Model $record, $reload = false )
+    function associate(Model $record, mixed $reload = false): Relation
     {
         $model = $this->getModel();
         $relation = $this->getRelationFrom($record);
@@ -140,7 +141,7 @@ abstract class AssociationAbstract extends Base
             $this->resetRelation($relation);
         }
         # indicate to reload
-        elseif ( $reload === true)
+        elseif ($reload === true)
         {
             $this->loadRelation($relation);
         }
@@ -154,14 +155,13 @@ abstract class AssociationAbstract extends Base
         return $relation;
     }
 
-    function resetRelation(Relation $relation)
+    function resetRelation(Relation $relation): static
     {
         $relation->reset();
         return $this;
     }
 
-    abstract function loadRelation(Relation $relation);
+    abstract function loadRelation(Relation $relation): static;
 
-    abstract function patchRelation(Relation $relation, $value = null);
-
+    abstract function patchRelation(Relation $relation, mixed $value = null): static;
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -20,4 +23,4 @@ use Roulette\Model\Model as BaseModel;
  */
 class Model extends BaseModel {}
 
-class_alias('Roulette\Model', 'Roulette\Record' );
+class_alias('Roulette\Model', 'Roulette\Record');

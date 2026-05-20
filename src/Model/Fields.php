@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -15,7 +18,7 @@ use Roulette\Template;
 
 /**
  * Collection class specialy and only to manage Fields
- * 
+ *
  * @package \Roulette\Model
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -26,7 +29,7 @@ class Fields extends BaseCollection
      * [__construct description]
      * @param [type] $iterable [description]
      */
-    function __construct($iterable = null)
+    function __construct(mixed $iterable = null)
     {
         parent::__construct();
 
@@ -36,25 +39,23 @@ class Fields extends BaseCollection
         {
             $me->add($v);
         });
-
-        return $this;
     }
 
-    protected function _set($key = null, $field = null)
+    protected function _set(mixed $key = null, mixed $field = null): static
     {
-        if(!($field instanceof Field))
+        if (!($field instanceof Field))
         {
             $field = new Field($field);
         }
 
         parent::_set($key, $field);
 
-        return $this;   
+        return $this;
     }
 
-    protected function _add($field = null)
+    protected function _add(mixed $field = null): static
     {
-        if(!($field instanceof Field))
+        if (!($field instanceof Field))
         {
             $field = new Field($field);
         }
@@ -64,19 +65,19 @@ class Fields extends BaseCollection
         return $this;
     }
 
-	/**
+    /**
      * Get the attribute for every fields in the model
-     * 
-     * @param  string $attribute 
-     * @param  string|array $fields     
-     * @return array           
+     *
+     * @param  string $attribute
+     * @param  string|array $fields
+     * @return array
      */
-    function getAttribute($attribute = null)
+    function getAttribute(mixed $attribute = null): array
     {
         # search from current all fields
-        $collectedAttribute = array();
+        $collectedAttribute = [];
 
-        $this->each(function($f) use( &$collectedAttribute, $attribute)
+        $this->each(function($f) use(&$collectedAttribute, $attribute)
         {
             $collectedAttribute[$f->getName()] = $f->getConfig($attribute);
         });
@@ -86,22 +87,22 @@ class Fields extends BaseCollection
 
     /**
      * Get the name of the fields of the model
-     * 
-     * @param  string $fields 
+     *
+     * @param  string $fields
      * @return array
      */
-    function getName()
+    function getName(): array
     {
         return $this->getAttribute('name');
     }
 
     /**
      * Get the source fields of the model
-     * 
+     *
      * @param string $fields
      * @return array
      */
-    function getSource()
+    function getSource(): array
     {
         return $this->getAttribute('source');
     }
@@ -111,7 +112,7 @@ class Fields extends BaseCollection
      * @param  string $fields
      * @return array
      */
-    function getDisplay()
+    function getDisplay(): array
     {
         return $this->getAttribute('display');
     }
@@ -119,9 +120,9 @@ class Fields extends BaseCollection
     /**
      * Find the field that have the private property being set to true from the model
      * @param  boolean $onlyName true to get only name
-     * @return array            
+     * @return array
      */
-    function filterPrivate()
+    function filterPrivate(): mixed
     {
         return $this->filter(function($v, $k, $a, $me)
         {
@@ -132,9 +133,9 @@ class Fields extends BaseCollection
     /**
      * Find the field that have the privet property being set to false from the model
      * @param  boolean $onlyName true to get only name
-     * @return array            
+     * @return array
      */
-    function filterPublic()
+    function filterPublic(): mixed
     {
         return $this->filter(function($v, $k, $a, $me)
         {
@@ -145,9 +146,9 @@ class Fields extends BaseCollection
     /**
      * Find fields that have property insert being set to true
      * @param  boolean $onlyName true to get only name
-     * @return array            
+     * @return array
      */
-    function filterInsertable()
+    function filterInsertable(): mixed
     {
         return $this->filter(function($v, $k, $a, $me)
         {
@@ -160,7 +161,7 @@ class Fields extends BaseCollection
      * @param  boolean $onlyName true to get only name
      * @return array
      */
-    function filterSelectable()
+    function filterSelectable(): mixed
     {
         return $this->filter(function($v, $k, $a, $me)
         {
@@ -171,9 +172,9 @@ class Fields extends BaseCollection
     /**
      * Find fields that have property update being set to true
      * @param  boolean $onlyName true to get only name
-     * @return array            
+     * @return array
      */
-    function filterUpdatable()
+    function filterUpdatable(): mixed
     {
         return $this->filter(function($v, $k, $a, $me)
         {
@@ -184,9 +185,9 @@ class Fields extends BaseCollection
     /**
      * Find field that have the property delete being set to true
      * @param  boolean $onlyName true to get only name
-     * @return array            
+     * @return array
      */
-    function filterDeletable()
+    function filterDeletable(): mixed
     {
         return $this->filter(function($v, $k, $a, $me)
         {
@@ -196,11 +197,11 @@ class Fields extends BaseCollection
 
     /**
      * Map given array of data ('fieldName'=>'value') into fieldSource ('fieldSource' => 'value')
-     * 
-     * @param  string|array $data 
-     * @return [type]       
+     *
+     * @param  string|array $data
+     * @return [type]
      */
-    function mapToSource($data = null)
+    function mapToSource(mixed $data = null): mixed
     {
         $fields = $this->getSource();
         $mapped = null;
@@ -211,15 +212,15 @@ class Fields extends BaseCollection
         }
         if (is_array($data))
         {
-            $mapped = array();
-            foreach ($data as $key => $value) 
+            $mapped = [];
+            foreach ($data as $key => $value)
             {
-                # compile if key contains source 
+                # compile if key contains source
                 $key = array_key_exists($key, $fields) ? $fields[$key] : Template::compile($key)->apply($fields);
-                
+
                 # compile if value contains source
                 $value = Template::compile($value)->apply($fields);
-                
+
                 # reorder all in new array
                 $mapped[$key] = $value;
             }
@@ -230,11 +231,11 @@ class Fields extends BaseCollection
 
     /**
      * Map given array of data ('fieldSource'=>'value') into fieldName ('fieldName' => 'value')
-     * 
-     * @param  string|array $data 
-     * @return [type]       
+     *
+     * @param  string|array $data
+     * @return [type]
      */
-    function mapToName($data = null)
+    function mapToName(mixed $data = null): mixed
     {
         # the only changes is to flip the `name=>source` into `source=>key`
         $fields = array_flip($this->getSource());
@@ -246,15 +247,15 @@ class Fields extends BaseCollection
         }
         if (is_array($data))
         {
-            $mapped = array();
-            foreach ($data as $key => $value) 
+            $mapped = [];
+            foreach ($data as $key => $value)
             {
                 # compile if key contains source
                 $key = array_key_exists($key, $fields) ? $fields[$key] : Template::compile($key)->apply($fields);
-                
+
                 # compile if value contains source
                 $value = Template::compile($value)->apply($fields);
-                
+
                 # reorder all in new array
                 $mapped[$key] = $value;
             }
@@ -263,9 +264,9 @@ class Fields extends BaseCollection
         return $mapped;
     }
 
-    function resolveName($fields = null)
+    function resolveName(mixed $fields = null): mixed
     {
-        if (empty($fields) or (is_string($fields) and $fields == '*'))
+        if (empty($fields) || (is_string($fields) && $fields == '*'))
         {
             $fields = $this->filter(function($v, $k)
             {
@@ -274,11 +275,11 @@ class Fields extends BaseCollection
         }
         elseif (is_string($fields))
         {
-            $fields = array($fields => $fields);
+            $fields = [$fields => $fields];
         }
         elseif (is_array($fields))
         {
-            $_fields = array();
+            $_fields = [];
             foreach ($fields as $fieldsName => $fieldsAlias)
             {
                 if (is_numeric($fieldsName))

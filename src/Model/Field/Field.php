@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -23,7 +26,7 @@ use Roulette\Mixin\HasModel;
 
 /**
  *  Field is part of the model, which is used to declare a field of that model
- *  
+ *
  * @package Roulette\Model
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -38,114 +41,114 @@ class Field extends Base
 
     /**
      * The name of field by which for references.
-     * 
+     *
      * @var string
      */
-    protected $name = null;
+    protected ?string $name = null;
 
     /**
      * Name of field from database to access.
-     * 
+     *
      * @var array
      */
-    protected $source = null;
+    protected ?string $source = null;
 
     /**
      * String to output for message and another user text purpose.
-     * 
+     *
      * @var String
      */
-    protected $display = null;
+    protected ?string $display = null;
 
     /**
      * Accessibility for getData in model, private is `true` will be ignored for append on it.
-     * 
+     *
      * @var boolean
      */
-    protected $private = false;
+    protected bool $private = false;
 
     /**
      * Readonly is `true` will be effect on field as readonly
-     * 
+     *
      * @var boolean
      */
-    protected $readOnly = false;
+    protected bool $readOnly = false;
 
     /**
      * Default value for first initializing data in the Model.
-     * 
+     *
      * @var String
      */
-    protected $default = null;
+    protected mixed $default = null;
 
     /**
      * writer will enter the field to DB
-     * 
+     *
      * @var array
      */
-    protected $writer = null;
+    protected mixed $writer = null;
 
     /**
      * reader will read Field from DB field
-     * 
+     *
      * @var array
      */
-    protected $reader = null;
+    protected mixed $reader = null;
 
     /**
      * Default value converter is null, can be filled with an array
-     * 
+     *
      * @var array
      */
-    protected $converter = null;
+    protected mixed $converter = null;
 
     /**
      * Default value renderer is null. renderer can be use for field ex: gender->render to Male or boolean
-     * 
+     *
      * @var null
      */
-    protected $renderer = null;
+    protected mixed $renderer = null;
 
     /**
      * Field will be vatidate from DB is same on record
-     * 
+     *
      * @var null
      */
-    protected $validation = null;
+    protected mixed $validation = null;
 
-    protected $operation = 'f';
+    protected mixed $operation = 'f';
 
-    protected $unique = false;
+    protected bool $unique = false;
 
-    protected $uniqueValidator = null;
+    protected mixed $uniqueValidator = null;
 
     /**
      * __construct for function creates a new object field.
      * @param object|string|array $config field configuration
      */
-    function __construct($config = null)
+    function __construct(mixed $config = null)
     {
-        if (is_string($config)) $config = array('name'=>$config);
+        if (is_string($config)) $config = ['name' => $config];
 
         $configs = Collection::create($config);
 
         # set default value
-        $configs->setIfNot(array(
-            'source' => $configs->get('name'),
-            'display'=> $configs->get('name')
-        ));
+        $configs->setIfNot([
+            'source'  => $configs->get('name'),
+            'display' => $configs->get('name')
+        ]);
 
-        $this->configure($configs->getAll(), array(
-            'except'=>array('permission','operation','select','insert','update','delete') // need to config it manualy later
-        ));
+        $this->configure($configs->getAll(), [
+            'except' => ['permission', 'operation', 'select', 'insert', 'update', 'delete'] // need to config it manualy later
+        ]);
 
         # configure validation
         $validation = $configs->get('validation');
-        if (! ($validation instanceof FieldValidation) ) 
+        if (!($validation instanceof FieldValidation))
         {
-            $this->validation = new FieldValidation($this, array(
+            $this->validation = new FieldValidation($this, [
                 'validators' => $validation
-            ));
+            ]);
         }
 
         # configure operation
@@ -156,52 +159,50 @@ class Field extends Base
         if ($configs->has('insert')) $this->setInsertable($configs->get('insert'));
         if ($configs->has('update')) $this->setUpdatable($configs->get('update'));
         if ($configs->has('delete')) $this->setDeletable($configs->get('delete'));
-
-        return $this;
     }
 
     /**
      * Method allows a class to decide how it will react when it is treated like a string.
      * Converting objects without __toString() method to string would cause E_RECOVERABLE_ERROR
-     * 
+     *
      * @return string [any string on name]
      */
-    function __toString()
+    function __toString(): string
     {
-        return $this->name;
+        return (string) $this->name;
     }
 
     /**
      * Take specified Name from field
-     * 
+     *
      * @return String just take the data string
      */
-    function getName()
+    function getName(): ?string
     {
         return $this->name;
     }
 
-    function setName($name = null, $applyToSource = false, $applyToDisplay = false)
+    function setName(mixed $name = null, bool $applyToSource = false, bool $applyToDisplay = false): static
     {
         $this->name = $name;
 
-        if($applyToSource) $this->setSource($name);
-        if($applyToDisplay) $this->setDisplay($name);
+        if ($applyToSource) $this->setSource($name);
+        if ($applyToDisplay) $this->setDisplay($name);
 
         return $this;
     }
 
     /**
      * Take specified Source from Field
-     * 
-     * @return String     
+     *
+     * @return String
      */
-    function getSource()
+    function getSource(): ?string
     {
         return $this->source;
     }
 
-    function setSource($source = null)
+    function setSource(mixed $source = null): static
     {
         $this->source = $source;
         return $this;
@@ -209,15 +210,15 @@ class Field extends Base
 
     /**
      * Take specified Display from Field
-     * 
+     *
      * @return String
      */
-    function getDisplay()
+    function getDisplay(): ?string
     {
         return $this->display;
     }
 
-    function setDisplay($display = null)
+    function setDisplay(mixed $display = null): static
     {
         $this->display = $display;
         return $this;
@@ -225,15 +226,15 @@ class Field extends Base
 
     /**
      * Take specified Default value from Field
-     * 
+     *
      * @return String
      */
-    function getDefault()
+    function getDefault(): mixed
     {
         return $this->default;
     }
 
-    function setDefault($default = null)
+    function setDefault(mixed $default = null): static
     {
         $this->default = $default;
         return $this;
@@ -241,92 +242,80 @@ class Field extends Base
 
     /**
      * Field can only view if field isReadOnly is true
-     * 
+     *
      * @return boolean [true / false]
      */
-    function isReadOnly()
+    function isReadOnly(): bool
     {
         return (bool) $this->readOnly;
     }
 
-    function setToReadOnly()
+    function setToReadOnly(bool $value = true): static
     {
-        $args = func_get_args();
-        
-        $value = count($args) ? !!$args[0] : true;
-
         $this->public = $value;
         return $this;
     }
 
     /**
      * See what the field is Private or not
-     * 
+     *
      * @return boolean
      */
-    function isPrivate()
+    function isPrivate(): bool
     {
         return (bool) $this->private;
     }
 
-    function setToPrivate()
+    function setToPrivate(bool $value = true): static
     {
-        $args = func_get_args();
-        
-        $value = count($args) ? !!$args[0] : true;
-
         $this->private = $value;
         return $this;
     }
 
     /**
      * See what the field is Public or not
-     * 
+     *
      * @return boolean
      */
-    function isPublic()
+    function isPublic(): bool
     {
         return !$this->isPrivate();
     }
 
-    function setToPublic()
+    function setToPublic(bool $value = true): static
     {
-        $args = func_get_args();
-        
-        $value = count($args) ? !!$args[0] : true;
-
         $this->public = $value;
         return $this;
     }
 
-    function getOperation()
+    function getOperation(): Permission
     {
-        if( !($this->operation instanceof Permission))
+        if (!($this->operation instanceof Permission))
         {
             $this->operation = new Permission($this->operation);
         }
         return $this->operation;
     }
 
-    function setOperation($operation = null)
+    function setOperation(mixed $operation = null): static
     {
         # parse operation config
-        $siud = array();
+        $siud = [];
 
         // in case array: array('insert','select') or array('insert'=>false, 'select'=>true) etc
         if (is_array($operation))
-        {   
-            $acceptableOperation = array('select'=>'s','insert'=>'i','update'=>'u','delete'=>'d');
+        {
+            $acceptableOperation = ['select' => 's', 'insert' => 'i', 'update' => 'u', 'delete' => 'd'];
             foreach ($operation as $key => $value)
             {
-                if (is_bool($value) and $value == true)
+                if (is_bool($value) && $value == true)
                 {
                     if (array_key_exists($key, $acceptableOperation))
                     {
                         $siud[] = $acceptableOperation[$key];
                     }
                 }
-                else if (is_string($value))
+                elseif (is_string($value))
                 {
                     if (array_key_exists($key, $acceptableOperation))
                     {
@@ -336,31 +325,31 @@ class Field extends Base
             }
         }
         // in case string: "siud","sid","sd" etc
-        else if (is_string($operation))
+        elseif (is_string($operation))
         {
             $siud = array_unique(str_split(strtolower($operation)));
         }
         # only allow for s,i,u,d keys
-        $this->getOperation()->setPermission(array(
+        $this->getOperation()->setPermission([
             in_array('s', $siud),
             in_array('i', $siud),
             in_array('u', $siud),
             in_array('d', $siud)
-        ));
+        ]);
         return $this;
     }
 
     /**
      * View the status field, can be select or not
-     * 
+     *
      * @return Boolean
      */
-    function isSelectable()
+    function isSelectable(): mixed
     {
         return $this->getOperation()->getSelectPermission();
     }
 
-    function setSelectable($value = true)
+    function setSelectable(mixed $value = true): static
     {
         $this->getOperation()->setSelectPermission($value);
         return $this;
@@ -368,15 +357,15 @@ class Field extends Base
 
     /**
      * View the status field, can be insert or not
-     * 
+     *
      * @return Boolean
      */
-    function isInsertable()
+    function isInsertable(): mixed
     {
         return $this->getOperation()->getInsertPermission();
     }
 
-    function setInsertable($value = true)
+    function setInsertable(mixed $value = true): static
     {
         $this->getOperation()->setInsertPermission($value);
         return $this;
@@ -384,15 +373,15 @@ class Field extends Base
 
     /**
      * View the status field, can be update or not
-     * 
+     *
      * @return Boolean
      */
-    function isUpdatable()
+    function isUpdatable(): mixed
     {
         return $this->getOperation()->getUpdatePermission();
     }
 
-    function setUpdatable($value = true)
+    function setUpdatable(mixed $value = true): static
     {
         $this->getOperation()->setUpdatePermission($value);
         return $this;
@@ -400,15 +389,15 @@ class Field extends Base
 
     /**
      * View the status field, can be delete or not
-     * 
+     *
      * @return Boolean
      */
-    function isDeletable()
+    function isDeletable(): mixed
     {
         return $this->getOperation()->getDeletePermission();
     }
 
-    function setDeletable($value = true)
+    function setDeletable(mixed $value = true): static
     {
         $this->getOperation()->setDeletePermission($value);
         return $this;
@@ -416,63 +405,63 @@ class Field extends Base
 
     /**
      * Use Renderer for specified fields
-     * 
+     *
      * @return Array
      */
-    function isUseRenderer()
+    function isUseRenderer(): bool
     {
         return !empty($this->renderer);
     }
 
     /**
      * Use Converter for specified fields
-     * 
+     *
      * @return Array
      */
-    function isUseConverter()
+    function isUseConverter(): bool
     {
         return !empty($this->converter);
     }
 
     /**
      * Use Reader for specified fields
-     * 
+     *
      * @return Array
      */
-    function isUseReader()
+    function isUseReader(): bool
     {
         return !empty($this->reader);
     }
 
     /**
      * Use Writer for specified fields
-     * 
+     *
      * @return Array
      */
-    function isUseWriter()
+    function isUseWriter(): bool
     {
         return !empty($this->writer);
     }
 
     /**
      * Use FieldValidation for specified fields
-     * 
+     *
      * @return Array
      */
-    function isUseValidation()
+    function isUseValidation(): bool
     {
         return !empty($this->validation);
     }
 
     /**
      * Read this field by params value
-     * 
+     *
      * @param  String $value value of this field
      * @return Object return a value
      */
-    function read($value = null)
+    function read(mixed $value = null): mixed
     {
-        if ($this->isUseReader() and is_callable($this->reader)) {
+        if ($this->isUseReader() && is_callable($this->reader)) {
             $value = call_user_func_array($this->reader, func_get_args());
         }
         return $value;
@@ -480,13 +469,13 @@ class Field extends Base
 
     /**
      * write description
-     * 
+     *
      * @param  String $value
      * @return Object return a value
      */
-    function write($value = null)
+    function write(mixed $value = null): mixed
     {
-        if ($this->isUseWriter() and is_callable($this->writer)) {
+        if ($this->isUseWriter() && is_callable($this->writer)) {
             $value = call_user_func_array($this->writer, func_get_args());
         }
         return $value;
@@ -494,17 +483,17 @@ class Field extends Base
 
     /**
      * Convert fields to be displayed
-     * Example : 
+     * Example :
      *      'convert'=>function($value){
      *          return htmlspecialchars_decode($value);
      *      }
-     *      
-     * @param  array $value 
+     *
+     * @param  array $value
      * @return array
      */
-    function convert($value = null)
+    function convert(mixed $value = null): mixed
     {
-        if ($this->isUseConverter() and is_callable($this->converter)) {
+        if ($this->isUseConverter() && is_callable($this->converter)) {
             $value = call_user_func_array($this->converter, func_get_args());
         }
         return $value;
@@ -512,13 +501,13 @@ class Field extends Base
 
     /**
      * Render will reverse field from its original value
-     * 
+     *
      * @param  array $value
      * @return array
      */
-    function render($value = null)
+    function render(mixed $value = null): mixed
     {
-        if ($this->isUseRenderer() and is_callable($this->renderer)) {
+        if ($this->isUseRenderer() && is_callable($this->renderer)) {
             $value = call_user_func_array($this->renderer, func_get_args());
         }
         return $value;
@@ -526,29 +515,31 @@ class Field extends Base
 
     /**
      * Validate fields that will be processed
-     * 
+     *
      * @param  array $value
      * @return array
      */
-    function validate($value = null)
+    function validate(mixed $value = null): ?array
     {
-        if ($this->isUseValidation() and ($this->validation instanceof FieldValidation))
+        if ($this->isUseValidation() && ($this->validation instanceof FieldValidation))
         {
             // validation is valid if return an empty value
-            return call_user_func_array(array($this->getValidation(), 'validate'), func_get_args());
+            return call_user_func_array([$this->getValidation(), 'validate'], func_get_args());
         }
+
+        return null;
     }
 
     /**
      * Take the validation to be processed
-     * 
+     *
      * @return Array
      */
-    function getValidation()
+    function getValidation(): FieldValidation
     {
         if (!($this->validation instanceof FieldValidation))
         {
-            $this->validation = new FieldValidation();
+            $this->validation = new FieldValidation($this);
         }
 
         return $this->validation;

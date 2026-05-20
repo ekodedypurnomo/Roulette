@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -18,12 +21,12 @@ use Roulette\Collection;
 
 /**
  *  Source is part of the model, which is used to declare a field of that model
- *  
+ *
  * @package \Roulette\Model
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class ViewOption extends Option
 {
-	// by now its only abstraction
+    // by now its only abstraction
 }

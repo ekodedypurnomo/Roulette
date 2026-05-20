@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,7 +16,7 @@ use Roulette\Collection as BaseCollection;
 
 /**
  * Is a class for helps in manipulating array in a single object.
- * 
+ *
  * @package \Roulette\Model
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>

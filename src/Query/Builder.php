@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -26,98 +29,98 @@ use Roulette\Callback;
  */
 class Builder extends Base
 {
-	static function query($optionMode = 'query', $table = null)
-	{
-		return new static($table, $optionMode);
-	}
+    static function query(mixed $optionMode = 'query', mixed $table = null): static
+    {
+        return new static($table, $optionMode);
+    }
 
-	static function table($table = null, $optionMode = 'query')
-	{
-		return new static($table, $optionMode);
-	}
+    static function table(mixed $table = null, mixed $optionMode = 'query'): static
+    {
+        return new static($table, $optionMode);
+    }
 
-	
+    protected mixed $option = null;
 
-	protected $option = null;
+    public function __call(string $method, array $arguments): static
+    {
+        if (!method_exists($this, $method))
+        {
+            call_user_func_array([$this->getOption(), $method], $arguments);
+            return $this; // force to return this
+        }
 
-	public function __call($method, $arguments)
-	{
-		if ( ! method_exists($this, $method))
-		{
-			call_user_func_array(array($this->getOption(), $method), $arguments);
-			return $this; // force to return this
-		}
-	}
+        return $this;
+    }
 
-	function __construct($table = null, $optionMode = 'query')
-	{
-		switch (strtoupper($optionMode))
-		{
-			case Select::$action:
-				$this->option = new Select($table);
-				break;
+    function __construct(mixed $table = null, mixed $optionMode = 'query')
+    {
+        switch (strtoupper((string) $optionMode))
+        {
+            case Select::$action:
+                $this->option = new Select($table);
+                break;
 
-			case Insert::$action:
-				$this->option = new Insert($table);
-				break;
+            case Insert::$action:
+                $this->option = new Insert($table);
+                break;
 
-			case Update::$action:
-				$this->option = new Update($table);
-				break;
+            case Update::$action:
+                $this->option = new Update($table);
+                break;
 
-			case Delete::$action:
-				$this->option = new Delete($table);
-				break;
-			
-			case Option::$action:
-			default:
-				$this->option = new Option($table);
-				break;
-		}
-	}
+            case Delete::$action:
+                $this->option = new Delete($table);
+                break;
 
-	function getOption()
-	{
-		if (!$this->option) $this->option = new Option();
+            case Option::$action:
+            default:
+                $this->option = new Option($table);
+                break;
+        }
+    }
 
-		return $this->option;
-	}
+    function getOption(): mixed
+    {
+        if (!$this->option) $this->option = new Option();
 
-	function get()
-	{
-		$option = $this->getOption()->toSelect();
-		$operation = Operation::create($option, true, true);
-		return Collection::create($operation->getRecords());
-	}
+        return $this->option;
+    }
 
-	function first()
-	{
-		$option = $this->getOption()->toSelect();
-		$option->limit(1);
-		$operation = Operation::create($option, true, true);
-		return $operation->getRecord();
-	}
+    function get(): Collection
+    {
+        $option = $this->getOption()->toSelect();
+        $operation = Operation::create($option, true, true);
+        return Collection::create($operation->getRecords());
+    }
 
-	function update($patch = null)
-	{
-		$option = $this->getOption()->toUpdate();
-		$option->set($patch);
-		$operation = Operation::create($option, true, true);
-		return $operation->isSuccess();
-	}
+    function first(): mixed
+    {
+        $option = $this->getOption()->toSelect();
+        $option->limit(1);
+        $operation = Operation::create($option, true, true);
+        return $operation->getRecord();
+    }
 
-	function insert($patch = null)
-	{
-		$option = $this->getOption()->toInsert();
-		$option->set($patch);
-		$operation = Operation::create($option, true, true);
-		return $operation->isSuccess();
-	}
+    function update(mixed $patch = null): bool
+    {
+        $option = $this->getOption()->toUpdate();
+        $option->set($patch);
+        $operation = Operation::create($option, true, true);
+        return $operation->isSuccess();
+    }
 
-	function delete()
-	{
-		$option = $this->getOption()->toDelete();
-		$operation = Operation::create($option, true, true);
-		return $operation->isSuccess();
-	}
+    function insert(mixed $patch = null): bool
+    {
+        $option = $this->getOption()->toInsert();
+        $option->set($patch);
+        $operation = Operation::create($option, true, true);
+        return $operation->isSuccess();
+    }
+
+    function delete(): bool
+    {
+        $option = $this->getOption()->toDelete();
+        $operation = Operation::create($option, true, true);
+        return $operation->isSuccess();
+    }
 }

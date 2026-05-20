@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -16,7 +19,7 @@ namespace Roulette\Model;
  */
 class Properties extends Model
 {
-    protected $propertiesName = null;
+    protected mixed $propertiesName = null;
 
-    static function getProperties(){}
+    static function getProperties(): void {}
 }

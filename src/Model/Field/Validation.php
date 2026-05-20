@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -15,7 +18,7 @@ use Roulette\Model\Field\Field;
 use Roulette\Mixin\HasField;
 
 /**
- * Cache management for model instance to increase speed of load data 
+ * Cache management for model instance to increase speed of load data
  *
  * @package \Roulette\Model
  * @since Version 2.0.0
@@ -25,53 +28,50 @@ class Validation extends BaseValidation
 {
     /**
      * The field.
-     * 
+     *
      * @var string
      */
-    protected $field = null;
+    protected ?Field $field = null;
 
-    function __construct(Field $field, $config = null)
+    function __construct(Field $field, mixed $config = null)
     {
         parent::__construct($config);
 
         $this->setField($field);
     }
 
-    function getField()
+    function getField(): ?Field
     {
         return $this->field;
     }
 
-    function setField(Field $field)
+    function setField(Field $field): static
     {
         $this->field = $field;
-        return $this;   
+        return $this;
     }
 
     /**
      * Validate value using its validators
-     * 
+     *
      * @param  Array $value
      * @return Array
      */
-    function validate($value = null)
+    function validate(mixed $value = null): array
     {
         $validators = $this->getValidators();
-        $isValid = true;
-        $validationMessages = array();
+        $validationMessages = [];
         $fieldName = $this->getField()->getName();
 
-        foreach ( $validators as $validator)
+        foreach ($validators as $validator)
         {
-            if ( $validator->test($value) !== true )
+            if ($validator->test($value) !== true)
             {
-                $isValid = false;
-
                 # here is the override
-                $message = $validator->getMessage(array(
-                    'value'=>$value,
-                    'field'=>$fieldName
-                ));
+                $message = $validator->getMessage([
+                    'value' => $value,
+                    'field' => $fieldName
+                ]);
 
                 $validationMessages[] = $message;
             }
@@ -79,5 +79,4 @@ class Validation extends BaseValidation
 
         return $validationMessages;
     }
-
 }

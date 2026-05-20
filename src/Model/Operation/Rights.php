@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -25,170 +28,171 @@ use Roulette\Model\Operation\Permission;
  * create 	: 4
  * update 	: 2
  * destroy 	: 1
- * 
+ *
  * example:
  * 		$perm = Rights::create('ff0');
  * 		echo $perm->isOwnerCanRead();
- * 		
+ *
  * @package \Roulette\Model
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Rights extends Base
 {
-	static function create($config = null)
-	{
-		$ownerRight = null;
-		$groupRight = null;
-		$otherRight = null;
+    static function create(mixed $config = null): static
+    {
+        $ownerRight = null;
+        $groupRight = null;
+        $otherRight = null;
 
-		if (is_array($config))
-		{
-			$config = Collection::create($config);
-			$ownerRight = $config->get('owner', $config->get('0'));
-			$groupRight = $config->get('group', $config->get('1'));
-			$otherRight = $config->get('other', $config->get('2'));
-		}
-		else if (is_string($config))
-		{
-			$config = str_split(str_pad($config, 3, '0'));
-			$ownerRight = $config[0];
-			$groupRight = $config[1];
-			$otherRight = $config[2];
-		}
+        if (is_array($config))
+        {
+            $config = Collection::create($config);
+            $ownerRight = $config->get('owner', $config->get('0'));
+            $groupRight = $config->get('group', $config->get('1'));
+            $otherRight = $config->get('other', $config->get('2'));
+        }
+        elseif (is_string($config))
+        {
+            $config = str_split(str_pad($config, 3, '0'));
+            $ownerRight = $config[0];
+            $groupRight = $config[1];
+            $otherRight = $config[2];
+        }
 
-		return new static($ownerRight, $groupRight, $otherRight);
-	}
+        return new static($ownerRight, $groupRight, $otherRight);
+    }
 
-	protected $owner = null;
+    protected mixed $owner = null;
 
-	protected $group = null;
-	
-	protected $other = null;
+    protected mixed $group = null;
 
-	function __construct($ownerRight = 'F', $groupRight = 0, $otherRight = 0)
-	{
-		if (is_string($ownerRight) and (strlen($ownerRight) > 1))
-		{
-			$this->owner = new Permission($ownerRight, 'bin');
-		}else
-		{
-			$this->owner = new Permission($ownerRight);
-		}
-		
-		if (is_string($groupRight) and (strlen($groupRight) > 1))
-		{
-			$this->group = new Permission($groupRight, 'bin');
-		}else
-		{
-			$this->group = new Permission($groupRight);
-		}
-		
-		if (is_string($otherRight) and (strlen($otherRight) > 1))
-		{
-			$this->other = new Permission($otherRight, 'bin');
-		}else
-		{
-			$this->other = new Permission($otherRight);
-		}
+    protected mixed $other = null;
 
-		return $this;
-	}
+    function __construct(mixed $ownerRight = 'F', mixed $groupRight = 0, mixed $otherRight = 0)
+    {
+        if (is_string($ownerRight) && (strlen($ownerRight) > 1))
+        {
+            $this->owner = new Permission($ownerRight, 'bin');
+        }
+        else
+        {
+            $this->owner = new Permission($ownerRight);
+        }
 
-	function toString()
-	{
-		return 	$this->getOwnerRight()->toHex(). 
-				$this->getGroupRight()->toHex(). 
-				$this->getOtherRight()->toHex();
-	}
+        if (is_string($groupRight) && (strlen($groupRight) > 1))
+        {
+            $this->group = new Permission($groupRight, 'bin');
+        }
+        else
+        {
+            $this->group = new Permission($groupRight);
+        }
 
-	function getOwnerRight()
-	{
-		if (!($this->owner instanceof Permission))
-		{
-			$this->owner = new Permission($this->owner);
-		}
+        if (is_string($otherRight) && (strlen($otherRight) > 1))
+        {
+            $this->other = new Permission($otherRight, 'bin');
+        }
+        else
+        {
+            $this->other = new Permission($otherRight);
+        }
+    }
 
-		return $this->owner;
-	}
+    function toString(): string
+    {
+        return  $this->getOwnerRight()->toHex().
+                $this->getGroupRight()->toHex().
+                $this->getOtherRight()->toHex();
+    }
 
-	function getGroupRight()
-	{
-		if (!($this->group instanceof Permission))
-		{
-			$this->group = new Permission($this->group);
-		}
+    function getOwnerRight(): Permission
+    {
+        if (!($this->owner instanceof Permission))
+        {
+            $this->owner = new Permission($this->owner);
+        }
 
-		return $this->group;
-	}
-	
-	function getOtherRight()
-	{
-		if (!($this->other instanceof Permission))
-		{
-			$this->other = new Permission($this->other);
-		}
+        return $this->owner;
+    }
 
-		return $this->other;
-	}
+    function getGroupRight(): Permission
+    {
+        if (!($this->group instanceof Permission))
+        {
+            $this->group = new Permission($this->group);
+        }
 
-	function ownerCanRead()
-	{
-		return $this->getOwnerRight()->getSelectPermission();
-	}
+        return $this->group;
+    }
 
-	function ownerCanCreate()
-	{
-		return $this->getOwnerRight()->getInsertPermission();
-	}
-	
-	function ownerCanUpdate()
-	{
-		return $this->getOwnerRight()->getUpdatePermission();
-	}
-	
-	function ownerCanDestroy()
-	{
-		return $this->getOwnerRight()->getDeletePermission();
-	}
+    function getOtherRight(): Permission
+    {
+        if (!($this->other instanceof Permission))
+        {
+            $this->other = new Permission($this->other);
+        }
 
-	function groupCanRead()
-	{
-		return $this->getGroupRight()->getSelectPermission();
-	}
+        return $this->other;
+    }
 
-	function groupCanCreate()
-	{
-		return $this->getGroupRight()->getInsertPermission();
-	}
-	
-	function groupCanUpdate()
-	{
-		return $this->getGroupRight()->getUpdatePermission();
-	}
-	
-	function groupCanDestroy()
-	{
-		return $this->getGroupRight()->getDeletePermission();
-	}
+    function ownerCanRead(): mixed
+    {
+        return $this->getOwnerRight()->getSelectPermission();
+    }
 
-	function otherCanRead()
-	{
-		return $this->getOtherRight()->getSelectPermission();
-	}
+    function ownerCanCreate(): mixed
+    {
+        return $this->getOwnerRight()->getInsertPermission();
+    }
 
-	function otherCanCreate()
-	{
-		return $this->getOtherRight()->getInsertPermission();
-	}
-	
-	function otherCanUpdate()
-	{
-		return $this->getOtherRight()->getUpdatePermission();
-	}
-	
-	function otherCanDestroy()
-	{
-		return $this->getOtherRight()->getDeletePermission();
-	}
+    function ownerCanUpdate(): mixed
+    {
+        return $this->getOwnerRight()->getUpdatePermission();
+    }
+
+    function ownerCanDestroy(): mixed
+    {
+        return $this->getOwnerRight()->getDeletePermission();
+    }
+
+    function groupCanRead(): mixed
+    {
+        return $this->getGroupRight()->getSelectPermission();
+    }
+
+    function groupCanCreate(): mixed
+    {
+        return $this->getGroupRight()->getInsertPermission();
+    }
+
+    function groupCanUpdate(): mixed
+    {
+        return $this->getGroupRight()->getUpdatePermission();
+    }
+
+    function groupCanDestroy(): mixed
+    {
+        return $this->getGroupRight()->getDeletePermission();
+    }
+
+    function otherCanRead(): mixed
+    {
+        return $this->getOtherRight()->getSelectPermission();
+    }
+
+    function otherCanCreate(): mixed
+    {
+        return $this->getOtherRight()->getInsertPermission();
+    }
+
+    function otherCanUpdate(): mixed
+    {
+        return $this->getOtherRight()->getUpdatePermission();
+    }
+
+    function otherCanDestroy(): mixed
+    {
+        return $this->getOtherRight()->getDeletePermission();
+    }
 }

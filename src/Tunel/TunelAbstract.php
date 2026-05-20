@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -21,76 +24,74 @@ use Roulette\Query\Operation;
  */
 abstract class TunelAbstract extends Base
 {
+    /**
+     * Information of the used framework
+     * @var null
+     */
+    static mixed $frameworkInfo = null;
 
-	/**
-	 * Information of the used framework
-	 * @var null
-	 */
-	static $frameworkInfo = null;
+    /**
+     * Get the information about the framework being used
+     * @return boolean
+     */
+    static function info(): mixed
+    {
+        if (!static::$frameworkInfo)
+        {
+            static::check();
+        }
+        return static::$frameworkInfo;
+    }
 
-	/**
-	 * Get the information about the framework being used
-	 * @return boolean
-	 */
-	static function info()
-	{
-		if (!static::$frameworkInfo)
-		{
-			static::check();
-		}
-		return static::$frameworkInfo;
-	}
+    /**
+     * Default value if framework not identified
+     * @return boolean
+     */
+    static function check(): bool
+    {
+        # static couldn't be an abstract, so we create default return here
+        return false;
+    }
 
-	/**
-	 * Default value if framework not identified
-	 * @return boolean
-	 */
-	static function check()
-	{
-		# static couldn't be an abstract, so we create default return here
-		return false;
-	}
-
-	static function model($model)
-	{
-		# static couldn't be an abstract, so we create default return here
-		return $model;
-	}
-
+    static function model(mixed $model): mixed
+    {
+        # static couldn't be an abstract, so we create default return here
+        return $model;
+    }
 
 
-	///////////////////////
-	// begin for object  //
-	///////////////////////
 
-	/**
-	 * Config connection to the framework
-	 * @var null
-	 */
-	protected $connection = null;
+    ///////////////////////
+    // begin for object  //
+    ///////////////////////
 
-	/**
-	 * @ignore
-	 */
-	function __construct($connection = null)
-	{
-		$this->connection = $connection;
-	}
+    /**
+     * Config connection to the framework
+     * @var null
+     */
+    protected mixed $connection = null;
 
-	/**
-	 * Get the connection configuration
-	 * @return array
-	 */
-	function getConnection()
-	{
-		return $this->connection;
-	}
+    /**
+     * @ignore
+     */
+    function __construct(mixed $connection = null)
+    {
+        $this->connection = $connection;
+    }
 
-	/**
-	 * Abstract function of operate
-	 * @param  Operation $operation 
-	 * @param  callable  $callback  
-	 */
-	abstract function operate(Operation $operation, callable $callback);
+    /**
+     * Get the connection configuration
+     * @return array
+     */
+    function getConnection(): mixed
+    {
+        return $this->connection;
+    }
 
+    /**
+     * Abstract function of operate
+     * @param  Operation $operation
+     * @param  callable  $callback
+     */
+    abstract function operate(Operation $operation, callable $callback): mixed;
 }
