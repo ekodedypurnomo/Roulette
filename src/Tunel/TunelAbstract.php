@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Roulette\Tunel;
 
 use Roulette\Base;
+use Roulette\Contract\Tunel;
 use Roulette\Query\Operation;
 
 /**
@@ -22,7 +23,7 @@ use Roulette\Query\Operation;
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-abstract class TunelAbstract extends Base
+abstract class TunelAbstract extends Base implements Tunel
 {
     /**
      * Information of the used framework
@@ -93,5 +94,5 @@ abstract class TunelAbstract extends Base
      * @param  Operation $operation
      * @param  callable  $callback
      */
-    abstract function operate(Operation $operation, callable $callback): mixed;
+    abstract function operate(Operation $operation, ?callable $callback = null): mixed;
 }

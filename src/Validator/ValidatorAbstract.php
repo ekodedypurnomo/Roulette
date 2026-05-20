@@ -14,6 +14,7 @@ namespace Roulette\Validator;
 
 use Roulette\Base;
 use Roulette\Template;
+use Roulette\Contract\Validatable;
 
 /**
  * Abstract class for Validator.
@@ -23,7 +24,7 @@ use Roulette\Template;
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-abstract class ValidatorAbstract extends Base
+abstract class ValidatorAbstract extends Base implements Validatable
 {
 	/**
 	 * Validation rule.
