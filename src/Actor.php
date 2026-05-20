@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -18,9 +21,8 @@ use Roulette\Model;
  */
 class Actor extends Model
 {
-	function can($policyName = null, $recordOrClass = null)
+	function can(?string $policyName = null, mixed $recordOrClass = null): bool
 	{
-		$policy = null;
 		$args = func_get_args();
 		array_shift($args);
 		array_unshift($args, $this);
@@ -28,13 +30,18 @@ class Actor extends Model
 		if (method_exists($recordOrClass, 'getPolicy'))
 		{
 			$policy = $recordOrClass::getPolicy($policyName);
-		}
-		
-		if ($policy)
-		{
-			return call_user_func_array(array($policy, 'assert'), $args);
+
+			if ($policy)
+			{
+				return (bool) call_user_func_array(array($policy, 'assert'), $args);
+			}
 		}
 
 		return true;
+	}
+
+	function able(?string $policyName = null, mixed $recordOrClass = null): bool
+	{
+		return $this->can($policyName, $recordOrClass);
 	}
 }

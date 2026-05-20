@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,20 +16,14 @@ use ReflectionClass;
 
 /**
  * Provide a view standart function. Top level parent class for Roulette Classes.
- * 
+ *
  * @package \Roulette
  * @author Eko Dedy Purnomo (eko.dedy.purnomo@gmail.com)
  * @since Version 2.0.0
  */
 class Base
 {
-    /**
-     * Function to send new data
-     * 
-     * @param [type] $config
-     * @return [type]        
-     */
-    static function create($config = null)
+    static function create(mixed $config = null): static
     {
         if (static::is($config))
         {
@@ -37,21 +34,15 @@ class Base
         return $reflection->newInstanceArgs(func_get_args());
     }
 
-    /**
-     * Determines information about the current platform the application is running on
-     * 
-     * @param  object  $object
-     * @return object
-     */
-    static function is($object = null)
+    static function is(mixed $object = null): bool
     {
         return $object instanceof static;
     }
 
-    static function isNot($object = null)
+    static function isNot(mixed $object = null): bool
     {
         return !static::is($object);
     }
 
-    function __construct(){}
+    function __construct() {}
 }

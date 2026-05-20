@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -22,5 +25,5 @@ interface Jsonable
      * @param  int  $options
      * @return string
      */
-    public function toJson($options = 0);
+    public function toJson(int $options = 0): string;
 }

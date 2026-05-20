@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,29 +16,22 @@ use Roulette\Model;
 use Roulette\Query\Operation;
 
 /**
- * ##HasModel
- *
  * @package Roulette\Mixin
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 trait HasModel
 {
-    /**
-     * The model.
-     * 
-     * @var string
-     */
-    protected $model = null;
+    protected ?string $model = null;
 
-    function getModel()
+    function getModel(): mixed
     {
         return Operation::getModel($this->model);
     }
 
-    function setModel($model)
+    function setModel(string $model): static
     {
         $this->model = $model;
-        return $this;   
+        return $this;
     }
 }
