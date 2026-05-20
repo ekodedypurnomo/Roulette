@@ -1,6 +1,6 @@
 <?php
 require_once(str_replace('/', DIRECTORY_SEPARATOR, dirname(dirname(__DIR__)).'/vendor/simpletester/src/SimpleTester/SimpleTester.php'));
-require_once(str_replace('/', DIRECTORY_SEPARATOR, dirname(dirname(__DIR__)).'/vendor/roulette/Roulette_ClassLoader.php'));
+require_once(str_replace('/', DIRECTORY_SEPARATOR, dirname(dirname(__DIR__)).'/vendor/autoload.php'));
 
 class RouletteUnittest
 {

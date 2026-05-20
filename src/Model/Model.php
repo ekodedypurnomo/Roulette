@@ -60,7 +60,7 @@ class Model extends Base
         }
         else
         {
-            return forward_static_call_array(array('static','init'), func_get_args());
+            return static::init(func_get_args());
         }
     }
 
@@ -136,7 +136,7 @@ class Model extends Base
      */
     static function fetchFromCache($recordId)
     {
-        if (static::isUseCache()) return;
+        if (!static::isUseCache()) return;
         
         if ( !(is_string($recordId) || is_numeric($recordId)) ) return; 
         
@@ -988,8 +988,6 @@ class Model extends Base
             })->execute();
         }
 
-        return $operation;
-
         $success = $operation->isSuccess();
 
         if ($success)
@@ -1013,7 +1011,7 @@ class Model extends Base
     function destroy( $callback = null )
     {
         $success = false;
-        $table = static::class;
+        $table = static::getTable();
         $condition = $this->getFields()->mapToSource(array(
             $this->getPrimary() => $this->get(static::getPrimary(), false)
             ));
@@ -1308,7 +1306,7 @@ class Model extends Base
 
     static function isUsePolicy()
     {
-        return !$this->getPolicies()->isEmpty();
+        return !static::getPolicies()->isEmpty();
     }
 
 
@@ -1374,6 +1372,11 @@ class Model extends Base
         return $view;
     }
 
+    static function view ($viewName = null)
+    {
+        return static::getDataView($viewName);
+    }
+
     static function setDataView($name, View $view)
     {
         $dataviews = static::getDataViews();
@@ -1381,11 +1384,6 @@ class Model extends Base
         $dataviews->set($name, $view);
 
         return static::class;
-    }
-
-    static function view()
-    {
-        return forward_static_call_array(array(static::class, 'getDataView'), func_get_args());
     }
 
     ////////////////
