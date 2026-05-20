@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,7 +16,7 @@ use Roulette\Validator\ValidatorAbstract;
 
 /**
  * SubClass for Validator, will be show message "value should be greater than"
- * 
+ *
  * @package Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -22,18 +25,18 @@ class Above extends ValidatorAbstract
 {
 	/**
 	 * Default Value for message Validator Above
-	 * @var string
+	 * @var string|null
 	 */
-	protected $message = 'value should be greater than {rule}';
+	protected ?string $message = 'value should be greater than {rule}';
 
 	/**
 	 * Execute the validation prosess
-	 * 
-	 * @param  int $value the variable to be validated
-	 * @return boolean true if the variable is valid
+	 *
+	 * @param  mixed $value the variable to be validated
+	 * @return bool true if the variable is valid
 	 */
-    function test($value = null)
+    function test(mixed $value = null): bool
     {
-    	return is_numeric($value) && is_numeric($value) && ($value > $this->rule);
+    	return is_numeric($value) && is_numeric($this->rule) && ($value > $this->rule);
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -14,7 +17,7 @@ use Roulette\Validator\ValidatorAbstract;
 /**
  * Built-in validators.
  * Validate value with regex as a tester.
- * 
+ *
  * Example:
  * ```php
  * 	$validator = new Roulette\Validator\validator\Format(
@@ -33,18 +36,18 @@ class Format extends ValidatorAbstract
 {
 	/**
 	 * Default value for format message
-	 * @var string
+	 * @var string|null
 	 */
-	protected $message = 'invalid format';
+	protected ?string $message = 'invalid format';
 
 	/**
 	 * Execute the proses validation
-	 * 
-	 * @param  string $value variable to be validated
-	 * @return boolean true if the variable is valid
+	 *
+	 * @param  mixed $value variable to be validated
+	 * @return bool true if the variable is valid
 	 */
-    function test($value = null)
+    function test(mixed $value = null): bool
     {
-    	return is_string($value) && preg_match($this->rule, $value);
+    	return is_string($value) && (bool) preg_match((string) $this->rule, $value);
     }
 }

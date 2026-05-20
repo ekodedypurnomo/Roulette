@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -18,59 +21,55 @@ use Roulette\Base;
  */
 class Regexp extends Base
 {
-	protected $regString = null;
+	protected ?string $regString = null;
 
-	protected $replaceString = '';
+	protected string $replaceString = '';
 
-	function __construct($regString = null, $replaceString = '')
+	function __construct(?string $regString = null, string $replaceString = '')
 	{
-		$this->regString = (string) $regString;
-		$this->replaceString = (string) $replaceString;
-
-		return $this;
+		$this->regString = $regString !== null ? (string) $regString : null;
+		$this->replaceString = $replaceString;
 	}
 
-	function test($subject = null)
+	function test(mixed $subject = null): int|false
 	{
-		if(empty($this->regString))
+		if (empty($this->regString))
 		{
-			return true;
+			return 1;
 		}
-		return preg_match($this->regString, $subject);
+		return preg_match($this->regString, (string) $subject);
 	}
 
-	function replace($subject = null, $replaceString = null)
+	function replace(mixed $subject = null, ?string $replaceString = null): string|array|null
 	{
-		if(!$replaceString)
+		if (!$replaceString)
 		{
 			$replaceString = $this->replaceString;
 		}
-		return preg_replace_callback($this->regString, function() use($replaceString)
+		return preg_replace_callback($this->regString ?? '', function() use($replaceString)
 		{
 			return $replaceString;
-		}, $subject);
+		}, (string) $subject);
 	}
 
-	function setString($regString = '')
+	function setString(string $regString = ''): static
 	{
 		$this->regString = $regString;
-		
 		return $this;
 	}
 
-	function getString()
+	function getString(): ?string
 	{
 		return $this->regString;
 	}
 
-	function setReplaceString($replaceString = '')
+	function setReplaceString(string $replaceString = ''): static
 	{
 		$this->replaceString = $replaceString;
-		
 		return $this;
 	}
 
-	function getReplaceString()
+	function getReplaceString(): string
 	{
 		return $this->replaceString;
 	}

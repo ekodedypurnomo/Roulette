@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -16,19 +19,20 @@ namespace Roulette;
  */
 class Callback
 {
-	static function call($func = null, $arguments = null, $context = null)
+	static function call(mixed $func = null, mixed $arguments = null, mixed $context = null): mixed
 	{
 		if (is_callable($func))
 		{
-			if (is_null($arguments)) $arguments = array();
-			if (!is_array($arguments)) $arguments = array($arguments);
+			if (is_null($arguments)) $arguments = [];
+			if (!is_array($arguments)) $arguments = [$arguments];
 
 			if ($context) $func->bindTo($context);
 			return call_user_func_array($func, $arguments);
 		}
+		return null;
 	}
 
-	static function able($callback = null)
+	static function able(mixed $callback = null): bool
 	{
 		return is_callable($callback);
 	}

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -10,31 +13,29 @@
 namespace Roulette\Validator;
 
 use Roulette\Validator\ValidatorAbstract;
+use Roulette\Regexp;
 
 /**
- * SubClass for Validator, will be show message "value should be greater than"
- * 
+ * SubClass for Validator — validates URL format
+ *
  * @package Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Url extends ValidatorAbstract
 {
-	protected $rule = '/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i';
+	protected mixed $rule = '/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i';
 
-	protected $message = 'value doesnt appear as valid Url format';
+	protected ?string $message = 'value doesnt appear as valid Url format';
 
-	function __construct($rule = null, $message = null)
+	function __construct(mixed $rule = null, ?string $message = null)
 	{
-		call_user_func_array(array(parent::class, '__construct'), function_get_args());
-
-		$this->rule = new Regexp($this->rule);
-
-		return $this;
+		parent::__construct($rule ?? $this->rule, $message);
+		$this->rule = new Regexp(is_string($this->rule) ? $this->rule : '');
 	}
 
-	function test($value = null)
+	function test(mixed $value = null): bool
 	{
-		return $this->rule->test($value);
+		return (bool) $this->rule->test($value);
 	}
 }

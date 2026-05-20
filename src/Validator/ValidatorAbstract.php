@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -24,28 +27,28 @@ abstract class ValidatorAbstract extends Base
 {
 	/**
 	 * Validation rule.
-	 * 
+	 *
 	 * @var mixed
 	 */
-	protected $rule = null;
+	protected mixed $rule = null;
 
 	/**
 	 * Validator message.
-	 * 
-	 * @var string
+	 *
+	 * @var string|null
 	 */
-	protected $message = null;
+	protected ?string $message = null;
 
 	/**
 	 * Create new Validator.
-	 * 
-	 * @param boolean $rule Validator rule
-	 * @param string  $message Validator message
+	 *
+	 * @param mixed $rule Validator rule
+	 * @param string|null $message Validator message
 	 */
-	function __construct($rule, $message = null)
+	function __construct(mixed $rule, ?string $message = null)
 	{
 		$this->rule = $rule;
-		
+
 		if ($message)
 		{
 			$this->message = $message;
@@ -55,35 +58,35 @@ abstract class ValidatorAbstract extends Base
 	/**
 	 * Get message with custom applied data.
 	 * Could be used after value fail the `test()`
-	 * 
-	 * @param  array $data
-	 * @return array
+	 *
+	 * @param  mixed $data
+	 * @return string
 	 */
-	function getMessage($data = null)
+	function getMessage(mixed $data = null): string
 	{
-		if (empty($data)) $data = array('value'=>null);
+		if (empty($data)) $data = ['value' => null];
 
-		if (!is_array($data)) $data = array('value'=>$data);
+		if (!is_array($data)) $data = ['value' => $data];
 
 		return Template::compile($this->message)->apply(array_merge(
 			$data,
-			array( 
-				'rule'=> $this->getRuleString() 
-			) 
+			[
+				'rule' => $this->getRuleString()
+			]
 		));
 	}
 
-	protected function getRule()
+	protected function getRule(): mixed
 	{
 		return $this->rule;
 	}
 
 	/**
 	 * Get stringify of rule.
-	 * 
+	 *
 	 * @return string
 	 */
-	protected function getRuleString()
+	protected function getRuleString(): string
 	{
 		$rule = "";
 
@@ -113,10 +116,10 @@ abstract class ValidatorAbstract extends Base
 
 	/**
 	 * Validate $value.
-	 * 
-	 * @param  mixed $value Value to validate 
-	 * @return boolean       
+	 *
+	 * @param  mixed $value Value to validate
+	 * @return bool
 	 */
-	abstract function test($value = null);
+	abstract function test(mixed $value = null): bool;
 
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -10,31 +13,29 @@
 namespace Roulette\Validator;
 
 use Roulette\Validator\ValidatorAbstract;
+use Roulette\Regexp;
 
 /**
- * SubClass for Validator, will be show message "value should be greater than"
- * 
+ * SubClass for Validator — validates UUID format
+ *
  * @package Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Uuid extends ValidatorAbstract
 {
-	protected $rule = '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/';
+	protected mixed $rule = '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/';
 
-	protected $message = 'value doesnt appear as valid UUID format';
+	protected ?string $message = 'value doesnt appear as valid UUID format';
 
-	function __construct($rule = null, $message = null)
+	function __construct(mixed $rule = null, ?string $message = null)
 	{
-		call_user_func_array(array(parent::class, '__construct'), function_get_args());
-
-		$this->rule = new Regexp($this->rule);
-
-		return $this;
+		parent::__construct($rule ?? $this->rule, $message);
+		$this->rule = new Regexp(is_string($this->rule) ? $this->rule : '');
 	}
 
-	function test($value = null)
+	function test(mixed $value = null): bool
 	{
-		return $this->rule->test($value);
+		return (bool) $this->rule->test($value);
 	}
 }

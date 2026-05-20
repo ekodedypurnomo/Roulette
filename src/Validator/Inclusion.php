@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,7 +16,7 @@ use Roulette\Validator\ValidatorAbstract;
 
 /**
  * SubClass for Validator, will be show message "must be include in {rule}"
- * 
+ *
  * @package \Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -22,41 +25,41 @@ class Inclusion extends ValidatorAbstract
 {
     /**
      * Default validator message for Inclusion
-     * @var string
+     * @var string|null
      */
-	protected $message = 'must be include in: {rule}';
+	protected ?string $message = 'must be include in: {rule}';
 
     /**
      * Default Config for Validator message Inclusion
-     * 
-     * @param Array  $validator
-     * @param String $message
+     *
+     * @param mixed $rule
+     * @param string|null $message
      */
-	function __construct($validator = null, $message = null)
+	function __construct(mixed $rule = null, ?string $message = null)
 	{
-		call_user_func_array(array(parent::class, '__construct'), func_get_args() );
-        
-		if (! is_array($this->rule) ) $this->rule = array();
+		parent::__construct($rule, $message);
+
+		if (!is_array($this->rule)) $this->rule = [];
 	}
 
     /**
      * Execute the validation process
-     * 
-     * @param  String $value variable to be validated
-     * @return boolean true if the variable is valid 
+     *
+     * @param  mixed $value variable to be validated
+     * @return bool true if the variable is valid
      */
-    function test($value = null)
+    function test(mixed $value = null): bool
     {
-        return in_array($value, $this->rule);
+        return in_array($value, (array) $this->rule);
     }
 
     /**
      * Take Specified validator
-     * @return String
+     * @return string
      */
-    function getRuleString()
+    protected function getRuleString(): string
     {
-        if (!is_array($this->rule)) $this->rule = array();
+        if (!is_array($this->rule)) $this->rule = [];
         return implode(',', $this->rule);
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -16,7 +19,7 @@ use Roulette\Mixin\Configurable;
 
 /**
  * Validation is the appearance of the message or perform other functions after action
- * 
+ *
  * @package \Roulette
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -25,9 +28,8 @@ class Validation extends Base
 {
     // use util\Observable;
     use Configurable;
-    
-    static protected $builtinValidators = array
-    (
+
+    static protected array $builtinValidators = [
         'above'     => \Roulette\Validator\Above::class,
         'below'     => \Roulette\Validator\Below::class,
         'blank'     => \Roulette\Validator\Blank::class,
@@ -38,7 +40,7 @@ class Validation extends Base
         'double'    => \Roulette\Validator\Double::class,
         'email'     => \Roulette\Validator\Email::class,
         'exclusion' => \Roulette\Validator\Exclusion::class,
-        'float'     => \Roulette\Validator\Float::class,
+        'float'     => \Roulette\Validator\FloatType::class,
         'format'    => \Roulette\Validator\Format::class,
         'inclusion' => \Roulette\Validator\Inclusion::class,
         'integer'   => \Roulette\Validator\Integer::class,
@@ -52,43 +54,41 @@ class Validation extends Base
         'notblank'  => \Roulette\Validator\Notblank::class,
         'nullable'  => \Roulette\Validator\Nullable::class,
         'numeric'   => \Roulette\Validator\Numeric::class,
-        'string'    => \Roulette\Validator\String::class,
+        'string'    => \Roulette\Validator\StringType::class,
         'time'      => \Roulette\Validator\Time::class,
         'url'       => \Roulette\Validator\Url::class,
-        'uuid'      => \Roulette\Validator\Uuid::class
-    );
+        'uuid'      => \Roulette\Validator\Uuid::class,
+    ];
 
     /**
      * Array of validators
      * @var array
      */
-    protected $validators = array();
-    
+    protected array $validators = [];
+
     /**
      * Default value for validator message
      * @var array
      */
-    protected $messageTemplates = array();
+    protected array $messageTemplates = [];
 
     /**
-     *@ignore
+     * @ignore
      */
-    function __construct($config = null)
+    function __construct(mixed $config = null)
     {
-        if ( is_callable($config) )
+        if (is_callable($config))
         {
-            $config = array('validators'=>array(
-                'custom'=>$config
-            ));
+            $config = ['validators' => ['custom' => $config]];
         }
-        
+
         $this->configure($config);
 
         // backup affected from config
         // then purge any artifact affected from configure
-        $validators = is_array($this->validators) ? $this->validators : array();
-        $this->validators = array();
-        
+        $validators = is_array($this->validators) ? $this->validators : [];
+        $this->validators = [];
+
         // now append each
         foreach ($validators as $validator => $rule)
         {
@@ -101,31 +101,30 @@ class Validation extends Base
                 $this->addValidator($validator, $rule);
             }
         }
-        
-        return $this;
     }
 
     /**
      * Get all validator
-     * @return Array
+     * @return array
      */
-    function getValidators()
+    function getValidators(): array
     {
         if (!is_array($this->validators))
         {
-            $this->validators = array();
+            $this->validators = [];
         }
         return $this->validators;
     }
 
     /**
      * Add new validator
-     * 
-     * @param Array  $validator
-     * @param Array  $rule
-     * @param String $message
+     *
+     * @param mixed $validator
+     * @param mixed $rule
+     * @param string|null $message
+     * @return static
      */
-    function addValidator($validator = null, $rule = null, $message = null)
+    function addValidator(mixed $validator = null, mixed $rule = null, ?string $message = null): static
     {
         # by default accept the instance of Validator
         if ($validator instanceof ValidatorAbstract)
@@ -143,10 +142,10 @@ class Validation extends Base
             $validator = 'custom';
         }
 
-        $validator = strtolower($validator);
-        
-        if ( ! array_key_exists($validator, static::$builtinValidators)) return $this;
-        
+        $validator = strtolower((string) $validator);
+
+        if (!array_key_exists($validator, static::$builtinValidators)) return $this;
+
         $validatorClass = static::$builtinValidators[$validator];
 
         if (array_key_exists($validator, $this->messageTemplates)) $message = $this->messageTemplates[$validator];
@@ -157,19 +156,19 @@ class Validation extends Base
     }
 
     /**
-     * Reset validors and message template
-     * @return array
+     * Reset validators and message template
+     * @return static
      */
-    function reset()
+    function reset(): static
     {
-        $this->validators = array();
-        $this->messageTemplates = array();
+        $this->validators = [];
+        $this->messageTemplates = [];
         return $this;
     }
 
     /**
      * Take specified validator message
-     * 
+     *
      *     Example :
      *     $message = array(
      *         'validators'=>array(),
@@ -180,54 +179,45 @@ class Validation extends Base
      *     );
      *
      *     $msg = \Roulette\Validation::getValidatorMessage('null') == 'dont null please';
-     *     
-     * @return Array
+     *
+     * @param string|null $key
+     * @return array|string|null
      */
-    function getMessageTemplates()
+    function getMessageTemplates(?string $key = null): array|string|null
     {
-        $args = func_get_args();
-        
-        # return all template if no filter
-        if (empty($args))
+        if (is_null($key))
         {
             return $this->messageTemplates;
         }
-        # return selected template
-        else
+
+        if (array_key_exists($key, $this->messageTemplates))
         {
-            $key = $args[0];
-            if (array_key_exists($key, $this->messageTemplates))
-            {
-                return $this->messageTemplates[$key];
-            }
+            return $this->messageTemplates[$key];
         }
+
+        return null;
     }
 
     /**
      * Validate value using its validators.
      * This function is overrided by \Roulette\Model\Field\Validation::validate for compitibilty
-     * 
-     * @param  Array $value
-     * @return Array
+     *
+     * @param  mixed $value
+     * @return array
      */
-    function validate($value = null)
+    function validate(mixed $value = null): array
     {
         $validators = $this->getValidators();
-        $isValid = true;
-        $validationMessages = array();
+        $validationMessages = [];
 
-        foreach ( $validators as $validator)
+        foreach ($validators as $validator)
         {
-            if ( $validator->test($value) !== true )
+            if ($validator->test($value) !== true)
             {
-                $isValid = false;
-                $validationMessages[] = $validator->getMessage(array( // pass data into template
-                    'value'=>$value
-                ));
+                $validationMessages[] = $validator->getMessage(['value' => $value]);
             }
         }
 
         return $validationMessages;
     }
-
 }

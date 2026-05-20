@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -12,7 +15,7 @@ use Roulette\Base;
 
 /**
  * Simple string template parser. (Experimental)
- * 
+ *
  * @package \Roulette
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -22,23 +25,23 @@ class Template extends Base
     /**
      * Template string unformated (the template).
      *
-     * @property    Array $template String template 
+     * @property    string|array|null $template String template
      * @access      protected
      */
-    protected $template = null;
-    
+    protected string|array|null $template = null;
+
     /**
      * Marker is default caracter to parsing
      *
-     * @property    Array $template String template default is { } pairs 
+     * @property    array $marker String template default is { } pairs
      * @access      protected
      */
-    protected $marker = array('{', '}');
+    protected array $marker = ['{', '}'];
 
     /**
      * Merge template with the data
      *
-     *      Example: 
+     *      Example:
      *      $data = array('name'=>'john','gender'=>'male'); //data dummy
      *      $result_should = 'name : '.$data['name'].' gender : '.$data['gender'];
      *
@@ -47,13 +50,12 @@ class Template extends Base
      *
      *      #array
      *      $result = \Roulette\Template::parse(array('name : {name}',' ','gender : {gender}'),$data);
-     *      
-     * 
-     * @param  Array $template
-     * @param  Array $data
-     * @return Array
+     *
+     * @param  string|array|null $template
+     * @param  mixed $data
+     * @return string
      */
-    public static function parse($template = null, $data = null)
+    public static function parse(string|array|null $template = null, mixed $data = null): string
     {
         return static::compile($template)->apply($data);
     }
@@ -70,32 +72,28 @@ class Template extends Base
      *
      *      #array
      *      $result = \Roulette\Template::compile(array('name : {name}',' ','gender : {gender}'))->apply($data);
-     * 
-     * @param  String $template
-     * @return Array
+     *
+     * @param  string|array|null $template
+     * @return static
      */
-    public static function compile($template = null)
+    public static function compile(string|array|null $template = null): static
     {
-        return $tpl = new static(array(
-            'template'=>$template
-        ));
+        return new static(['template' => $template]);
     }
 
     /**
      * Constructor, create in instance of this class.
-     * 
-     * @param Array $config A set of configuration
-     * @return Roulette\Template 
+     *
+     * @param string|array|null $config A set of configuration
      */
-    function __construct($config = null)
+    function __construct(string|array|null $config = null)
     {
         if (is_string($config)) {
-            $config = array('template' => $config);
+            $config = ['template' => $config];
         }
-        if (is_array($config))
-        {
+        if (is_array($config)) {
             if (array_key_exists('template', $config)) $this->template = $config['template'];
-            if (array_key_exists('marker', $config)) $this->marker = $config['marker'];
+            if (array_key_exists('marker', $config))   $this->marker   = $config['marker'];
         }
     }
 
@@ -105,16 +103,15 @@ class Template extends Base
      *      Example:
      *      //load the model first
      *      $data = \Roulette\Template->setMarker(array('a','b'));
-     * 
-     * @param Array $marker
+     *
+     * @param array|null $marker
+     * @return static
      */
-    function setMarker($marker = null)
+    function setMarker(?array $marker = null): static
     {
         if (is_array($marker)) {
-            if (isset($marker[0]))
-                $this->marker[0] = $marker[0];
-            if (isset($marker[1]))
-                $this->marker[1] = $marker[1];
+            if (isset($marker[0])) $this->marker[0] = $marker[0];
+            if (isset($marker[1])) $this->marker[1] = $marker[1];
         }
         return $this;
     }
@@ -125,52 +122,51 @@ class Template extends Base
      *      Example:
      *      //load the model first
      *      $data = \Roulette\Template->setMarker(array('a','b'));
-     * 
-     * @return Array
+     *
+     * @return array
      */
-    function getMarker()
+    function getMarker(): array
     {
         return $this->marker;
     }
 
     /**
      * Append the template with params
-     * 
-     * @param Array $template
+     *
+     * @param string|array|null $template
+     * @return static
      */
-    function setTemplate($template = null)
+    function setTemplate(string|array|null $template = null): static
     {
-        if (!is_array($template)){
-            $template = array($template);
+        if (!is_array($template)) {
+            $template = [$template];
         }
-        if (is_array($template)) {
-            $this->template = $template;
-        }
+        $this->template = $template;
         return $this;
     }
 
     /**
      * Take an existing template
-     * @return Array
+     * @return string|array|null
      */
-    function getTemplate()
+    function getTemplate(): string|array|null
     {
         return $this->template;
     }
 
     /**
      * Replace value from template with value from input
-     * 
-     * @param  String $str
-     * @param  Array  $replacement
-     * @return String
+     *
+     * @param  string|null $str
+     * @param  array|null  $replacement
+     * @return string|null
      */
-    protected function mark($str = null, $replacement = null)
+    protected function mark(?string $str = null, ?array $replacement = null): ?string
     {
-        if (is_string($str) and is_array($replacement)) {
+        if (is_string($str) && is_array($replacement)) {
             foreach ($replacement as $key => $value) {
-                if ( is_string($value) or is_numeric($value) ) {
-                    $str = str_replace( (string) $this->marker[0] . $key . $this->marker[1], $value, $str);
+                if (is_string($value) || is_numeric($value)) {
+                    $str = str_replace((string) $this->marker[0] . $key . $this->marker[1], (string) $value, $str);
                 }
             }
         }
@@ -179,37 +175,36 @@ class Template extends Base
 
     /**
      * Using the results of the input replace the contents of template values
-     * 
-     * @param  Array $replacement
-     * @return Array
+     *
+     * @param  mixed $replacement
+     * @return string
      */
-    function apply($replacement = null)
+    function apply(mixed $replacement = null): string
     {
         $str = $this->template;
-
         $compiled = "";
 
-        if (is_array($str)) 
+        if (is_array($str))
         {
-            $compiledArray = array();
+            $compiledArray = [];
 
             foreach ($str as $key => $value) {
                 $compiledArray[] = $this->mark($value, $replacement);
             }
-    
+
             $compiled = implode('', $compiledArray);
-        } 
-        else 
+        }
+        else
         {
-            $compiled = $this->mark($str, $replacement);
+            $compiled = (string) $this->mark($str, $replacement);
         }
 
         // need to clear variables
         $clearRe = '#\\'.$this->marker[0].'(.*?)\\'.$this->marker[1].'#';
-        $compiled = preg_replace_callback($clearRe, function(){
+        $compiled = (string) preg_replace_callback($clearRe, function() {
             return "";
         }, $compiled);
-    
+
         return $compiled;
     }
 }

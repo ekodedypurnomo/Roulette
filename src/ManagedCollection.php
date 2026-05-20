@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -14,99 +17,99 @@ use Roulette\Regexp;
 
 /**
  * Is a class for helps in manipulating array in a single object.
- * 
+ *
  * @package \Roulette
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class ManagedCollection extends Collection
 {
-	protected $acceptableKeys = null;
-	
-	protected $acceptableValues = null;
+	protected mixed $acceptableKeys = null;
 
-	protected $beforeSet = null;
+	protected mixed $acceptableValues = null;
 
-	protected $beforeAdd = null;
+	protected mixed $beforeSet = null;
 
-	function acceptableKey($key = null)
+	protected mixed $beforeAdd = null;
+
+	function acceptableKey(mixed $key = null): bool
 	{
-		if (is_array($this->acceptableKeys) and !empty($this->acceptableKeys))
+		if (is_array($this->acceptableKeys) && !empty($this->acceptableKeys))
 		{
 			return in_array($key, $this->acceptableKeys);
 		}
 		elseif (is_callable($this->acceptableKeys))
 		{
-			return call_user_func($this->acceptableKeys, $key);
+			return (bool) call_user_func($this->acceptableKeys, $key);
 		}
 		elseif ($this->acceptableKeys instanceof Regexp)
 		{
-			return Regexp::test($key);
+			return (bool) $this->acceptableKeys->test($key);
 		}
-		
+
 		return true;
 	}
 
-	function acceptableValue($value = null)
+	function acceptableValue(mixed $value = null): bool
 	{
-		if (is_array($this->acceptableValues) and !empty($this->acceptableValues))
+		if (is_array($this->acceptableValues) && !empty($this->acceptableValues))
 		{
 			return in_array($value, $this->acceptableValues);
 		}
 		elseif (is_callable($this->acceptableValues))
 		{
-			return call_user_func($this->acceptableValues, $value);
+			return (bool) call_user_func($this->acceptableValues, $value);
 		}
 		elseif ($this->acceptableValues instanceof Regexp)
 		{
-			return Regexp::test($value);
+			return (bool) $this->acceptableValues->test($value);
 		}
-		
+
 		return true;
 	}
 
-	function acceptable($key = null, $value = null)
+	function acceptable(mixed $key = null, mixed $value = null): bool
 	{
-		return ($this->acceptableKey($key) and $this->acceptableValue($value));
+		return $this->acceptableKey($key) && $this->acceptableValue($value);
 	}
 
-	function setAcceptableKeys($keys)
+	function setAcceptableKeys(mixed $keys): void
 	{
 		$this->acceptableKeys = $keys;
 	}
 
-	function setAcceptableValues($values)
+	function setAcceptableValues(mixed $values): void
 	{
 		$this->acceptableValues = $values;
 	}
 
-	protected function _set($key = null, $value = null)
-	{	
-		if ($this->acceptable($key, $value) === false) return $this;
-
-		$items =& $this->items();
-
-		if(is_callable($this->beforeSet))
-		{
-			if(call_user_func_array($this->beforeSet, array(&$value, &$items)) === false)
-			{
-				return $this;
-			} 
-		}
-		$items[$key] = $value;
-		
-		return $this;
-	}
-
-	protected function _add($value = null)
+	protected function _set(mixed $key = null, mixed $value = null): static
 	{
 		if ($this->acceptable($key, $value) === false) return $this;
 
 		$items =& $this->items();
-		
-		if(is_callable($this->beforeAdd))
+
+		if (is_callable($this->beforeSet))
 		{
-			if(call_user_func_array($this->beforeAdd, array(&$value, &$items)) === false)
+			if (call_user_func_array($this->beforeSet, [&$value, &$items]) === false)
+			{
+				return $this;
+			}
+		}
+		$items[$key] = $value;
+
+		return $this;
+	}
+
+	protected function _add(mixed $value = null): static
+	{
+		if ($this->acceptable(null, $value) === false) return $this;
+
+		$items =& $this->items();
+
+		if (is_callable($this->beforeAdd))
+		{
+			if (call_user_func_array($this->beforeAdd, [&$value, &$items]) === false)
 			{
 				return $this;
 			}

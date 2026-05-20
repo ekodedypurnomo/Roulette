@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,7 +16,7 @@ use Roulette\Validator\ValidatorAbstract;
 
 /**
  * SubClass for Validator, will be show message "value does not passed validation"
- * 
+ *
  * @package \Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -22,17 +25,17 @@ class Custom extends ValidatorAbstract
 {
 	/**
 	 * Default validator message for Custom
-	 * @var string
+	 * @var string|null
 	 */
-	protected $message = 'value does not passed validation';
+	protected ?string $message = 'value does not passed validation';
 
 	/**
 	 * Execute the validation process
-	 * @param  string $value variable to be validated
-	 * @return boolean  true if the variable is valid      
+	 * @param  mixed $value variable to be validated
+	 * @return bool true if the variable is valid
 	 */
-    function test($value = null)
+    function test(mixed $value = null): bool
     {
-    	return is_callable($this->rule) && call_user_func_array($this->rule, func_get_args());
+    	return is_callable($this->rule) && (bool) call_user_func($this->rule, $value);
     }
 }

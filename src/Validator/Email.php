@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,29 +16,26 @@ use Roulette\Validator\ValidatorAbstract;
 use Roulette\Regexp;
 
 /**
- * SubClass for Validator, will be show message "value should be greater than"
- * 
+ * SubClass for Validator — validates email address format
+ *
  * @package Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Email extends ValidatorAbstract
 {
-	protected $rule = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
+	protected mixed $rule = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
 
-	protected $message = 'value doesnt appear as valid Email format';
+	protected ?string $message = 'value doesnt appear as valid Email format';
 
-	function __construct($rule = null, $message = null)
+	function __construct(mixed $rule = null, ?string $message = null)
 	{
-		call_user_func_array(array(parent::class, '__construct'), function_get_args());
-
-		$this->rule = new Regexp($this->rule);
-
-		return $this;
+		parent::__construct($rule ?? $this->rule, $message);
+		$this->rule = new Regexp(is_string($this->rule) ? $this->rule : '');
 	}
 
-	function test($value = null)
+	function test(mixed $value = null): bool
 	{
-		return $this->rule->test($value);
+		return (bool) $this->rule->test($value);
 	}
 }

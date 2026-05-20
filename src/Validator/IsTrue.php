@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -12,8 +15,8 @@ namespace Roulette\Validator;
 use Roulette\Validator\ValidatorAbstract;
 
 /**
- * SubClass for Validator, will be show message "value should be greater than"
- * 
+ * SubClass for Validator, will be show message "value should be `true`"
+ *
  * @package Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -21,18 +24,18 @@ use Roulette\Validator\ValidatorAbstract;
 class IsTrue extends ValidatorAbstract
 {
 	/**
-	 * Default validator message for Integer
-	 * @var string
+	 * Default validator message for IsTrue
+	 * @var string|null
 	 */
-	protected $message = 'value should be `true`';
+	protected ?string $message = 'value should be `true`';
 
 	/**
 	 * Execute the validation process
-	 * 
-	 * @param  string $value variable to be validated 
-	 * @return boolean true if the variable is valid 
+	 *
+	 * @param  mixed $value variable to be validated
+	 * @return bool true if the variable is valid
 	 */
-    function test($value = null)
+    function test(mixed $value = null): bool
     {
     	return ($value === true);
     }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -12,13 +15,13 @@ namespace Roulette\Validator;
 use Roulette\Validator\ValidatorAbstract;
 
 /**
- * SubClass for Validator, will be show message "value should be greater than"
- * 
+ * SubClass for Validator — time format validation. Not yet implemented.
+ *
  * @package Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-class Time extends ValidatorAbstract
+abstract class Time extends ValidatorAbstract
 {
-	
+
 }

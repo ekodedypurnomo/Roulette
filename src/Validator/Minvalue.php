@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -12,8 +15,8 @@ namespace Roulette\Validator;
 use Roulette\Validator\ValidatorAbstract;
 
 /**
- * SubClass for Validator, will be show message "maximum value is {rule}"
- * 
+ * SubClass for Validator, will be show message "minimum value is {rule}"
+ *
  * @package \Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -22,17 +25,17 @@ class Minvalue extends ValidatorAbstract
 {
 	/**
 	 * Default validator message for Minvalue
-	 * @var string
+	 * @var string|null
 	 */
-	protected $message = 'maximum value is {rule}';
-	
+	protected ?string $message = 'minimum value is {rule}';
+
 	/**
 	 * Execute the prosess validation
-	 * 
-	 * @param  int $value variable to be validated
-	 * @return boolean true if the variable is valid
+	 *
+	 * @param  mixed $value variable to be validated
+	 * @return bool true if the variable is valid
 	 */
-    function test($value = null)
+    function test(mixed $value = null): bool
     {
     	return is_numeric($value) && is_numeric($this->rule) && ($value >= $this->rule);
     }

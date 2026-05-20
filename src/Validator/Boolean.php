@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * This file is part of the Roulette package.
  *
@@ -13,7 +16,7 @@ use Roulette\Validator\ValidatorAbstract;
 
 /**
  * SubClass for Validator, will be show message "value should be a boolean"
- * 
+ *
  * @package Roulette\Validator
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
@@ -22,17 +25,17 @@ class Boolean extends ValidatorAbstract
 {
 	/**
 	 * Default validator message for Boolean
-	 * @var string
+	 * @var string|null
 	 */
-	protected $message = 'value should be a boolean';
+	protected ?string $message = 'value should be a boolean';
 
 	/**
 	 * Execute the validation proses
-	 * 
-	 * @param  boolean $value variable to be validated
-	 * @return boolean true if the valiable is valid
+	 *
+	 * @param  mixed $value variable to be validated
+	 * @return bool true if the valiable is valid
 	 */
-    function test($value = null)
+    function test(mixed $value = null): bool
     {
     	return is_bool($value);
     }
