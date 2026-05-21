@@ -147,7 +147,7 @@ class Field extends Base
         if (!($validation instanceof FieldValidation))
         {
             $this->validation = new FieldValidation($this, [
-                'validators' => $validation ?? []
+                'validators' => is_array($validation) ? $validation : []
             ]);
         }
 
