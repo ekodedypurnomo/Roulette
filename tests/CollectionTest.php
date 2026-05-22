@@ -64,7 +64,10 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'setIf'));
 
         $obj = new Collection(['one' => 1, 'two' => 2, 'three' => 3]);
-        $this->assertNotNull($obj->setIf('two', 4), 'default');
+        $obj->setIf('two', 99);
+        $this->assertSame(99, $obj->get('two'), 'updates existing key');
+        $obj->setIf('five', 5);
+        $this->assertFalse($obj->has('five'), 'does not add missing key');
     }
 
     public function testSetIfNot(): void
@@ -72,7 +75,10 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'setIfNot'));
 
         $obj = new Collection(['one' => 1, 'two' => 2, 'three' => 3]);
-        $this->assertNotNull($obj->setIfNot('five', 5), 'default');
+        $obj->setIfNot('one', 99);
+        $this->assertSame(1, $obj->get('one'), 'does not overwrite existing key');
+        $obj->setIfNot('five', 5);
+        $this->assertSame(5, $obj->get('five'), 'adds missing key');
     }
 
     public function testFill(): void
@@ -219,7 +225,10 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'clear'));
 
         $obj = new Collection(['one' => 1, 'two' => 2]);
-        $this->assertNotFalse($obj->clear(), 'default');
+        $obj->clear();
+        $this->assertNull($obj->get('one'), 'values nulled');
+        $this->assertNull($obj->get('two'), 'values nulled');
+        $this->assertSame(2, $obj->getCount(), 'keys retained (count unchanged)');
     }
 
     public function testClean(): void
@@ -227,11 +236,14 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'clean'));
 
         $obj = new Collection(['one' => 1, 'two' => 2]);
-        $this->assertNotFalse($obj->clean(), 'default');
-
-        $obj = new Collection();
         $obj->clear();
-        $this->assertSame(0, $obj->getCount(), 'null');
+        $obj->clean();
+        $this->assertSame(0, $obj->getCount(), 'null values removed after clean');
+
+        $obj2 = new Collection(['a' => 1, 'b' => null, 'c' => 3]);
+        $obj2->clean();
+        $this->assertSame(2, $obj2->getCount(), 'only null items removed');
+        $this->assertFalse($obj2->has('b', false), 'null key gone');
     }
 
     public function testContain(): void
@@ -513,8 +525,10 @@ class CollectionTest extends TestCase
     {
         $this->assertTrue(method_exists(Collection::class, 'sort'));
 
-        $obj = new Collection(['A' => 1, 'F' => 5, 'G' => 8, 'H' => 10]);
-        $this->assertNotFalse($obj->sort(), 'default');
+        $obj = new Collection([3, 1, 4, 1, 5, 9, 2]);
+        $obj->sort();
+        $values = $obj->getValues();
+        $this->assertSame([1, 1, 2, 3, 4, 5, 9], $values, 'ascending order');
     }
 
     public function testAddAll(): void
@@ -543,7 +557,8 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'shuffle'));
 
         $obj = new Collection([1, 3, 9]);
-        $this->assertNotFalse($obj->shuffle(), 'default');
+        $obj->shuffle();
+        $this->assertSame(3, $obj->count(), 'count preserved after shuffle');
     }
 
     public function testDiff(): void
@@ -567,48 +582,45 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'invoke'));
 
         $obj = new Collection([1, 3, 9]);
-        $result = $obj->invoke(function ($item, $key) {
-            return $item * 2;
-        });
-        $this->assertNotFalse($result, 'default');
+        $result = $obj->invoke(fn($item) => $item * 2);
+        $this->assertSame([2, 6, 18], $result->getValues(), 'doubles each item');
     }
 
     public function testEvery(): void
     {
         $this->assertTrue(method_exists(Collection::class, 'every'));
 
-        $obj = new Collection([1, 3, 9]);
-        $result = $obj->every(function ($item, $key) {
-            return $item * 2;
-        });
-        $this->assertNotFalse($result, 'default');
+        $obj = new Collection([2, 4, 6]);
+        $this->assertTrue($obj->every(fn($item) => $item % 2 === 0), 'all even → true');
+        $this->assertFalse($obj->every(fn($item) => $item > 3), 'not all > 3 → false');
     }
 
     public function testSome(): void
     {
         $this->assertTrue(method_exists(Collection::class, 'some'));
 
-        $obj = new Collection([1, 2, 3, 4]);
-        $result = $obj->some(function ($item, $key) {
-            return true;
-        });
-        $this->assertNotFalse($result, 'default');
+        $obj = new Collection([1, 2, 3]);
+        $this->assertTrue($obj->some(fn($item) => $item === 2), 'has 2 → true');
+        $this->assertFalse($obj->some(fn($item) => $item === 99), 'no 99 → false');
     }
 
     public function testChunk(): void
     {
         $this->assertTrue(method_exists(Collection::class, 'chunk'));
 
-        $obj = new Collection([1, 3, 9]);
-        $this->assertNotFalse($obj->chunk(1), 'default');
+        $obj = new Collection([1, 2, 3, 4]);
+        $chunks = $obj->chunk(2);
+        $this->assertSame(2, $chunks->count(), '4 items in chunks of 2 → 2 chunks');
     }
 
     public function testFlip(): void
     {
         $this->assertTrue(method_exists(Collection::class, 'flip'));
 
-        $obj = new Collection([1, 3, 9]);
-        $this->assertNotFalse($obj->flip(), 'default');
+        $obj = new Collection(['a' => 1, 'b' => 2]);
+        $flipped = $obj->flip();
+        $this->assertSame('a', $flipped->get(1), 'key 1 maps to "a"');
+        $this->assertSame('b', $flipped->get(2), 'key 2 maps to "b"');
     }
 
     public function testImplode(): void
@@ -616,7 +628,7 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'implode'));
 
         $obj = new Collection([1, 2, 5, 8]);
-        $this->assertNotFalse($obj->implode(','), 'default');
+        $this->assertSame('1,2,5,8', $obj->implode(','), 'comma-joined values');
     }
 
     public function testIntersect(): void
@@ -632,7 +644,8 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'reverse'));
 
         $obj = new Collection(['one' => 1, 'two' => 2, 'three' => 3]);
-        $this->assertNotFalse($obj->reverse(), 'default');
+        $reversed = $obj->reverse();
+        $this->assertSame(['three' => 3, 'two' => 2, 'one' => 1], $reversed->getAll(), 'order reversed');
     }
 
     public function testRandom(): void
@@ -656,7 +669,8 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'getIterator'));
 
         $obj = new Collection([1, 2, 5, 8]);
-        $this->assertNotFalse($obj->getIterator(), 'default');
+        $iter = $obj->getIterator();
+        $this->assertInstanceOf(\Traversable::class, $iter);
     }
 
     public function testJsonSerialize(): void
@@ -664,7 +678,7 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, 'jsonSerialize'));
 
         $obj = new Collection([1, 2, 5, 8]);
-        $this->assertNotFalse($obj->jsonSerialize(), 'default');
+        $this->assertSame([1, 2, 5, 8], $obj->jsonSerialize());
     }
 
     public function testConstruct(): void
@@ -672,7 +686,7 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, '__construct'));
 
         $obj = new Collection([1, 2, 5, 8]);
-        $this->assertNotFalse($obj->__construct([3, 4]), 'default');
+        $this->assertSame(4, $obj->count(), 'count from array');
     }
 
     public function testToString(): void
@@ -680,6 +694,6 @@ class CollectionTest extends TestCase
         $this->assertTrue(method_exists(Collection::class, '__toString'));
 
         $obj = new Collection([1, 2, 5, 8]);
-        $this->assertNotFalse($obj->__toString(), 'default');
+        $this->assertIsString((string) $obj);
     }
 }

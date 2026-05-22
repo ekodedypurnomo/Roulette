@@ -143,6 +143,7 @@ class FieldTest extends TestCase
 
         $result = $field->setSource('source');
         $this->assertInstanceOf(Field::class, $result, 'setSource returns fluent');
+        $this->assertSame('source', $field->getSource(), 'setSource value applied');
     }
 
     public function testGetSetDisplay(): void
@@ -184,6 +185,10 @@ class FieldTest extends TestCase
         $field = new Field(['name' => 'field', 'readOnly' => false]);
         $result = $field->setToReadOnly(true);
         $this->assertInstanceOf(Field::class, $result, 'returns fluent');
+        $this->assertTrue($field->isReadOnly(), 'readOnly set to true');
+
+        $field->setToReadOnly(false);
+        $this->assertFalse($field->isReadOnly(), 'readOnly set back to false');
     }
 
     public function testIsPrivate(): void
@@ -219,6 +224,12 @@ class FieldTest extends TestCase
         $field = new Field(['name' => 'field']);
         $result = $field->setToPublic(true);
         $this->assertInstanceOf(Field::class, $result, 'returns fluent');
+        $this->assertTrue($field->isPublic(), 'public after setToPublic(true)');
+        $this->assertFalse($field->isPrivate(), 'not private after setToPublic(true)');
+
+        $field->setToPublic(false);
+        $this->assertFalse($field->isPublic(), 'not public after setToPublic(false)');
+        $this->assertTrue($field->isPrivate(), 'private after setToPublic(false)');
     }
 
     public function testGetOperation(): void

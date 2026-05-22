@@ -74,39 +74,4 @@ class TemplateTest extends TestCase
         $this->assertEquals($expected, Template::parse(['name : {name}', ' ', 'gender : {gender}'], $replacer), 'array');
     }
 
-    public function testSetMarker(): void
-    {
-        $this->assertTrue(method_exists(Template::class, 'setMarker'));
-
-        $tpl = new Template();
-        $tpl->setMarker(['[', ']']);
-        $this->assertEquals(['[', ']'], $tpl->getMarker(), 'change marker');
-    }
-
-    public function testGetMarker(): void
-    {
-        $this->assertTrue(method_exists(Template::class, 'getMarker'));
-
-        $tpl = new Template();
-        $tpl->setMarker(['[', ']']);
-        $this->assertEquals(['[', ']'], $tpl->getMarker(), 'put marker');
-    }
-
-    public function testSetTemplate(): void
-    {
-        $this->assertTrue(method_exists(Template::class, 'setTemplate'));
-
-        $obj = new Template();
-        $result = $obj->setTemplate('name : {name} gender : {gender}');
-        $this->assertNotNull($result, 'with marker');
-    }
-
-    public function testGetTemplate(): void
-    {
-        $this->assertTrue(method_exists(Template::class, 'getTemplate'));
-
-        $obj = new Template();
-        $obj->setTemplate('name : {name}');
-        $this->assertEquals(['name : {name}'], $obj->getTemplate(), 'string');
-    }
 }

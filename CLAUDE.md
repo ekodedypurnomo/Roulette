@@ -256,32 +256,28 @@ Adapters handle: database connections, query execution, transaction management.
 
 ---
 
-## Known Bugs (develop branch)
+## Known Bugs
 
-| File | Line | Bug | Fix |
-|------|------|-----|-----|
-| `Model/Model.php` | ~139 | `if (static::isUseCache()) return;` — logic inverted, cache never works | Change to `if (!static::isUseCache()) return;` |
-| `Model/Model.php` | ~992 | `return $operation;` inside `save()` — dead code follows (reload, callback, return $success unreachable) | Move return to end |
-| `Model/Model.php` | ~1016 | `$table = static::class;` inside `destroy()` — uses class name instead of table name | Change to `$table = static::getTable();` |
-
----
-
-## Recent Changes
-
-The `develop` branch has work-in-progress on:
-- **Actor.php** — Enhanced policy checking system
-- **Data/Value.php** — Field value lifecycle refinements
-- **Model/Model.php** — CRUD and association improvements
+All previously documented bugs have been fixed on the `develop` branch.
 
 ---
 
 ## Testing
 
-Tests are located at `test/` (inside `v2/`). The test folder includes a CodeIgniter 3 framework setup for integration testing with the Roulette ORM against various database drivers (MySQL, PostgreSQL, SQLite, etc.).
+Tests are located at `tests/` (inside `v2/`). The suite uses PHPUnit 10 with an SQLite in-memory driver for DB-backed tests — no external database required.
 
 Test structure:
-- `test/CI3/` - CodeIgniter 3 framework with system and application files
-- Database drivers: MySQL, MySQLi, PostgreSQL, SQLite, Oracle, MSSQL, Sybase, ODBC, CUBRID
+
+- `tests/Support/DbTestCase.php` — Base class for DB-dependent tests (SQLite in-memory via PDO)
+- `tests/Support/UserModel.php` — Shared model fixture
+- `tests/Support/SqliteTunel.php` — SQLite tunel adapter for PHPUnit
+
+Run all tests:
+
+```bash
+./vendor/bin/phpunit --no-coverage
+# Expected: 336+ tests, 0 failures, 0 skipped, 0 deprecations
+```
 
 ---
 
