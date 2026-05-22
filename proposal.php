@@ -5,7 +5,7 @@
 
 // laravel
 DB::query();
-Student::findFirst()
+Student::findFirst();
 Student::find();
 // CI
 $this->model_student->get();
@@ -21,7 +21,8 @@ $faculty = $todd->getFaculty(); // predefined query
 $parents = $todd->getParents(); // predefined query
 
 // Roulette overview
-$todd = Student::laod(['name'=>'tod']);
+$todd = Student::create(['name'=>'todd']); // or
+$todd = Student::load(['name'=>'todd']);
 $faculty = $todd->lookup('faculty'); // no need to do query database
 $parents = $todd->lookup('parents'); // no need to do query database
 
@@ -46,12 +47,12 @@ class Surat extends Model
 
 Surat::prototype([
 	'table'=>'surat', // source table
-	'primary'=>'surat_id'
+	'primary'=>'surat_id',
 	'fields'=>[
 		[
 			'name' => 'surat_id',
 			'updateable'=> false,
-			'nullable'=> false
+			'nullable'=> false,
 			'renderer' => function(){},
 			'converter' => function(){}
 		],
@@ -75,16 +76,16 @@ Surat::prototype([
 		[
 			'name'=>'jenis',
 			'type'=>'HASONE',
-			'model'=>App\model\Jenis::class,
+			'model'=>Jenis::class,
 			'field'=>'surat_jenis'],
 		[
 			'name'=>'pembuat',
-			'type'=>Roulette\Association::HASONE,
+			'type'=>Association::HASONE,
 			'model'=>self::class,
 			'field'=>'surat_pembuat'],
 		[
 			'name'=>'penerima',
-			'type'=>Roulette\Association::HASMANY,
+			'type'=>Association::HASMANY,
 			'model'=>Staf::class]
 	],
 	'views'=>[
@@ -144,12 +145,12 @@ function ()
 	});
 
 	// destroy
-	$surat123->destroy(function(){}); // true / false
+	$surat123->destroy(function($operation){}); // true / false
 
 	// load
 	// could be by an id, or it custom field conditions
 	$surat123 = Surat::load('id123'); // record
-	$surat123 = Surat::load(['surat_id'=>'id123']); // records
+	$surat123 = Surat::load(['surat_id'=>'id123']); // record
 	// $raksurat = Rak::load($surat123['surat_rak']);
 
 	// find associated
@@ -164,7 +165,7 @@ function ()
 	$penerimaData = $penerimaStore->getData();
 
 	$surat123->lookup('penerima')->getData(); // collection
-
+	$surat123->getPenerima();
 }
 
 //////////////////////////
@@ -187,8 +188,8 @@ function ()
 
 	// sol 2, view parser, roullete way
 	$suratsfull = Surat::view('full')->find()->getData();
-		$rak = $d[0]->lookup('rak'); // use cache
-		$jenis = $d[0]->lookup('jenis'); // use cache
+		$rak = $suratsfull[0]->lookup('rak'); // use cache / data from view
+		$jenis = $suratsfull[0]->lookup('jenis'); // use cache / data from view
 
 	// sol 2.1, view builder
 	/**

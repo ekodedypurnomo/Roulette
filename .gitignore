@@ -2,6 +2,9 @@
 /vendor/
 composer.lock
 
+# Claude Code workspace
+.claude/
+
 # PHPUnit
 .phpunit.result.cache
 .phpunit.cache/
