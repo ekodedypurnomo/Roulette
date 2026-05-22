@@ -62,7 +62,7 @@ class Condition extends Base
 
         # init operator
         $this->operator = $operator;
-        $_operator = strtoupper($operator);
+        $_operator = strtoupper((string) $operator);
         if (in_array($_operator, static::$definedOperator))
         {
             $this->operator = $_operator;

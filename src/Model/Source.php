@@ -37,6 +37,8 @@ class Source extends Base
     use Configurable;
     use HasModel;
 
+    protected ?string $name = null;
+
     /**
      * Name of field from database to access.
      *

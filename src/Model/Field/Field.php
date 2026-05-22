@@ -122,6 +122,8 @@ class Field extends Base
 
     protected mixed $uniqueValidator = null;
 
+    protected mixed $error = null;
+
     /**
      * __construct for function creates a new object field.
      * @param object|string|array $config field configuration
@@ -252,7 +254,7 @@ class Field extends Base
 
     function setToReadOnly(bool $value = true): static
     {
-        $this->public = $value;
+        $this->readOnly = $value;
         return $this;
     }
 
@@ -284,7 +286,7 @@ class Field extends Base
 
     function setToPublic(bool $value = true): static
     {
-        $this->public = $value;
+        $this->private = !$value;
         return $this;
     }
 

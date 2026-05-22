@@ -63,7 +63,7 @@ class Model extends Base
         }
         else
         {
-            return static::init($args);
+            return static::init($args[0]);
         }
     }
 
@@ -561,6 +561,8 @@ class Model extends Base
 
             return $data->get($f->getName());
         }
+
+        return null;
     }
 
     /**

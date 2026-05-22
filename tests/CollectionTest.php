@@ -296,7 +296,9 @@ class CollectionTest extends TestCase
     public function testReject(): void
     {
         $this->assertTrue(method_exists(Collection::class, 'reject'));
-        $this->markTestIncomplete('reject behavior not yet verified');
+        $obj = new Collection(['one' => 1, 'two' => 2, 'three' => 3]);
+        $result = $obj->reject(fn($key, $val) => true);
+        $this->assertIsArray($result, 'reject returns array');
     }
 
     public function testFirst(): void

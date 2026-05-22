@@ -27,7 +27,7 @@ class Actor extends Model
 		array_shift($args);
 		array_unshift($args, $this);
 
-		if (method_exists($recordOrClass, 'getPolicy'))
+		if ($recordOrClass !== null && method_exists($recordOrClass, 'getPolicy'))
 		{
 			$policy = $recordOrClass::getPolicy($policyName);
 

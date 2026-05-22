@@ -62,6 +62,8 @@ trait HasGroup
     {
         if (!is_array($this->having)) $this->having = [];
 
+        if (empty($field)) return $this;
+
         if (is_callable($field))
         {
             $builder = new $this($this->model);
@@ -71,7 +73,7 @@ trait HasGroup
         }
 
         $condition = Condition::create([
-            'boolean'  => $hook,
+            'hook'     => $hook,
             'field'    => $field,
             'operator' => $operatorOrValue,
             'value'    => $value,
