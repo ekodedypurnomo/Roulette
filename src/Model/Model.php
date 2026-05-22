@@ -23,6 +23,7 @@ use Roulette\Model\Fields;
 use Roulette\Model\Association\AssociationAbstract;
 use Roulette\Model\Association\HasOne;
 use Roulette\Model\Association\HasMany;
+use Roulette\Model\Association\BelongsTo;
 use Roulette\Model\Operation\Rights;
 use Roulette\Model\Operation\Scope;
 use Roulette\Model\Policy;
@@ -1074,6 +1075,10 @@ class Model extends Base
                 elseif ($type == 'hasOne' || $type == AssociationAbstract::HASONE)
                 {
                     $a = HasOne::create($v->getAll(['except' => ['type']]));
+                }
+                elseif ($type == 'belongsTo' || $type == AssociationAbstract::BELONGSTO)
+                {
+                    $a = BelongsTo::create($v->getAll(['except' => ['type']]));
                 }
             }
 

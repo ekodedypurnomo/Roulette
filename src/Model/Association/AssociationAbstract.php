@@ -50,6 +50,8 @@ abstract class AssociationAbstract extends Base
 
     const HASMANY = 2;
 
+    const BELONGSTO = 3;
+
     /**
      * name of the Association
      * @var String
