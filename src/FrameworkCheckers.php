@@ -13,9 +13,6 @@ declare(strict_types=1);
 namespace Roulette;
 
 use Roulette\Base;
-use Roulette\Tunel\tunnels;
-use Roulette\Tunel\Tunel;
-use Roulette\Tunel\Definer;
 
 /**
  * Check the type of the framework used by the server application.
@@ -46,7 +43,7 @@ class FrameworkCheckers extends Base
     {
         if (!static::$configLoaded)
         {
-            $tunnelDir = __DIR__ . '/tunnels.php';
+            $tunnelDir = __DIR__ . '/tunels.php';
 
             static::$frameworks = require_once(str_replace('/', DIRECTORY_SEPARATOR, $tunnelDir));
             static::$configLoaded = true;
