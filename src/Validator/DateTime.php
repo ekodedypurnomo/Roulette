@@ -21,7 +21,20 @@ use Roulette\Validator\ValidatorAbstract;
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-abstract class DateTime extends ValidatorAbstract
+class DateTime extends ValidatorAbstract
 {
+    protected mixed $rule = 'Y-m-d H:i:s';
+    protected ?string $message = 'value is not a valid datetime, expected format: {rule}';
 
+    function __construct(mixed $rule = null, ?string $message = null)
+    {
+        parent::__construct($rule ?? $this->rule, $message);
+    }
+
+    function test(mixed $value = null): bool
+    {
+        if (!is_string($value) && !is_numeric($value)) return false;
+        $d = \DateTime::createFromFormat((string) $this->rule, (string) $value);
+        return $d !== false && $d->format((string) $this->rule) === (string) $value;
+    }
 }

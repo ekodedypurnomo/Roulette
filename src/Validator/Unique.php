@@ -21,7 +21,12 @@ use Roulette\Validator\ValidatorAbstract;
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-abstract class Unique extends ValidatorAbstract
+class Unique extends ValidatorAbstract
 {
+    protected ?string $message = 'value must be unique';
 
+    function test(mixed $value = null): bool
+    {
+        return is_callable($this->rule) && (bool) call_user_func($this->rule, $value);
+    }
 }

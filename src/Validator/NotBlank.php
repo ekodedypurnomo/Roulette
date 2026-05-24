@@ -21,7 +21,12 @@ use Roulette\Validator\ValidatorAbstract;
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-abstract class NotBlank extends ValidatorAbstract
+class NotBlank extends ValidatorAbstract
 {
+    protected ?string $message = 'value must not be blank';
 
+    function test(mixed $value = null): bool
+    {
+        return $value !== null && trim((string) $value) !== '';
+    }
 }
