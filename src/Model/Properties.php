@@ -12,12 +12,14 @@ declare(strict_types=1);
  */
 namespace Roulette\Model;
 
+use Roulette\Model as BaseModel;
+
 /**
  * @package \Roulette\Model
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-class Properties extends Model
+class Properties extends BaseModel
 {
     protected mixed $propertiesName = null;
 

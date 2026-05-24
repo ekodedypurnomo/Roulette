@@ -20,7 +20,6 @@ use Roulette\Query\Option\Insert;
 use Roulette\Query\Option\Update;
 use Roulette\Query\Option\Delete;
 use Roulette\Query\Option\Option;
-use Roulette\Callback;
 
 /**
  * @package \Roulette\Query

@@ -10,14 +10,14 @@ declare(strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace Roulette;
+namespace Roulette\Tunel;
 
 use Roulette\Base;
 
 /**
  * Check the type of the framework used by the server application.
  *
- * @package \Roulette
+ * @package \Roulette\Tunel
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
@@ -43,7 +43,7 @@ class FrameworkCheckers extends Base
     {
         if (!static::$configLoaded)
         {
-            $tunnelDir = __DIR__ . '/tunels.php';
+            $tunnelDir = __DIR__ . '/Tunels.php';
 
             static::$frameworks = require_once(str_replace('/', DIRECTORY_SEPARATOR, $tunnelDir));
             static::$configLoaded = true;

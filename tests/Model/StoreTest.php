@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Roulette\Tests\Model;
 
+use Roulette\Collection;
 use Roulette\Model\Store;
 use Roulette\Tests\Support\DbTestCase;
 use Roulette\Tests\Support\UserModel;
@@ -14,6 +15,11 @@ class StoreTest extends DbTestCase
     {
         parent::setUp();
         $this->createUsersTable();
+    }
+
+    public function testIsCollection(): void
+    {
+        $this->assertTrue(is_subclass_of(Store::class, Collection::class));
     }
 
     public function testGetCount(): void

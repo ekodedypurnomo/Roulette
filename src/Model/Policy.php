@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Roulette\Model;
 
 use Roulette\Base;
-use Roulette\Callback;
 
 /**
  * @package \Roulette\Model
