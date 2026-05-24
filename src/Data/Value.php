@@ -17,8 +17,23 @@ use Roulette\Model\Field\Field;
 use Roulette\Model;
 
 /**
- * \Rouletet\data\Value represent a single value of the field,
- * its not so simply for a value, but it has several purpose of a field value.
+ * Manages the full lifecycle of a single field value inside a Model.
+ *
+ * Every field on a model holds one Value instance. It tracks three distinct
+ * states — `original` (what came from DB), `raw` (what the user set), and
+ * `display` (the rendered output) — and provides change detection via
+ * `isModified()` (`raw !== original`).
+ *
+ * Entry points:
+ * - `setOriginal($v)` — called by the ORM when loading from DB; applies `reader()`
+ *   and `default`, then copies into both `raw` and `original`.
+ * - `setValue($v)` — called when user/code sets a new value; applies `converter()`
+ *   then `validator()`; stores result in `raw` regardless of validity.
+ * - `commit()` — syncs `original` ← `raw` (called after a successful save).
+ * - `revert()` — syncs `raw` ← `original` (discards unsaved changes).
+ * - `get()` — returns `display` (after `renderer()`) or `raw` when render=false.
+ * - `validate()` — runs all validators against current `raw`.
+ *
  * There are two options for set the value:
  * - setOriginal:
  *     Apply for original value, means value is real value from database,

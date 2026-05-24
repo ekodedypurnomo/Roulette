@@ -22,6 +22,27 @@ use Roulette\Query\Option\Delete;
 use Roulette\Query\Option\Option;
 
 /**
+ * Fluent SQL query builder. Constructs SELECT / INSERT / UPDATE / DELETE statements.
+ *
+ * Typically obtained via `Model::query()` rather than instantiated directly.
+ * Each method returns `$this`, enabling a chainable API. The query is not
+ * executed until `execute()` is called.
+ *
+ * Common SELECT pattern:
+ *   Model::query()
+ *       ->select(['id', 'name'])
+ *       ->where(['active' => true])
+ *       ->orderBy(['name' => 'ASC'])
+ *       ->take(10)
+ *       ->skip(0)
+ *       ->execute();
+ *
+ * Supported clauses: select, where, groupBy, having, orderBy, take (LIMIT),
+ * skip (OFFSET), join. For mutations: update($data), delete().
+ *
+ * Unknown method calls are forwarded to the underlying Option object, so
+ * clause-specific methods (e.g. join()) resolve transparently.
+ *
  * @package \Roulette\Query
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>

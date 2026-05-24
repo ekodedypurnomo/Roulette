@@ -18,7 +18,22 @@ use Roulette\Validator\ValidatorAbstract;
 use Roulette\Mixin\Configurable;
 
 /**
- * Validation is the appearance of the message or perform other functions after action
+ * Validator registry and factory. Resolves string validator names to ValidatorAbstract instances.
+ *
+ * The built-in registry maps short names (e.g. `'email'`, `'minlength'`) to their
+ * concrete Validator classes. Field declarations reference these names; the framework
+ * resolves them here at validation time.
+ *
+ * Add a custom validator type globally:
+ *   Validation::addValidator('phone', App\Validator\Phone::class);
+ *
+ * Or attach a one-off validator to a specific field:
+ *   $field->addValidator('custom', function($value) { return strlen($value) > 3; });
+ *
+ * Built-in validator names: above, below, boolean, custom, date, datetime, double,
+ * email, exclusion, float, format, inclusion, integer, isfalse, istrue, maxlength,
+ * maxvalue, minlength, minvalue, notblank, nullable, numeric, string, time, unique,
+ * url, uuid.
  *
  * @package \Roulette
  * @since Version 2.0.0

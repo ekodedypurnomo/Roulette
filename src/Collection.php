@@ -22,8 +22,21 @@ use Roulette\Contract\Jsonable;
 use Roulette\Contract\Arrayable;
 
 /**
- * Is a class for helps in manipulating array in a single object.
- * 
+ * Typed array wrapper with functional iteration methods.
+ *
+ * Wraps a plain PHP array and adds map, filter, each, reduce, and search
+ * while implementing the standard PHP interfaces so it can be iterated with
+ * foreach, counted with count(), and serialized to JSON directly.
+ *
+ * Usage:
+ *   $col = new Collection([1, 2, 3]);
+ *   $doubled = $col->map(fn($v) => $v * 2);  // returns new Collection
+ *   $evens   = $col->filter(fn($v) => $v % 2 === 0);
+ *   $col->each(fn($v) => doSomething($v));
+ *
+ * Model::find() returns a Store (subclass of Collection) — the same API applies.
+ * Use toArray() / toJson() to convert for API responses.
+ *
  * @package \Roulette
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>

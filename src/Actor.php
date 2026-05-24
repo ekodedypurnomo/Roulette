@@ -15,9 +15,23 @@ namespace Roulette;
 use Roulette\Model;
 
 /**
+ * Authorization agent. Extend Model to represent the entity performing actions (e.g. a User).
+ *
+ * Use `can()` / `able()` to evaluate a named policy on a record or model class.
+ * The policy callable is looked up from the target model's prototype and called with
+ * the actor as the first argument, followed by any extra arguments passed to `can()`.
+ *
+ * Usage:
+ *   $actor = Actor::load($userId);
+ *   if ($actor->can('edit', $post)) { ... }
+ *
+ * Both `can()` and `able()` are identical — `able()` exists as a semantic alias
+ * for contexts where "is actor able to..." reads more naturally than "can actor...".
+ * When no policy is registered, both return true (open by default).
+ *
  * @package \Roulette
- * @author Eko Dedy Purnomo (eko.dedy.purnomo@gmail.com)
  * @since Version 2.0.0
+ * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
 class Actor extends Model
 {

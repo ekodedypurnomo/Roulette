@@ -25,9 +25,25 @@ use Roulette\Mixin\Configurable;
 use Roulette\Mixin\HasModel;
 
 /**
- *  Field is part of the model, which is used to declare a field of that model
+ * Defines the schema and transformation pipeline for a single model field.
  *
- * @package Roulette\Model
+ * A field is declared inside the model prototype's `fields` array and controls
+ * every aspect of how a column value flows in and out of the model:
+ *
+ * - `type`      — maps to a built-in validator (string, integer, email, uuid, …)
+ * - `nullable`  — whether null is a valid value
+ * - `default`   — fallback when the DB returns null
+ * - `reader`    — callable applied when loading from DB
+ * - `writer`    — callable applied before persisting to DB
+ * - `converter` — callable applied before validation when user sets a value
+ * - `renderer`  — callable that produces the display value returned by get()
+ * - `validators`— additional Validator instances beyond the type check
+ *
+ * At runtime, use the model's `get($field)` / `set($field, $value)` API —
+ * direct Field access is an internal concern. To add validators programmatically:
+ *   `$field->addValidator('minlength', 3)`
+ *
+ * @package \Roulette\Model\Field
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */

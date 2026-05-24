@@ -36,8 +36,28 @@ use Roulette\Actor;
 use Roulette\Template;
 
 /**
- * A Model represents a record from database as an object, that have many crud
- * operation function, including association.
+ * Base class for all ORM models. Extend this class to represent a database table.
+ *
+ * Each subclass must implement a static `init()` method that calls `static::prototype()`
+ * to declare the table name, primary key, fields, associations, and policies.
+ *
+ * CRUD:
+ * - `new Model($data)` / `save()` — create or update a record
+ * - `Model::load($id)` — fetch one record by primary key
+ * - `Model::find($conditions)` — fetch a Store of matching records
+ * - `destroy()` — delete the record
+ *
+ * Field lifecycle (per field, per save cycle):
+ * reader → default → raw → converter → validator → writer → DB
+ *
+ * Associations — declare in prototype(), access via `lookup()`:
+ * - `hasOne` / `hasMany` — this model owns the foreign key on the related table
+ * - `belongsTo` — this model holds the foreign key
+ *
+ * Policies — declare callables in prototype() and check via an Actor:
+ * `$actor->can('edit', $record)`
+ *
+ * Modified tracking: `getModified()` returns fields changed since last load/save.
  *
  * @package \Roulette
  * @since Version 0.1.0

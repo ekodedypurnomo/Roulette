@@ -27,8 +27,26 @@ use Roulette\Mixin\Configurable;
 use Roulette\Mixin\HasModel;
 
 /**
- * Assosiation was a description of a relationship between a model one with the other models
- * which in this function there-many relationship model or one model
+ * Base class for model associations (HasOne, HasMany, BelongsTo).
+ *
+ * An association describes how one model relates to another. Declare associations
+ * in the model prototype using the `associations` key; access them at runtime
+ * via `$record->lookup('relationName')`.
+ *
+ * Relation types:
+ * - HasOne   — this model is the parent; related model holds the foreign key; returns one record
+ * - HasMany  — this model is the parent; related model holds the foreign key; returns a Store
+ * - BelongsTo — this model holds the foreign key; returns the parent record
+ *
+ * Prototype declaration:
+ *   'associations' => [
+ *       'profile' => ['type' => 'hasOne',   'model' => 'App\Profile', 'foreignKey' => 'user_id'],
+ *       'posts'   => ['type' => 'hasMany',  'model' => 'App\Post',    'foreignKey' => 'user_id'],
+ *       'author'  => ['type' => 'belongsTo','model' => 'App\User',    'foreignKey' => 'user_id'],
+ *   ]
+ *
+ * Each concrete subclass must implement `associate()` which executes the lookup query
+ * and returns the related record(s).
  *
  * @package \Roulette\Model\Association
  * @since Version 2.0.0
