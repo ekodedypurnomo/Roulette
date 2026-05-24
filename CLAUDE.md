@@ -37,10 +37,9 @@ Roulette is a sophisticated PHP ORM framework that bridges objects and relationa
 
 ```
 Roulette/
-├── Model/               # Core model classes
-│   ├── Model.php       # Main Model base class
+├── Model/               # Core model sub-classes
 │   ├── Field/          # Field definition & validation
-│   ├── Association/    # HasOne, HasMany relationships
+│   ├── Association/    # HasOne, HasMany, BelongsTo relationships
 │   ├── Cache.php       # Model instance caching
 │   ├── Prototype.php   # Static model configuration
 │   ├── Policy.php      # Authorization policies
@@ -57,8 +56,15 @@ Roulette/
 │   └── Permission.php  # Field-level permissions
 ├── Validator/          # Validation rules
 ├── Tunel/              # Framework adapters
+│   ├── FrameworkCheckers.php  # Framework detection utility
+│   ├── Tunels.php             # Registered adapter list
+│   ├── TunelAbstract.php      # Base adapter interface
+│   ├── Laravel5.php           # Laravel 5 integration
+│   ├── Codeigniter3.php       # CodeIgniter 3 integration
+│   └── Phalcon3.php           # Phalcon 3 integration
 ├── Contract/           # Interfaces (Jsonable, Arrayable)
 ├── Mixin/              # Traits (Observable, Configurable)
+├── Model.php           # Main Model base class (CRUD, fields, associations, policies)
 ├── Actor.php           # Authorization agent
 ├── Collection.php      # Array wrapper
 ├── Base.php            # Top-level parent class
@@ -182,20 +188,28 @@ Built-in validators in `Roulette/Validator/`:
 
 ### HasOne
 ```php
-// User has one Profile
+// User has one Profile (Profile.user_id = User.id)
 'profile' => ['type' => 'hasOne', 'model' => 'App\Profile', 'foreignKey' => 'user_id']
 ```
 
 ### HasMany
 ```php
-// User has many Posts
+// User has many Posts (Post.user_id = User.id)
 'posts' => ['type' => 'hasMany', 'model' => 'App\Post', 'foreignKey' => 'user_id']
+```
+
+### BelongsTo
+
+```php
+// Post belongs to User (Post.user_id → User.id)
+'author' => ['type' => 'belongsTo', 'model' => 'App\User', 'foreignKey' => 'user_id']
 ```
 
 Load associated data:
 ```php
 $user = User::load('id');
-$posts = $user->lookup('posts'); // Store of Post models
+$posts  = $user->lookup('posts');   // Store of Post models
+$author = $post->lookup('author');  // single User model
 ```
 
 ---
@@ -246,7 +260,7 @@ Adapters handle: database connections, query execution, transaction management.
 
 | File | Purpose |
 |------|---------|
-| `Model/Model.php` | Core ORM logic: CRUD, fields, associations, policies |
+| `Model.php` | Core ORM logic: CRUD, fields, associations, policies |
 | `Data/Value.php` | Field value lifecycle management |
 | `Actor.php` | Authorization checking (can/able methods) |
 | `Collection.php` | Array wrapper with functional methods |
@@ -276,7 +290,7 @@ Run all tests:
 
 ```bash
 ./vendor/bin/phpunit --no-coverage
-# Expected: 336+ tests, 0 failures, 0 skipped, 0 deprecations
+# Expected: 357 tests, 0 failures, 0 skipped, 0 deprecations
 ```
 
 ---
