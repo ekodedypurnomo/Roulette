@@ -29,9 +29,12 @@ Roulette is a sophisticated PHP ORM framework that bridges objects and relationa
 | **Actor** | Authorization agent; checks policies before operations |
 | **QueryBuilder** | Constructs SELECT/INSERT/UPDATE/DELETE queries fluently |
 | **Validator** | ~20+ validator types (Email, UUID, Unique, Custom, etc.) |
-| **Association** | Manages HasOne/HasMany relationships between models |
+| **Association** | Manages HasOne/HasMany/BelongsTo relationships between models |
 | **Policy** | Authorization rules; tied to models and callable by Actor |
 | **Collection** | Array-like object with functional methods (map, filter, each) |
+| **Schema** | DDL generator — `sql()`, `diff()`, `migrate()` from model prototype |
+| **N1Detector** | Opt-in N+1 query detector for association lazy-loading |
+| **EventSourceable** | Opt-in audit trail trait — captures create/update/delete diffs |
 
 ### Directory Structure
 
@@ -63,8 +66,11 @@ Roulette/
 │   ├── Codeigniter3.php       # CodeIgniter 3 integration
 │   └── Phalcon3.php           # Phalcon 3 integration
 ├── Contract/           # Interfaces (Jsonable, Arrayable)
-├── Mixin/              # Traits (Observable, Configurable)
-├── Model.php           # Main Model base class (CRUD, fields, associations, policies)
+├── Mixin/              # Traits (Observable, Configurable, EventSourceable)
+│   └── EventSourceable.php    # Opt-in audit trail trait
+├── Model.php           # Main Model base class (CRUD, fields, associations, policies, scopes)
+├── Schema.php          # DDL generator: sql(), diff(), migrate()
+├── N1Detector.php      # N+1 query detection for association lazy-loading
 ├── Actor.php           # Authorization agent
 ├── Collection.php      # Array wrapper
 ├── Base.php            # Top-level parent class
@@ -260,12 +266,15 @@ Adapters handle: database connections, query execution, transaction management.
 
 | File | Purpose |
 |------|---------|
-| `Model.php` | Core ORM logic: CRUD, fields, associations, policies |
+| `Model.php` | Core ORM logic: CRUD, fields, associations, policies, global scopes |
+| `Schema.php` | DDL generator: sql() / diff() / migrate() |
+| `N1Detector.php` | N+1 detection: enable(), setThreshold(), onDetect() |
+| `Mixin/EventSourceable.php` | Audit trail trait: save/destroy hooks, getHistory() |
 | `Data/Value.php` | Field value lifecycle management |
 | `Actor.php` | Authorization checking (can/able methods) |
 | `Collection.php` | Array wrapper with functional methods |
 | `Query/Builder.php` | Query construction API |
-| `Model/Field/Field.php` | Field schema & transformations |
+| `Model/Field/Field.php` | Field schema & transformations (incl. `compute` for virtual fields) |
 | `Validator/ValidatorAbstract.php` | Base validator class |
 
 ---
@@ -290,7 +299,7 @@ Run all tests:
 
 ```bash
 ./vendor/bin/phpunit --no-coverage
-# Expected: 357 tests, 0 failures, 0 skipped, 0 deprecations
+# Expected: 390 tests, 0 failures, 0 skipped, 0 deprecations
 ```
 
 ---
@@ -311,6 +320,21 @@ Run all tests:
 
 **Output API response:**
 → `$record->getData(['fields' => [...], 'relations' => [...]])`
+
+**Add a global query scope:**
+→ Declare `'scopes' => ['name' => fn($qop) => $qop->where([...])]` in prototype; bypass with `Model::withoutScope('name')::find()`
+
+**Add a computed/virtual field:**
+→ `['name' => 'full_name', 'compute' => fn($record) => ...]` in prototype fields; never persisted to DB
+
+**Generate / sync DB schema:**
+→ `Schema::sql(Model::class)` — DDL preview; `Schema::migrate(Model::class)` — apply to DB
+
+**Add audit trail to a model:**
+→ `use EventSourceable` in the model class; requires `model_events` table; read via `$record->getHistory()`
+
+**Detect N+1 queries:**
+→ `N1Detector::enable()` then `N1Detector::onDetect(fn($key, $count) => ...)` during development
 
 ---
 
