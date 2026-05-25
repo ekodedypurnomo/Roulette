@@ -9,27 +9,9 @@ composer.lock
 .phpunit.result.cache
 .phpunit.cache/
 
-# phpDocumentor generated output
+# phpDocumentor
+phpdoc*.xml
 /docs/phpdoc-cache-*/
-/docs/structure.xml
-/docs/classes/
-/docs/classes.svg
-/docs/css/
-/docs/deprecated.html
-/docs/errors.html
-/docs/files/
-/docs/font/
-/docs/graph_class.html
-/docs/graphs/
-/docs/images/
-/docs/img/
-/docs/index.html
-/docs/js/
-/docs/markers.html
-/docs/namespaces/
-/docs/packages/
-/docs/reports/
-/docs/source/
 
 # Windows thumbnail cache files
 Thumbs.db
