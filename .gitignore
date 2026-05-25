@@ -9,6 +9,10 @@ composer.lock
 .phpunit.result.cache
 .phpunit.cache/
 
+# phpDocumentor generated output
+/docs/phpdoc-cache-*/
+/docs/structure.xml
+
 # Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
