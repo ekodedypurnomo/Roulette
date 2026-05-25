@@ -584,6 +584,24 @@ class Laravel5 extends TunelAbstract
         return $this;
     }
 
+    function beginTransaction(): bool
+    {
+        $this->getConnection()->beginTransaction();
+        return true;
+    }
+
+    function commit(): bool
+    {
+        $this->getConnection()->commit();
+        return true;
+    }
+
+    function rollback(): bool
+    {
+        $this->getConnection()->rollBack();
+        return true;
+    }
+
     protected function operateTruncate(Operation $operation): static
     {
         $option = $operation->getOption();

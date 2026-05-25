@@ -584,6 +584,21 @@ class Phalcon3 extends TunelAbstract
         return $this;
     }
 
+    function beginTransaction(): bool
+    {
+        return (bool) $this->getConnection()->begin();
+    }
+
+    function commit(): bool
+    {
+        return (bool) $this->getConnection()->commit();
+    }
+
+    function rollback(): bool
+    {
+        return (bool) $this->getConnection()->rollback();
+    }
+
     protected function operateTruncate(Operation $operation): static
     {
         $option = $operation->getOption();

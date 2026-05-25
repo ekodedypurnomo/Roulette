@@ -95,4 +95,19 @@ abstract class TunelAbstract extends Base implements Tunel
      * @param  callable  $callback
      */
     abstract function operate(Operation $operation, ?callable $callback = null): mixed;
+
+    function beginTransaction(): bool
+    {
+        return false;
+    }
+
+    function commit(): bool
+    {
+        return false;
+    }
+
+    function rollback(): bool
+    {
+        return false;
+    }
 }

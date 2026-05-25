@@ -193,6 +193,21 @@ class SqliteTunel extends TunelAbstract
         return [$sql, $params];
     }
 
+    public function beginTransaction(): bool
+    {
+        return $this->connection->beginTransaction();
+    }
+
+    public function commit(): bool
+    {
+        return $this->connection->commit();
+    }
+
+    public function rollback(): bool
+    {
+        return $this->connection->rollBack();
+    }
+
     private function buildWhere(array $conditions): array
     {
         if (empty($conditions)) {

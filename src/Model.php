@@ -1174,6 +1174,29 @@ class Model extends Base
 
 
 
+    /////////////////
+    // TRANSACTION //
+    /////////////////
+
+    /**
+     * Wrap a callable in a database transaction.
+     * Commits on success; rolls back and re-throws on exception.
+     * @throws \Throwable
+     */
+    static function transaction(callable $fn): mixed
+    {
+        $tunel = Operation::getOperationTunel();
+        $tunel->beginTransaction();
+        try {
+            $result = $fn();
+            $tunel->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            $tunel->rollback();
+            throw $e;
+        }
+    }
+
     ////////////////
     // ASSOCIATON //
     ////////////////

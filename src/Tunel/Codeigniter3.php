@@ -169,4 +169,22 @@ class Codeigniter3 extends TunelAbstract
         return $result;
     }
 
+    function beginTransaction(): bool
+    {
+        $this->getConnection()->trans_begin();
+        return true;
+    }
+
+    function commit(): bool
+    {
+        $this->getConnection()->trans_commit();
+        return true;
+    }
+
+    function rollback(): bool
+    {
+        $this->getConnection()->trans_rollback();
+        return true;
+    }
+
 }
