@@ -39,8 +39,8 @@ class HasMany extends AssociationAbstract
         $record = $relation->getRecord();
         $recordId = $record->getId();
 
-        $relation->associated = true;
-        $relation->resource = $model::find([$field => $recordId]);
+        $relation->setAssociated(true);
+        $relation->setResource($model::find([$field => $recordId]));
 
         return $this;
     }
@@ -50,13 +50,13 @@ class HasMany extends AssociationAbstract
         $modelCollection = new Store();
         $model = $this->getModel();
 
-        foreach ($reload as $key => $data)
+        foreach ($data as $key => $item)
         {
-            $modelCollection->add(new $model($data));
+            $modelCollection->add(new $model($item));
         }
 
-        $relation->associated = true;
-        $relation->resource = $modelCollection;
+        $relation->setAssociated(true);
+        $relation->setResource($modelCollection);
 
         return $this;
     }

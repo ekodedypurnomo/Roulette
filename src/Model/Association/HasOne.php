@@ -38,8 +38,8 @@ class HasOne extends AssociationAbstract
         $record = $relation->getRecord();
         $foreign = $record->get($field, false);
 
-        $relation->associated = true;
-        $relation->resource = $model::load($foreign);
+        $relation->setAssociated(true);
+        $relation->setResource($model::load($foreign));
 
         return $this;
     }
@@ -47,8 +47,8 @@ class HasOne extends AssociationAbstract
     function patchRelation(Relation $relation, mixed $data = null): static
     {
         $model = $this->getModel();
-        $relation->associated = true;
-        $relation->resource = new $model($data);
+        $relation->setAssociated(true);
+        $relation->setResource(new $model($data));
 
         return $this;
     }

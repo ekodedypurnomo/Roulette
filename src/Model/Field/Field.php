@@ -91,6 +91,18 @@ class Field extends Base
     protected bool $readOnly = false;
 
     /**
+     * Field type name (maps to a built-in validator, e.g. 'string', 'integer', 'email').
+     * Used by Schema to determine the DDL column type.
+     */
+    protected ?string $type = null;
+
+    /**
+     * Whether null is a valid value for this field.
+     * Defaults to null (Schema treats null as true/nullable).
+     */
+    protected ?bool $nullable = null;
+
+    /**
      * Default value for first initializing data in the Model.
      *
      * @var String
@@ -388,9 +400,9 @@ class Field extends Base
      *
      * @return Boolean
      */
-    function isSelectable(): mixed
+    function isSelectable(): bool
     {
-        return $this->getOperation()->getSelectPermission();
+        return (bool) $this->getOperation()->getSelectPermission();
     }
 
     function setSelectable(mixed $value = true): static
@@ -404,9 +416,9 @@ class Field extends Base
      *
      * @return Boolean
      */
-    function isInsertable(): mixed
+    function isInsertable(): bool
     {
-        return $this->getOperation()->getInsertPermission();
+        return (bool) $this->getOperation()->getInsertPermission();
     }
 
     function setInsertable(mixed $value = true): static
@@ -420,9 +432,9 @@ class Field extends Base
      *
      * @return Boolean
      */
-    function isUpdatable(): mixed
+    function isUpdatable(): bool
     {
-        return $this->getOperation()->getUpdatePermission();
+        return (bool) $this->getOperation()->getUpdatePermission();
     }
 
     function setUpdatable(mixed $value = true): static
@@ -436,9 +448,9 @@ class Field extends Base
      *
      * @return Boolean
      */
-    function isDeletable(): mixed
+    function isDeletable(): bool
     {
-        return $this->getOperation()->getDeletePermission();
+        return (bool) $this->getOperation()->getDeletePermission();
     }
 
     function setDeletable(mixed $value = true): static

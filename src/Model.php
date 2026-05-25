@@ -1128,7 +1128,7 @@ class Model extends Base
             })->execute();
 
             # success indicator is by non-zero affected rows
-            $success = (boolean)$operation->affectedRows;
+            $success = (boolean)$operation->getAffectedRows();
 
             # make the record as a ghost if destroyed
             if ($success)
@@ -1165,17 +1165,17 @@ class Model extends Base
                     'name' => $name,
                     'type' => 'hasOne'
                 ]);
-                $type = $v->get('type');
+                $type = strtoupper((string) $v->get('type'));
 
-                if ($type == 'hasMany' || $type == AssociationAbstract::HASMANY)
+                if ($type === HasMany::TYPE)
                 {
                     $a = HasMany::create($v->getAll(['except' => ['type']]));
                 }
-                elseif ($type == 'hasOne' || $type == AssociationAbstract::HASONE)
+                elseif ($type === HasOne::TYPE)
                 {
                     $a = HasOne::create($v->getAll(['except' => ['type']]));
                 }
-                elseif ($type == 'belongsTo' || $type == AssociationAbstract::BELONGSTO)
+                elseif ($type === BelongsTo::TYPE)
                 {
                     $a = BelongsTo::create($v->getAll(['except' => ['type']]));
                 }

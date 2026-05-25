@@ -29,30 +29,10 @@ use Roulette\Model;
  */
 class Relation extends Base
 {
-    /**
-     * expresses the relationship between the different models
-     *
-     * @var null
-     */
-    public mixed $association = null;
-
-    /**
-     * Check is true or false model has association
-     * @var boolean
-     */
-    public bool $associated = false;
-
-    /**
-     * a collection of some of the fields are complete
-     * @var null
-     */
-    public mixed $record = null;
-
-    /**
-     * link data from record
-     * @var null
-     */
-    public mixed $resource = null;
+    protected mixed $association = null;
+    protected bool $associated = false;
+    protected mixed $record = null;
+    protected mixed $resource = null;
 
     /**
      * __construct for function creates a new object field
@@ -104,6 +84,18 @@ class Relation extends Base
     function getResource(): mixed
     {
         return $this->resource;
+    }
+
+    function setAssociated(bool $value): static
+    {
+        $this->associated = $value;
+        return $this;
+    }
+
+    function setResource(mixed $value): static
+    {
+        $this->resource = $value;
+        return $this;
     }
 
     function reset(): static

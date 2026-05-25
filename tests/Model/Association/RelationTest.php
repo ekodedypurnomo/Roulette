@@ -49,8 +49,8 @@ class RelationTest extends TestCase
     public function testReset(): void
     {
         $relation = new Relation($this->assoc, $this->user);
-        $relation->associated = true;
-        $relation->resource   = new UserModel();
+        $relation->setAssociated(true);
+        $relation->setResource(new UserModel());
         $relation->reset();
         $this->assertFalse($relation->isAssociated(), 'associated reset to false');
         $this->assertNull($relation->getResource(), 'resource reset to null');

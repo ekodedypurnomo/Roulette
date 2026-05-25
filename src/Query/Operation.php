@@ -407,6 +407,21 @@ class Operation extends Base
         return $this->result;
     }
 
+    function getQuery(): mixed
+    {
+        return $this->query;
+    }
+
+    function getQueryRaw(): mixed
+    {
+        return $this->queryRaw;
+    }
+
+    function getAffectedRows(): mixed
+    {
+        return $this->affectedRows;
+    }
+
     /**
      * check whether the data error
      * @return [type] [description]

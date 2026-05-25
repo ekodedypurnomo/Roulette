@@ -102,6 +102,8 @@ trait Observable
      */
     function trigger(?string $eventName = null, array $params = []): bool
     {
+        if (!$this->runEvents) return true;
+
         if ($this->hasEvent($eventName) && $this->eventEnabled($eventName))
         {
             if (array_key_exists($eventName, $this->listeners) && is_array($this->listeners[$eventName]))
