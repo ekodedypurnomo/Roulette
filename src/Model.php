@@ -30,6 +30,8 @@ use Roulette\Model\Properties;
 use Roulette\Model\ViewOption;
 use Roulette\Query\Builder as QueryBuilder;
 use Roulette\Query\Operation;
+use Roulette\Exception\ModelNotFoundException;
+use Roulette\Exception\ValidationException;
 use Roulette\Data\Option as DataOption;
 use Roulette\Data\Value as DataValue;
 use Roulette\Actor;
@@ -356,6 +358,19 @@ class Model extends Base
         }
 
         return null;
+    }
+
+    /**
+     * Like load() but throws ModelNotFoundException if the record does not exist.
+     * @throws ModelNotFoundException
+     */
+    static function loadOrFail(mixed $id = null): static
+    {
+        $record = static::load($id);
+        if ($record === null) {
+            throw new ModelNotFoundException(static::class, $id);
+        }
+        return $record;
     }
 
     /**
@@ -1104,6 +1119,18 @@ class Model extends Base
         }
 
         return $success;
+    }
+
+    /**
+     * Like save() but throws ValidationException when validation fails.
+     * @throws ValidationException
+     */
+    function saveOrFail(bool $validate = true, bool $recheck = true): bool
+    {
+        if ($validate && !$this->validate()->isValid()) {
+            throw new ValidationException($this->getErrorMessages(true));
+        }
+        return (bool) $this->save(null, false, $recheck);
     }
 
     /**
