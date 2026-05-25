@@ -79,6 +79,12 @@ class Model extends Base
     static private array $_pendingDisabledScopes = [];
 
     /**
+     * Eager-load relations for the next find()/load() call, keyed by class name.
+     * Consumed (cleared) after each query so they never leak across calls.
+     */
+    static private array $_pendingEagerLoads = [];
+
+    /**
      * @ignore
      */
     static function prototype(mixed ...$args): mixed
@@ -392,6 +398,7 @@ class Model extends Base
         $field = array_flip(static::getFields()->filterSelectable()->getSource());
         $condition = static::getFields()->mapToSource($condition);
         $disabled = static::consumeDisabledScopes();
+        $eagerLoads = static::consumeEagerLoads();
 
         $operation = Operation::create('select')->buildQuery(function($qop) use($table, $field, $condition, $take, $skip, $order, $group, $having, $disabled, $class)
         {
@@ -410,6 +417,10 @@ class Model extends Base
             $r = new $class((array)$v, true);
             $store->add($r);
         });
+
+        if (!empty($eagerLoads)) {
+            static::applyEagerLoads($store, $eagerLoads);
+        }
 
         return $store;
     }
@@ -453,6 +464,149 @@ class Model extends Base
     {
         self::$_pendingDisabledScopes[static::class] = ['*'];
         return static::class;
+    }
+
+    /**
+     * Eager-load one or more associations for the immediately following find()/load().
+     * Returns the class name so calls can be chained: User::with('posts')::find().
+     *
+     * @param  string|array $relations  Relation name(s) as declared in prototype 'associations'.
+     * @return string                   The calling class name (for static chaining).
+     */
+    static function with(string|array $relations): string
+    {
+        $flat = is_array($relations) ? $relations : [$relations];
+        self::$_pendingEagerLoads[static::class] = array_merge(
+            self::$_pendingEagerLoads[static::class] ?? [],
+            $flat
+        );
+        return static::class;
+    }
+
+    /**
+     * Consume (read and clear) the pending eager-load list for this class.
+     */
+    private static function consumeEagerLoads(): array
+    {
+        $class = static::class;
+        $loads = self::$_pendingEagerLoads[$class] ?? [];
+        unset(self::$_pendingEagerLoads[$class]);
+        return $loads;
+    }
+
+    /**
+     * Batch-load eager associations onto a Store of records.
+     * For each relation name, executes a single IN query instead of N individual queries.
+     */
+    private static function applyEagerLoads(Store $store, array $relationNames): void
+    {
+        if (empty($relationNames) || $store->count() === 0) {
+            return;
+        }
+
+        $associations = static::getAssociations();
+
+        foreach ($relationNames as $name) {
+            $assoc = $associations->get($name);
+            if (!$assoc) continue;
+
+            $assocModel = $assoc->getModel();
+            $field      = $assoc->getField();
+            $type       = $assoc->getType();
+
+            if ($type === HasMany::TYPE || $type === HasOne::TYPE) {
+                // Collect parent IDs
+                $ids = [];
+                $store->each(function($record) use (&$ids) {
+                    $id = $record->getId();
+                    if ($id !== null) $ids[] = $id;
+                });
+
+                if (empty($ids)) continue;
+
+                // Resolve the DB source column name for the foreign key field
+                $fieldColumn = array_key_first($assocModel::getFields()->mapToSource([$field => '']));
+                $relatedModels = static::batchFindByField($assocModel, $fieldColumn, $ids);
+
+                // Group related records by their foreign key value
+                $grouped = [];
+                foreach ($relatedModels as $r) {
+                    $fk = $r->get($field, false);
+                    $grouped[$fk][] = $r;
+                }
+
+                // Assign pre-loaded results to each record's relation
+                $store->each(function($record) use ($name, $assoc, $type, $grouped, $assocModel) {
+                    $id      = $record->getId();
+                    $items   = $grouped[$id] ?? [];
+                    $rel     = new \Roulette\Model\Association\Relation($assoc, $record);
+
+                    $rel->setAssociated(true);
+
+                    if ($type === HasMany::TYPE) {
+                        $relStore = new Store(null, $assocModel);
+                        foreach ($items as $r) $relStore->add($r);
+                        $rel->setResource($relStore);
+                    } else {
+                        $rel->setResource($items[0] ?? null);
+                    }
+
+                    $record->getRelations()->set($name, $rel);
+                });
+
+            } elseif ($type === BelongsTo::TYPE) {
+                // Collect foreign key values from children
+                $fkValues = [];
+                $store->each(function($record) use ($field, &$fkValues) {
+                    $fk = $record->get($field, false);
+                    if ($fk !== null) $fkValues[] = $fk;
+                });
+
+                if (empty($fkValues)) continue;
+
+                $fkValues  = array_unique($fkValues);
+                $pk        = $assocModel::getPrimary();
+                $pkColumn  = array_key_first($assocModel::getFields()->mapToSource([$pk => '']));
+                $parents   = static::batchFindByField($assocModel, $pkColumn, $fkValues);
+
+                // Index by PK
+                $indexed = [];
+                foreach ($parents as $r) {
+                    $indexed[$r->getId()] = $r;
+                }
+
+                // Assign to each record
+                $store->each(function($record) use ($name, $assoc, $field, $indexed) {
+                    $fk  = $record->get($field, false);
+                    $rel = new \Roulette\Model\Association\Relation($assoc, $record);
+                    $rel->setAssociated(true);
+                    $rel->setResource($indexed[$fk] ?? null);
+                    $record->getRelations()->set($name, $rel);
+                });
+            }
+        }
+    }
+
+    /**
+     * Execute a single IN query directly, bypassing mapToSource so we can use whereIn().
+     * Returns an array of instantiated model objects.
+     */
+    private static function batchFindByField(string $modelClass, string $fieldColumn, array $ids): array
+    {
+        $table        = $modelClass::getTable();
+        $selectFields = array_flip($modelClass::getFields()->filterSelectable()->getSource());
+
+        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $selectFields, $fieldColumn, $ids) {
+            $qop->table($table)
+                ->select($selectFields)
+                ->whereIn($fieldColumn, $ids);
+        })->execute();
+
+        $results = [];
+        foreach ($operation->getRecords() as $row) {
+            $results[] = new $modelClass((array) $row, true);
+        }
+        return $results;
     }
 
     /**

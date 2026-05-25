@@ -111,6 +111,11 @@ abstract class AssociationAbstract extends Base
         return $this->name;
     }
 
+    function getType(): ?string
+    {
+        return static::TYPE;
+    }
+
     /**
      * get the foreign field of the assocaited model
      * @return String [description]
