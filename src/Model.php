@@ -71,6 +71,12 @@ class Model extends Base
     static protected ?Prototype $prototype = null;
 
     /**
+     * Scopes disabled for the next find()/load() call, keyed by class name.
+     * Consumed (cleared) after each query so they never leak across calls.
+     */
+    static private array $_pendingDisabledScopes = [];
+
+    /**
      * @ignore
      */
     static function prototype(mixed ...$args): mixed
@@ -332,12 +338,15 @@ class Model extends Base
         $condition = static::getFields()->mapToSource(
             is_array($id) ? $id : [static::getPrimary() => $id]
             );
+        $disabled = static::consumeDisabledScopes();
+        $class = static::class;
 
-        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $field, $condition)
+        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $field, $condition, $disabled, $class)
         {
             $qop->table($table)
                 ->select($field)
                 ->where($condition);
+            $class::applyScopes($qop, $disabled);
         })->execute();
 
         if ($operation->getRecord())
@@ -367,8 +376,9 @@ class Model extends Base
         $table = static::getTable();
         $field = array_flip(static::getFields()->filterSelectable()->getSource());
         $condition = static::getFields()->mapToSource($condition);
+        $disabled = static::consumeDisabledScopes();
 
-        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $field, $condition, $take, $skip, $order, $group, $having)
+        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $field, $condition, $take, $skip, $order, $group, $having, $disabled, $class)
         {
             $qop->table($table)
                 ->select($field)
@@ -377,6 +387,7 @@ class Model extends Base
                 ->skip($skip)
                 ->groupBy($group)
                 ->having($having);
+            $class::applyScopes($qop, $disabled);
         })->execute();
 
         Collection::create($operation->getRecords())->each(function($v, $k, $all, $c) use($class, $store)
@@ -399,6 +410,69 @@ class Model extends Base
     static function filter(mixed $registeredFilter = null): string
     {
         return static::class;
+    }
+
+    /**
+     * Disable one or more named scopes for the immediately following find()/load().
+     * Returns the class name so calls can be chained: User::withoutScope('active')::find([]).
+     *
+     * @param  string|array ...$names  Scope names to skip, or a single array of names.
+     * @return string                  The calling class name (for static chaining).
+     */
+    static function withoutScope(string|array ...$names): string
+    {
+        $flat = [];
+        foreach ($names as $n) {
+            $flat = array_merge($flat, is_array($n) ? $n : [$n]);
+        }
+        self::$_pendingDisabledScopes[static::class] = $flat;
+        return static::class;
+    }
+
+    /**
+     * Disable ALL scopes for the immediately following find()/load().
+     *
+     * @return string  The calling class name (for static chaining).
+     */
+    static function withoutScopes(): string
+    {
+        self::$_pendingDisabledScopes[static::class] = ['*'];
+        return static::class;
+    }
+
+    /**
+     * Consume (read and clear) the pending disabled-scope list for this class.
+     * Must be called at the start of every find()/load() so state never carries over.
+     */
+    private static function consumeDisabledScopes(): array
+    {
+        $class = static::class;
+        $disabled = self::$_pendingDisabledScopes[$class] ?? [];
+        unset(self::$_pendingDisabledScopes[$class]);
+        return $disabled;
+    }
+
+    /**
+     * Apply all prototype-declared scopes that are not in the disabled list.
+     * A disabled list containing '*' skips every scope.
+     *
+     * Scopes are declared in the prototype as:
+     *   'scopes' => ['active' => fn($qop) => $qop->where(['active' => 1])]
+     *
+     * @param  mixed  $qop      The query-option builder passed inside buildQuery().
+     * @param  array  $disabled Names of scopes to skip (or ['*'] to skip all).
+     */
+    protected static function applyScopes(mixed $qop, array $disabled = []): void
+    {
+        if (in_array('*', $disabled)) return;
+
+        $scopes = static::prototype()->get('scopes');
+        if (!is_array($scopes)) return;
+
+        foreach ($scopes as $name => $callable) {
+            if (in_array($name, $disabled)) continue;
+            if (is_callable($callable)) call_user_func($callable, $qop);
+        }
     }
 
 
@@ -603,6 +677,14 @@ class Model extends Base
                 $data[$alias] = $this->get($key, $render);
             }
             return $data;
+        }
+
+        if ($f = static::getFields()->get($field))
+        {
+            if ($f->isComputed())
+            {
+                return call_user_func($f->getCompute(), $this);
+            }
         }
 
         if ($fieldValue = $this->getValue($field))

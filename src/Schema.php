@@ -159,6 +159,7 @@ class Schema
         $cols    = [];
 
         foreach ($modelClass::getFields() as $field) {
+            if ($field->isComputed()) continue;
             $cols[] = [
                 'name'     => $field->getSource(),
                 'type'     => (string) ($field->getConfig('type') ?? ''),

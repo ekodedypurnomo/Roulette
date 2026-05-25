@@ -136,6 +136,13 @@ class Field extends Base
 
     protected bool $unique = false;
 
+    /**
+     * Compute callable for virtual/computed fields.
+     * When set, get() returns the result of calling this with the record instance.
+     * The field is never read from or written to the database.
+     */
+    protected mixed $compute = null;
+
     protected mixed $uniqueValidator = null;
 
     protected mixed $error = null;
@@ -157,7 +164,7 @@ class Field extends Base
         ]);
 
         $this->configure($configs->getAll(), [
-            'except' => ['permission', 'operation', 'select', 'insert', 'update', 'delete'] // need to config it manualy later
+            'except' => ['permission', 'operation', 'select', 'insert', 'update', 'delete', 'compute'] // need to config it manualy later
         ]);
 
         # configure validation
@@ -177,6 +184,15 @@ class Field extends Base
         if ($configs->has('insert')) $this->setInsertable($configs->get('insert'));
         if ($configs->has('update')) $this->setUpdatable($configs->get('update'));
         if ($configs->has('delete')) $this->setDeletable($configs->get('delete'));
+
+        # configure computed field
+        if ($configs->has('compute') && is_callable($configs->get('compute')))
+        {
+            $this->compute = $configs->get('compute');
+            $this->setSelectable(false);
+            $this->setInsertable(false);
+            $this->setUpdatable(false);
+        }
     }
 
     /**
@@ -256,6 +272,16 @@ class Field extends Base
     {
         $this->default = $default;
         return $this;
+    }
+
+    function isComputed(): bool
+    {
+        return is_callable($this->compute);
+    }
+
+    function getCompute(): mixed
+    {
+        return $this->compute;
     }
 
     /**

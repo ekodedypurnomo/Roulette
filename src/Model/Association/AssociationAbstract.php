@@ -22,6 +22,7 @@ use Roulette\Model;
 use Roulette\Model\Field\Field;
 use Roulette\Model\Store;
 use Roulette\Model\Association\Relation;
+use Roulette\N1Detector;
 
 use Roulette\Mixin\Configurable;
 use Roulette\Mixin\HasModel;
@@ -160,9 +161,10 @@ abstract class AssociationAbstract extends Base
         {
             $this->resetRelation($relation);
         }
-        # indicate to reload
+        # explicit reload — always hits DB, always tracked for N+1
         elseif ($reload === true)
         {
+            N1Detector::record(get_class($record), $this->getName());
             $this->loadRelation($relation);
         }
         # indicate if reload is collection of record|array
@@ -170,6 +172,12 @@ abstract class AssociationAbstract extends Base
         elseif (is_array($reload))
         {
             $this->patchRelation($relation, $value = $reload);
+        }
+        # first lazy-load (not yet associated) — also tracked for N+1
+        elseif (!$relation->isAssociated())
+        {
+            N1Detector::record(get_class($record), $this->getName());
+            $this->loadRelation($relation);
         }
 
         return $relation;
