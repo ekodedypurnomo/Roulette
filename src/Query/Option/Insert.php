@@ -30,10 +30,42 @@ class Insert extends OptionAbstract
 
     static string $action = 'INSERT';
 
+    protected bool $ignore = false;
+
+    /** Columns that form the unique key for ON CONFLICT resolution. */
+    protected array $conflictTarget = [];
+
+    /** Columns to update on conflict (empty = update all non-key columns). */
+    protected array $conflictUpdate = [];
+
+    function ignore(bool $ignore = true): static
+    {
+        $this->ignore = $ignore;
+        return $this;
+    }
+
+    function isIgnore(): bool
+    {
+        return $this->ignore;
+    }
+
+    function onConflict(array $target, array $update = []): static
+    {
+        $this->conflictTarget = $target;
+        $this->conflictUpdate = $update;
+        return $this;
+    }
+
+    function getConflictTarget(): array { return $this->conflictTarget; }
+    function getConflictUpdate(): array { return $this->conflictUpdate; }
+
     function reset(): static
     {
         $this->resetTable();
         $this->resetPatch();
+        $this->ignore        = false;
+        $this->conflictTarget = [];
+        $this->conflictUpdate = [];
         return $this;
     }
 }

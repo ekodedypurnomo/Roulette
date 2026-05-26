@@ -500,6 +500,75 @@ class Model extends Base
         return (int) $operation->getAffectedRows();
     }
 
+    ////////////
+    // UPSERT //
+    ////////////
+
+    /**
+     * Bulk-insert multiple rows, silently skipping rows that violate a unique
+     * constraint (INSERT OR IGNORE / INSERT IGNORE).
+     * Returns the number of successfully inserted rows.
+     *
+     * @param array $rows  Array of associative arrays keyed by field name.
+     */
+    static function insertOrIgnore(array $rows): int
+    {
+        $inserted = 0;
+        $table    = static::getTable();
+
+        foreach ($rows as $rowData) {
+            $record = new static($rowData);
+            $data   = $record->getDataToInsert();
+
+            if (empty($data)) continue;
+
+            $operation = Operation::create('insert')->buildQuery(function($qop) use($table, $data) {
+                $qop->table($table)->set($data)->ignore(true);
+            })->execute();
+
+            if ($operation->isSuccess() && $operation->getAffectedRows() > 0) $inserted++;
+        }
+
+        return $inserted;
+    }
+
+    /**
+     * Insert or update rows based on a set of unique (conflict) columns.
+     * Rows that conflict on $uniqueFields are updated with $updateFields values
+     * (or all non-key fields when $updateFields is empty).
+     * Returns the number of rows inserted or updated.
+     *
+     * @param array    $rows          Array of associative arrays keyed by field name.
+     * @param string[] $uniqueFields  Model field names that form the unique key.
+     * @param string[] $updateFields  Fields to update on conflict; default = all non-key.
+     */
+    static function upsert(array $rows, array $uniqueFields, array $updateFields = []): int
+    {
+        $affected  = 0;
+        $table     = static::getTable();
+        $fields    = static::getFields();
+
+        $uniqueCols = $fields->mapToSource(array_fill_keys($uniqueFields, null));
+        $uniqueCols = array_keys($uniqueCols);
+
+        $updateCols = empty($updateFields) ? [] : array_keys($fields->mapToSource(array_fill_keys($updateFields, null)));
+
+        foreach ($rows as $rowData) {
+            $record = new static($rowData);
+            $data   = $record->getDataToInsert();
+
+            if (empty($data)) continue;
+
+            $operation = Operation::create('insert')->buildQuery(function($qop) use($table, $data, $uniqueCols, $updateCols) {
+                $qop->table($table)->set($data)->onConflict($uniqueCols, $updateCols);
+            })->execute();
+
+            if ($operation->isSuccess()) $affected += (int) $operation->getAffectedRows();
+        }
+
+        return $affected;
+    }
+
     ////////////////////////////
     // INCREMENT / DECREMENT  //
     ////////////////////////////

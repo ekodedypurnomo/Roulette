@@ -143,15 +143,31 @@ class SqliteTunel extends TunelAbstract
 
     private function buildInsert(Insert $option): array
     {
-        $table = $option->getTable();
-        $patch = $option->getPatch();
+        $table  = $option->getTable();
+        $patch  = $option->getPatch();
+        $ignore = $option->isIgnore();
 
         $columns      = array_keys($patch);
         $placeholders = implode(', ', array_fill(0, count($columns), '?'));
         $cols         = implode(', ', array_map(fn($c) => "\"$c\"", $columns));
+        $params       = array_values($patch);
 
-        $sql    = "INSERT INTO \"$table\" ($cols) VALUES ($placeholders)";
-        $params = array_values($patch);
+        $conflictTarget = $option->getConflictTarget();
+        $conflictUpdate = $option->getConflictUpdate();
+
+        if (!empty($conflictTarget)) {
+            // ON CONFLICT(...) DO UPDATE SET ...
+            $targetCols  = implode(', ', array_map(fn($c) => "\"$c\"", $conflictTarget));
+            $updateCols  = empty($conflictUpdate) ? $columns : $conflictUpdate;
+            $updateCols  = array_diff($updateCols, $conflictTarget); // skip key cols
+            $updateParts = array_map(fn($c) => "\"$c\" = excluded.\"$c\"", $updateCols);
+            $sql = "INSERT INTO \"$table\" ($cols) VALUES ($placeholders)"
+                 . " ON CONFLICT($targetCols) DO UPDATE SET " . implode(', ', $updateParts);
+        } elseif ($ignore) {
+            $sql = "INSERT OR IGNORE INTO \"$table\" ($cols) VALUES ($placeholders)";
+        } else {
+            $sql = "INSERT INTO \"$table\" ($cols) VALUES ($placeholders)";
+        }
 
         return [$sql, $params];
     }
