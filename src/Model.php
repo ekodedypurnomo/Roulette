@@ -24,6 +24,7 @@ use Roulette\Model\Association\AssociationAbstract;
 use Roulette\Model\Association\HasOne;
 use Roulette\Model\Association\HasMany;
 use Roulette\Model\Association\BelongsTo;
+use Roulette\Model\Association\BelongsToMany;
 use Roulette\Model\Operation\Rights;
 use Roulette\Model\Policy;
 use Roulette\Model\Properties;
@@ -806,6 +807,29 @@ class Model extends Base
                     $rel = new \Roulette\Model\Association\Relation($assoc, $record);
                     $rel->setAssociated(true);
                     $rel->setResource($indexed[$fk] ?? null);
+                    $record->getRelations()->set($name, $rel);
+                });
+
+            } elseif ($type === BelongsToMany::TYPE) {
+                // Collect owner IDs
+                $ownerIds = [];
+                $store->each(function($record) use (&$ownerIds) {
+                    $id = $record->getId();
+                    if ($id !== null) $ownerIds[] = $id;
+                });
+
+                if (empty($ownerIds)) continue;
+
+                $grouped = $assoc->batchLoad($assocModel, $ownerIds);
+
+                $store->each(function($record) use ($name, $assoc, $assocModel, $grouped) {
+                    $id       = $record->getId();
+                    $items    = $grouped[$id] ?? [];
+                    $rel      = new \Roulette\Model\Association\Relation($assoc, $record);
+                    $relStore = new Store(null, $assocModel);
+                    foreach ($items as $r) $relStore->add($r);
+                    $rel->setAssociated(true);
+                    $rel->setResource($relStore);
                     $record->getRelations()->set($name, $rel);
                 });
             }
@@ -1608,6 +1632,10 @@ class Model extends Base
                 {
                     $a = BelongsTo::create($v->getAll(['except' => ['type']]));
                 }
+                elseif ($type === BelongsToMany::TYPE)
+                {
+                    $a = BelongsToMany::create($v->getAll(['except' => ['type']]));
+                }
             }
 
             $a->setPivot($class);
@@ -1695,6 +1723,54 @@ class Model extends Base
         {
             return $assoc->getResource();
         }
+    }
+
+    /**
+     * Attach a related record to this record through a BelongsToMany pivot table.
+     *
+     * @param string    $associationName  Name declared in prototype.
+     * @param mixed     $relatedId        Primary key of the related record.
+     * @param array     $pivotData        Extra columns to store on the pivot row.
+     */
+    function attach(string $associationName, mixed $relatedId, array $pivotData = []): bool
+    {
+        $assoc = static::getAssociation($associationName);
+        if (!($assoc instanceof BelongsToMany)) {
+            throw new \InvalidArgumentException("Association '$associationName' is not a belongsToMany.");
+        }
+        return $assoc->attach($this, $relatedId, $pivotData);
+    }
+
+    /**
+     * Remove a pivot row linking this record to $relatedId.
+     * Pass null to detach all related records.
+     *
+     * @param string    $associationName  Name declared in prototype.
+     * @param mixed     $relatedId        Primary key to detach, or null for all.
+     */
+    function detach(string $associationName, mixed $relatedId = null): int
+    {
+        $assoc = static::getAssociation($associationName);
+        if (!($assoc instanceof BelongsToMany)) {
+            throw new \InvalidArgumentException("Association '$associationName' is not a belongsToMany.");
+        }
+        return $assoc->detach($this, $relatedId);
+    }
+
+    /**
+     * Replace all pivot rows for this record with exactly $relatedIds.
+     *
+     * @param string    $associationName  Name declared in prototype.
+     * @param array     $relatedIds       New set of related primary keys.
+     * @param array     $pivotData        Extra pivot columns applied to every new row.
+     */
+    function sync(string $associationName, array $relatedIds, array $pivotData = []): void
+    {
+        $assoc = static::getAssociation($associationName);
+        if (!($assoc instanceof BelongsToMany)) {
+            throw new \InvalidArgumentException("Association '$associationName' is not a belongsToMany.");
+        }
+        $assoc->sync($this, $relatedIds, $pivotData);
     }
 
 
