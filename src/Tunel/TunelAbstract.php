@@ -32,8 +32,8 @@ abstract class TunelAbstract extends Base implements Tunel
     static mixed $frameworkInfo = null;
 
     /**
-     * Get the information about the framework being used
-     * @return boolean
+     * Get the information about the framework being used.
+     * @return mixed
      */
     static function info(): mixed
     {
@@ -45,18 +45,20 @@ abstract class TunelAbstract extends Base implements Tunel
     }
 
     /**
-     * Default value if framework not identified
-     * @return boolean
+     * Detect whether this tunel's framework is currently running.
+     * @return bool
      */
     static function check(): bool
     {
-        # static couldn't be an abstract, so we create default return here
         return false;
     }
 
+    /**
+     * @param  mixed  $model
+     * @return mixed
+     */
     static function model(mixed $model): mixed
     {
-        # static couldn't be an abstract, so we create default return here
         return $model;
     }
 

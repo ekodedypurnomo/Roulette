@@ -13,21 +13,21 @@ declare(strict_types=1);
 namespace Roulette\Tunel;
 
 use Roulette\Tunel\Assembly;
-use Roulette\Tunel\Driver\CodeIgniter3\Executor;
-use Roulette\Tunel\Driver\CodeIgniter3\Logger;
-use Roulette\Tunel\Driver\CodeIgniter3\Transaction;
+use Roulette\Tunel\Driver\CodeIgniter4\Executor;
+use Roulette\Tunel\Driver\CodeIgniter4\Logger;
+use Roulette\Tunel\Driver\CodeIgniter4\Transaction;
 
 /**
- * Roulette tunel for CodeIgniter 3.
+ * Roulette tunel for CodeIgniter 4.
  *
- * Detects a running CI3 application via the CI super-object and the
- * presence of CI3's core classes, then assembles the CI3 drivers.
+ * Detects CI4 via the db_connect() helper, assembles the CI4 drivers,
+ * and registers the tunel. Works with CI4's BaseConnection / BaseBuilder.
  *
  * @package \Roulette\Tunel
  * @since   Version 2.0.0
  * @author  Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */
-class Codeigniter3 extends Assembly
+class CodeIgniter4 extends Assembly
 {
     /** @var mixed Framework info array keyed by 'framework', 'version', 'tunel' */
     static mixed $frameworkInfo = null;
@@ -35,13 +35,11 @@ class Codeigniter3 extends Assembly
     /** @return bool */
     static function check(): bool
     {
-        if (!function_exists('get_instance')) return false;
+        if (!function_exists('db_connect')) return false;
+        if (!defined('APPPATH') || !class_exists('\CodeIgniter\CodeIgniter')) return false;
 
-        $ci = get_instance();
-        if (!$ci || !isset($ci->db)) return false;
-
-        $version = defined('CI_VERSION') ? CI_VERSION : 'unknown';
-        $db      = $ci->db;
+        $db      = db_connect();
+        $version = \CodeIgniter\CodeIgniter::CI_VERSION ?? 'unknown';
         $tunel   = new static(
             new Executor($db),
             new Logger($db),

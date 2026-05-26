@@ -14,30 +14,47 @@ composer require roulette/roulette
 
 ## Connecting to a Database
 
-Roulette uses a **tunel** — an adapter that wraps your framework's DB connection. For standalone use, register a PDO-based tunel directly:
+Roulette uses a **tunel** — an adapter that wraps your framework's DB connection.
 
-```php
-use Roulette\Query\Operation;
-use Roulette\Tunel\SqliteTunel; // or your own adapter
+### Auto-detected frameworks
 
-$pdo   = new PDO('sqlite:database.sqlite');
-$tunel = new SqliteTunel($pdo);
-
-Operation::setOperationTunel($tunel);
-```
-
-For framework integrations, use the built-in adapters in `src/Tunel/`:
-
-| Adapter | Class |
-|---------|-------|
-| Laravel 5 | `Roulette\Tunel\Laravel5` |
-| CodeIgniter 3 | `Roulette\Tunel\Codeigniter3` |
-| Phalcon 3 | `Roulette\Tunel\Phalcon3` |
+For Laravel, CodeIgniter, and Phalcon, Roulette detects the running framework automatically:
 
 ```php
 // Auto-detect framework and use its connection
 Operation::useFrameworkTunel();
 ```
+
+| Framework | Detection | Class |
+| --- | --- | --- |
+| Laravel 5–12, Lumen | `app()` helper + `Application` instance | `Roulette\Tunel\Laravel` |
+| CodeIgniter 4 | `db_connect()` + `\CodeIgniter\CodeIgniter` | `Roulette\Tunel\CodeIgniter4` |
+| CodeIgniter 3 | `get_instance()->db` | `Roulette\Tunel\Codeigniter3` |
+| Phalcon 3/4/5 | DI container `db` service | `Roulette\Tunel\Phalcon` |
+
+### Manual wiring (no auto-detect)
+
+Symfony and standalone PDO require explicit registration:
+
+```php
+use Roulette\Query\Operation;
+use Roulette\Tunel\Standalone;
+
+// Standalone PDO (MySQL, PostgreSQL, SQLite, etc.)
+$pdo   = new PDO('mysql:host=localhost;dbname=app', 'user', 'pass');
+$tunel = Standalone::fromPdo($pdo);
+Operation::setOperationTunel($tunel);
+```
+
+```php
+use Roulette\Tunel\Symfony as SymfonyTunel;
+
+// Symfony via Doctrine DBAL
+$tunel = SymfonyTunel::fromConnection($doctrine->getConnection());
+Operation::setOperationTunel($tunel);
+```
+
+For a complete reference of all adapters, driver internals, and how to write a custom tunel, see [docs/tunel.md](tunel.md).
 
 ## Defining Your First Model
 
