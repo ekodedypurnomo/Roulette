@@ -22,6 +22,4 @@ use Roulette\Model as BaseModel;
 class Properties extends BaseModel
 {
     protected mixed $propertiesName = null;
-
-    static function getProperties(): void {}
 }

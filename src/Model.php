@@ -1776,17 +1776,26 @@ class Model extends Base
 
     static function initProperties(Collection $config): string
     {
-        if ($config->has('properties'))
-        {
-            $prototype = static::prototype();
+        $properties = static::getProperties()->reset();
 
-            $properties = new Properties($config->get('properties'));
-        }
+        Collection::create($config->get('properties'))->each(function($value, $name) use($properties) {
+            $properties->set($name, $value);
+        });
 
         return static::class;
     }
 
-    static function getProperties(): void {}
+    static function getProperties(): Collection
+    {
+        $prototype = static::prototype();
+
+        if (!($prototype->get('properties') instanceof Collection))
+        {
+            $prototype->set('properties', new Collection());
+        }
+
+        return $prototype->get('properties');
+    }
 }
 
 class_alias('Roulette\Model', 'Roulette\Record');
