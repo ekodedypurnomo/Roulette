@@ -115,9 +115,13 @@ class SqliteTunel extends TunelAbstract
         } else {
             $parts = [];
             foreach ($columns as $alias => $field) {
-                $parts[] = ($alias === $field)
-                    ? "\"$field\""
-                    : "\"$field\" AS \"$alias\"";
+                // SQL expressions (e.g. count(*), max(col)) must not be quoted
+                $isExpr = str_contains((string) $field, '(');
+                if ($isExpr) {
+                    $parts[] = ($alias === $field) ? $field : "$field AS \"$alias\"";
+                } else {
+                    $parts[] = ($alias === $field) ? "\"$field\"" : "\"$field\" AS \"$alias\"";
+                }
             }
             $selectClause = implode(', ', $parts);
         }

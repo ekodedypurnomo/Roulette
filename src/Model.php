@@ -17,6 +17,7 @@ use Roulette\Collection;
 use Roulette\Model\Cache;
 use Roulette\Model\Prototype;
 use Roulette\Model\Source;
+use Roulette\Model\Paginator;
 use Roulette\Model\Store;
 use Roulette\Model\Field\Field;
 use Roulette\Model\Fields;
@@ -425,6 +426,66 @@ class Model extends Base
         }
 
         return $store;
+    }
+
+    /**
+     * Count total rows matching $condition (without loading records).
+     * Bypasses scopes only when called via withoutScope().
+     *
+     * @param mixed $condition  WHERE conditions, same as find().
+     * @return int
+     */
+    static function count(mixed $condition = null): int
+    {
+        $table     = static::getTable();
+        $condition = static::getFields()->mapToSource($condition);
+        $disabled  = static::consumeDisabledScopes();
+        $class     = static::class;
+
+        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $condition, $disabled, $class) {
+            $qop->table($table)
+                ->addSelectCount('*', '__count')
+                ->where($condition);
+            $class::applyScopes($qop, $disabled);
+        })->execute();
+
+        $row = $operation->getRecord();
+        return (int) ($row['__count'] ?? 0);
+    }
+
+    ////////////////
+    // PAGINATION //
+    ////////////////
+
+    /**
+     * Paginate results.
+     * Executes a COUNT query + a LIMIT/OFFSET SELECT and returns a Paginator.
+     *
+     * @param int   $perPage      Records per page (default 15).
+     * @param int   $page         1-based page number (default 1).
+     * @param mixed $condition    WHERE conditions, same as find().
+     * @param mixed $order        ORDER BY, same as find().
+     * @return \Roulette\Model\Paginator
+     */
+    static function paginate(int $perPage = 15, int $page = 1, mixed $condition = null, mixed $order = null): Paginator
+    {
+        $page    = max(1, $page);
+        $perPage = max(1, $perPage);
+
+        $total    = static::count($condition);
+        $lastPage = (int) ceil($total / $perPage);
+        $lastPage = max(1, $lastPage);
+        $offset   = ($page - 1) * $perPage;
+
+        $items = static::find($condition, $order, $perPage, $offset);
+
+        return new Paginator(
+            items:       $items,
+            total:       $total,
+            perPage:     $perPage,
+            currentPage: $page,
+            lastPage:    $lastPage,
+        );
     }
 
     ////////////////////
