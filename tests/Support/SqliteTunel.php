@@ -11,6 +11,7 @@ use Roulette\Query\Option\Delete;
 use Roulette\Query\Option\Insert;
 use Roulette\Query\Option\Select;
 use Roulette\Query\Option\Update;
+use Roulette\Query\RawExpression;
 use Roulette\Tunel\TunelAbstract;
 use Throwable;
 
@@ -163,8 +164,12 @@ class SqliteTunel extends TunelAbstract
         $params = [];
 
         foreach ($patch as $col => $val) {
-            $parts[]  = "\"$col\" = ?";
-            $params[] = $val;
+            if ($val instanceof RawExpression) {
+                $parts[] = "\"$col\" = $val";
+            } else {
+                $parts[]  = "\"$col\" = ?";
+                $params[] = $val;
+            }
         }
 
         $sql = "UPDATE \"$table\" SET " . implode(', ', $parts);

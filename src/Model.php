@@ -30,6 +30,7 @@ use Roulette\Model\Properties;
 use Roulette\Model\ViewOption;
 use Roulette\Query\Builder as QueryBuilder;
 use Roulette\Query\Operation;
+use Roulette\Query\RawExpression;
 use Roulette\Exception\ModelNotFoundException;
 use Roulette\Exception\ValidationException;
 use Roulette\Data\Option as DataOption;
@@ -494,6 +495,88 @@ class Model extends Base
 
         $operation = Operation::create('delete')->buildQuery(function($qop) use($table, $condition) {
             $qop->table($table)->where($condition);
+        })->execute();
+
+        return (int) $operation->getAffectedRows();
+    }
+
+    ////////////////////////////
+    // INCREMENT / DECREMENT  //
+    ////////////////////////////
+
+    /**
+     * Atomically increment a field for all rows matching $condition.
+     * Emits: UPDATE table SET col = col + amount WHERE …
+     *
+     * @param array  $condition  WHERE conditions (field => value), same as find().
+     * @param string $field      Field name to increment.
+     * @param int|float $amount  Value to add (default 1).
+     * @return int  Number of affected rows.
+     */
+    static function incrementWhere(array $condition, string $field, int|float $amount = 1): int
+    {
+        return static::_atomicAdjust($condition, $field, $amount);
+    }
+
+    /**
+     * Atomically decrement a field for all rows matching $condition.
+     * Emits: UPDATE table SET col = col - amount WHERE …
+     *
+     * @param array  $condition  WHERE conditions (field => value), same as find().
+     * @param string $field      Field name to decrement.
+     * @param int|float $amount  Value to subtract (default 1).
+     * @return int  Number of affected rows.
+     */
+    static function decrementWhere(array $condition, string $field, int|float $amount = 1): int
+    {
+        return static::_atomicAdjust($condition, $field, -$amount);
+    }
+
+    /**
+     * Atomically increment a field on this record.
+     * Emits: UPDATE table SET col = col + amount WHERE id = ?
+     * Also refreshes the in-memory field value to stay in sync.
+     *
+     * @param string    $field  Field name.
+     * @param int|float $amount Value to add (default 1).
+     * @return static
+     */
+    function increment(string $field, int|float $amount = 1): static
+    {
+        static::_atomicAdjust([static::getPrimary() => $this->getId()], $field, $amount);
+        $current = $this->get($field);
+        $this->set($field, $current + $amount, commit: true);
+        return $this;
+    }
+
+    /**
+     * Atomically decrement a field on this record.
+     * Emits: UPDATE table SET col = col - amount WHERE id = ?
+     * Also refreshes the in-memory field value to stay in sync.
+     *
+     * @param string    $field  Field name.
+     * @param int|float $amount Value to subtract (default 1).
+     * @return static
+     */
+    function decrement(string $field, int|float $amount = 1): static
+    {
+        return $this->increment($field, -$amount);
+    }
+
+    static private function _atomicAdjust(array $condition, string $field, int|float $amount): int
+    {
+        $table     = static::getTable();
+        $condition = static::getFields()->mapToSource($condition);
+        $col       = static::getFields()->mapToSource([$field => null]);
+        $colName   = array_key_first($col);
+        $sign      = $amount >= 0 ? '+' : '-';
+        $abs       = abs($amount);
+        $expr      = new RawExpression("\"$colName\" $sign $abs");
+
+        $operation = Operation::create('update')->buildQuery(function($qop) use($table, $condition, $colName, $expr) {
+            $qop->table($table)
+                ->set($colName, $expr)
+                ->where($condition);
         })->execute();
 
         return (int) $operation->getAffectedRows();
