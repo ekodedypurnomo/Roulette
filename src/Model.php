@@ -426,6 +426,79 @@ class Model extends Base
     }
 
 
+    ////////////////////
+    // BULK OPERATIONS //
+    ////////////////////
+
+    /**
+     * Bulk-insert multiple rows. Runs one INSERT per row inside a loop.
+     * Returns the number of successfully inserted rows.
+     *
+     * @param array $rows  Array of associative arrays, each keyed by field name.
+     */
+    static function insertMany(array $rows): int
+    {
+        $inserted = 0;
+        $table    = static::getTable();
+
+        foreach ($rows as $rowData) {
+            $record = new static($rowData);
+            $data   = $record->getDataToInsert();
+
+            if (empty($data)) continue;
+
+            $operation = Operation::create('insert')->buildQuery(function($qop) use($table, $data) {
+                $qop->table($table)->set($data);
+            })->execute();
+
+            if ($operation->isSuccess()) $inserted++;
+        }
+
+        return $inserted;
+    }
+
+    /**
+     * Bulk-update all rows matching $condition, applying $data fields.
+     * Returns the number of affected rows.
+     *
+     * @param array $condition  Condition array (field => value), same as find().
+     * @param array $data       Fields to update (field => new value).
+     */
+    static function updateWhere(array $condition, array $data): int
+    {
+        if (empty($data)) return 0;
+
+        $table     = static::getTable();
+        $condition = static::getFields()->mapToSource($condition);
+        $patch     = static::getFields()->mapToSource($data);
+
+        $operation = Operation::create('update')->buildQuery(function($qop) use($table, $condition, $patch) {
+            $qop->table($table)
+                ->set($patch)
+                ->where($condition);
+        })->execute();
+
+        return (int) $operation->getAffectedRows();
+    }
+
+    /**
+     * Bulk-delete all rows matching $condition.
+     * Returns the number of deleted rows.
+     *
+     * @param array $condition  Condition array (field => value), same as find().
+     */
+    static function destroyWhere(array $condition): int
+    {
+        $table     = static::getTable();
+        $condition = static::getFields()->mapToSource($condition);
+
+        $operation = Operation::create('delete')->buildQuery(function($qop) use($table, $condition) {
+            $qop->table($table)->where($condition);
+        })->execute();
+
+        return (int) $operation->getAffectedRows();
+    }
+
     static function query(mixed $mode = null): QueryBuilder
     {
         $builder = new QueryBuilder(static::getTable(), $mode);
