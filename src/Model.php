@@ -427,6 +427,69 @@ class Model extends Base
         return $store;
     }
 
+    ////////////////////
+    // CHUNK / CURSOR //
+    ////////////////////
+
+    /**
+     * Process large result sets in fixed-size batches without loading everything into memory.
+     * $callback receives a Store of records; return false to stop early.
+     *
+     * @param int           $size       Records per batch (e.g. 100, 500).
+     * @param callable      $callback   fn(Store $chunk): void|bool  Return false to stop.
+     * @param mixed         $condition  WHERE conditions, same as find().
+     * @param mixed         $order      ORDER BY, same as find().
+     * @return int  Total number of records processed.
+     */
+    static function chunk(int $size, callable $callback, mixed $condition = null, mixed $order = null): int
+    {
+        $offset    = 0;
+        $processed = 0;
+
+        while (true) {
+            $batch = static::find($condition, $order, $size, $offset);
+
+            if ($batch->count() === 0) break;
+
+            $result     = $callback($batch);
+            $processed += $batch->count();
+            $offset    += $size;
+
+            if ($result === false) break;
+            if ($batch->count() < $size) break;
+        }
+
+        return $processed;
+    }
+
+    /**
+     * Return a generator that yields one record at a time.
+     * Memory-efficient: fetches one page at a time internally, yields record by record.
+     *
+     * @param mixed     $condition  WHERE conditions, same as find().
+     * @param mixed     $order      ORDER BY, same as find().
+     * @param int       $batchSize  Internal fetch size (default 100).
+     * @return \Generator  Yields individual Model instances.
+     */
+    static function cursor(mixed $condition = null, mixed $order = null, int $batchSize = 100): \Generator
+    {
+        $offset = 0;
+
+        while (true) {
+            $batch = static::find($condition, $order, $batchSize, $offset);
+
+            if ($batch->count() === 0) break;
+
+            foreach ($batch as $record) {
+                yield $record;
+            }
+
+            $offset += $batchSize;
+
+            if ($batch->count() < $batchSize) break;
+        }
+    }
+
 
     ////////////////////
     // BULK OPERATIONS //
