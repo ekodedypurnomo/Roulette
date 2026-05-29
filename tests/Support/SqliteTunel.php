@@ -93,7 +93,7 @@ class SqliteTunel extends TunelAbstract
             }
         } catch (Throwable $e) {
             $operation->success = false;
-            $operation->error   = $e->getMessage();
+            $operation->error   = $e;
         }
 
         $operation->query = $sql;
@@ -133,6 +133,15 @@ class SqliteTunel extends TunelAbstract
         if ($whereSql) {
             $sql   .= " WHERE $whereSql";
             $params = $whereParams;
+        }
+
+        if ($option->hasOrder()) {
+            $orderParts = [];
+            foreach ($option->getOrder() as $col => $dir) {
+                $dir          = in_array(strtoupper($dir), ['ASC', 'DESC']) ? strtoupper($dir) : 'ASC';
+                $orderParts[] = "\"$col\" $dir";
+            }
+            $sql .= ' ORDER BY ' . implode(', ', $orderParts);
         }
 
         if ($option->hasLimit()) {
@@ -185,7 +194,9 @@ class SqliteTunel extends TunelAbstract
 
         foreach ($patch as $col => $val) {
             if ($val instanceof RawExpression) {
-                $parts[] = "\"$col\" = $val";
+                $quotedCol = "\"$col\"";
+                $rawSql    = str_replace('{col}', $quotedCol, (string) $val);
+                $parts[]   = "$quotedCol = $rawSql";
             } else {
                 $parts[]  = "\"$col\" = ?";
                 $params[] = $val;
@@ -275,12 +286,19 @@ class SqliteTunel extends TunelAbstract
             if ($opUpper === 'IN' || $opUpper === 'NOT IN') {
                 $vals = (array) $value;
                 $ph   = implode(', ', array_fill(0, count($vals), '?'));
-                $parts[]  = "{$prefix}\"$field\" $op ($ph)";
+                $parts[]  = "{$prefix}\"$field\" $opUpper ($ph)";
                 $params   = array_merge($params, $vals);
-            } elseif (strtoupper((string) $value) === 'NULL') {
+            } elseif ($opUpper === 'BETWEEN' || $opUpper === 'NOT BETWEEN') {
+                $parts[]  = "{$prefix}\"$field\" $opUpper ? AND ?";
+                $params[] = $value[0];
+                $params[] = $value[1];
+            } elseif ($opUpper === 'LIKE' || $opUpper === 'NOT LIKE') {
+                $parts[]  = "{$prefix}\"$field\" $opUpper ?";
+                $params[] = $value;
+            } elseif (!is_array($value) && strtoupper((string) $value) === 'NULL') {
                 $parts[] = "{$prefix}\"$field\" $op NULL";
             } else {
-                $parts[]  = "{$prefix}\"$field\" = ?";
+                $parts[]  = "{$prefix}\"$field\" $op ?";
                 $params[] = $value;
             }
         }

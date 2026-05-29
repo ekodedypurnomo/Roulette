@@ -105,4 +105,48 @@ class SchemaTest extends DbTestCase
         $this->assertSame('hello', $found->first()->get('title'));
         $this->assertEquals(42, $found->first()->get('count'));
     }
+
+    public function testMigrateAddsColumnsToExistingTable(): void
+    {
+        // Create table with only primary key
+        $this->tunel->exec('CREATE TABLE typed_test (id TEXT PRIMARY KEY)');
+
+        // Confirm title and count are missing
+        $diff = Schema::diff(TypedModel::class);
+        $this->assertCount(2, $diff['missing']);
+
+        // migrate() should ADD COLUMN for missing ones
+        Schema::migrate(TypedModel::class);
+
+        // After migrate, diff should be clean
+        $diff = Schema::diff(TypedModel::class);
+        $this->assertEmpty($diff['missing']);
+    }
+
+    public function testMigrateDoesNotDropExtraColumns(): void
+    {
+        // Create table with an extra column not in the model
+        $this->tunel->exec(
+            'CREATE TABLE typed_test (id TEXT PRIMARY KEY, title TEXT, count INTEGER, legacy_col TEXT)'
+        );
+
+        Schema::migrate(TypedModel::class);
+
+        $diff = Schema::diff(TypedModel::class);
+        $this->assertEmpty($diff['missing']);
+        $this->assertCount(1, $diff['extra']);
+        $this->assertSame('legacy_col', $diff['extra'][0]['name']);
+    }
+
+    public function testDiffDetectsExtraColumns(): void
+    {
+        $this->tunel->exec(
+            'CREATE TABLE typed_test (id TEXT PRIMARY KEY, title TEXT, count INTEGER, orphan TEXT)'
+        );
+
+        $diff = Schema::diff(TypedModel::class);
+        $this->assertEmpty($diff['missing']);
+        $extraNames = array_column($diff['extra'], 'name');
+        $this->assertContains('orphan', $extraNames);
+    }
 }

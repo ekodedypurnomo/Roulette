@@ -18,21 +18,21 @@ class PolicyTest extends TestCase
     public function testConstructWithAssertions(): void
     {
         $policy = new Policy('view', fn() => false, fn() => false);
-        $this->assertCount(2, $policy->getAssetions(), 'two assertions from constructor');
+        $this->assertCount(2, $policy->getAssertions(), 'two assertions from constructor');
     }
 
     public function testAddAssertion(): void
     {
         $policy = new Policy('edit');
         $policy->addAssertion(fn() => true);
-        $this->assertCount(1, $policy->getAssetions(), 'one assertion added');
+        $this->assertCount(1, $policy->getAssertions(), 'one assertion added');
     }
 
     public function testGetAssetions(): void
     {
         $policy = new Policy('edit');
-        $this->assertIsArray($policy->getAssetions(), 'returns array');
-        $this->assertEmpty($policy->getAssetions(), 'empty by default');
+        $this->assertIsArray($policy->getAssertions(), 'returns array');
+        $this->assertEmpty($policy->getAssertions(), 'empty by default');
     }
 
     public function testAssertAllDenyReturnTrue(): void
@@ -58,9 +58,9 @@ class PolicyTest extends TestCase
     public function testReset(): void
     {
         $policy = new Policy('view', fn() => true);
-        $this->assertCount(1, $policy->getAssetions(), 'before reset');
+        $this->assertCount(1, $policy->getAssertions(), 'before reset');
         $policy->reset();
-        $this->assertCount(0, $policy->getAssetions(), 'after reset');
+        $this->assertCount(0, $policy->getAssertions(), 'after reset');
     }
 
     public function testCreateFactory(): void
