@@ -1,3 +1,8 @@
+---
+title: Framework Adapters
+nav_order: 11
+---
+
 # Tunel — Framework Adapters
 
 A **tunel** is the layer that connects Roulette to a database. It wraps your framework's existing connection so the ORM can execute queries without you writing any SQL or touching PDO directly.

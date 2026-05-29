@@ -1,3 +1,8 @@
+---
+title: Associations
+nav_order: 5
+---
+
 # Associations
 
 ## Declaring Associations

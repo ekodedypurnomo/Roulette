@@ -1,3 +1,8 @@
+---
+title: Query Builder
+nav_order: 6
+---
+
 # Query Builder
 
 ## find()

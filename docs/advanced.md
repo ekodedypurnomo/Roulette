@@ -1,3 +1,8 @@
+---
+title: Advanced
+nav_order: 10
+---
+
 # Advanced
 
 ## Schema Migration
