@@ -194,15 +194,29 @@ abstract class AssociationAbstract extends Base
 
     abstract function eagerLoad(Store $records): void;
 
+    protected const BATCH_FETCH_CHUNK_SIZE = 500;
+
     protected function batchFetch(string $modelClass, string $fieldColumn, array $ids): array
     {
+        if (empty($ids)) return [];
+
+        // Chunk large ID sets to avoid excessive IN clause size
+        if (count($ids) > self::BATCH_FETCH_CHUNK_SIZE) {
+            $results = [];
+            foreach (array_chunk($ids, self::BATCH_FETCH_CHUNK_SIZE) as $chunk) {
+                $results = array_merge($results, $this->batchFetch($modelClass, $fieldColumn, $chunk));
+            }
+            return $results;
+        }
+
         $table        = $modelClass::getTable();
         $selectFields = array_flip($modelClass::getFields()->filterSelectable()->getSource());
 
-        $operation = \Roulette\Query\Operation::create('select')->buildQuery(function($qop) use($table, $selectFields, $fieldColumn, $ids) {
+        $operation = \Roulette\Query\Operation::create('select')->buildQuery(function($qop) use($table, $selectFields, $fieldColumn, $ids, $modelClass) {
             $qop->table($table)
                 ->select($selectFields)
                 ->whereIn($fieldColumn, $ids);
+            $modelClass::applyScopes($qop, []);
         })->execute();
 
         $results = [];

@@ -34,13 +34,21 @@ trait ManagesIncrements
 
     static private function _atomicAdjust(array $condition, string $field, int|float $amount): int
     {
+        $sourceMap = static::getFields()->getSource();
+
+        if (!array_key_exists($field, $sourceMap)) {
+            throw new \InvalidArgumentException(
+                sprintf("Field '%s' is not defined on %s.", $field, static::class)
+            );
+        }
+
         $table     = static::getTable();
         $condition = static::getFields()->mapToSource($condition);
-        $col       = static::getFields()->mapToSource([$field => null]);
-        $colName   = array_key_first($col);
+        $colName   = $sourceMap[$field];
         $sign      = $amount >= 0 ? '+' : '-';
         $abs       = abs($amount);
-        $expr      = new RawExpression("\"$colName\" $sign $abs");
+        // {col} is replaced by the executor with a properly quoted identifier
+        $expr      = new RawExpression("{col} $sign $abs");
 
         $operation = Operation::create('update')->buildQuery(function($qop) use($table, $condition, $colName, $expr) {
             $qop->table($table)

@@ -17,9 +17,12 @@ use Roulette\Tunel\TunelAbstract;
 use Roulette\Query\Operation;
 
 /**
- * The line to do trancasction to database via Laravel 5 application server
+ * Legacy tunel for Phalcon 3 only.
  *
- * @package Roulette\Tunel\Laravel5
+ * @deprecated Use Phalcon.php instead — it supports Phalcon 3/4/5.
+ *             This adapter is kept for backwards compatibility only.
+ *
+ * @package Roulette\Tunel\Phalcon3
  * @since Version 2.0.0
  * @author Eko Dedy Purnomo <eko.dedy.purnomo@gmail.com>
  */

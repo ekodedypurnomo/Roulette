@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Roulette\Model\Concerns;
 
 use Roulette\Query\Operation;
+use Roulette\Exception\QueryException;
 use Roulette\Exception\ValidationException;
 
 trait ManagesPersistence
 {
-    function save(mixed $callback = null, bool $validate = true, bool $recheck = true): mixed
+    /**
+     * @param bool $reload  Set false to skip the post-save SELECT (reduces round-trips in
+     *                      write-heavy paths where fresh data is not needed immediately).
+     */
+    function save(mixed $callback = null, bool $validate = true, bool $recheck = true, bool $reload = true): bool
     {
         if ($this->fireModelEvent('before:save') === false) {
             if (is_callable($callback)) $callback(false, $this);
@@ -55,7 +60,7 @@ trait ManagesPersistence
 
         if ($success)
         {
-            $this->reload($revert = true);
+            if ($reload) $this->reload($revert = true);
             $this->fireModelEvent($isUpdate ? 'after:update' : 'after:create');
             $this->fireModelEvent('after:save');
         }
@@ -70,10 +75,13 @@ trait ManagesPersistence
         if ($validate && !$this->validate()->isValid()) {
             throw new ValidationException($this->getErrorMessages(true));
         }
-        return (bool) $this->save(null, false, $recheck);
+        if (!$this->save(null, false, $recheck)) {
+            throw new QueryException('save() failed: DB error or before:save event aborted the operation.');
+        }
+        return true;
     }
 
-    function destroy(mixed $callback = null): mixed
+    function destroy(mixed $callback = null): bool
     {
         $success   = false;
         $table     = static::getTable();
@@ -97,6 +105,7 @@ trait ManagesPersistence
 
             if ($success)
             {
+                static::removeFromCache($this->getId());
                 $this->makeAlive(false);
                 $this->fireModelEvent('after:destroy');
             }

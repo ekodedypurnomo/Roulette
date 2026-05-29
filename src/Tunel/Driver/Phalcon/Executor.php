@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Roulette\Tunel\Driver\Phalcon;
 
 use Roulette\Query\Operation;
+use Roulette\Query\RawExpression;
 use Roulette\Tunel\Driver\Executor as ExecutorContract;
 
 /**
@@ -88,9 +89,20 @@ class Executor implements ExecutorContract
         if (!$option->hasTable()) return;
 
         $patch    = $option->getPatch();
-        $setParts = array_map(fn($col) => "$col = ?", array_keys($patch));
-        $bindings = array_values($patch);
-        $sql      = sprintf('UPDATE %s SET %s', $option->getTable(), implode(', ', $setParts));
+        $setParts = [];
+        $bindings = [];
+
+        foreach ($patch as $col => $value) {
+            if ($value instanceof RawExpression) {
+                $rawSql     = str_replace('{col}', $col, (string) $value);
+                $setParts[] = "$col = $rawSql";
+            } else {
+                $setParts[] = "$col = ?";
+                $bindings[] = $value;
+            }
+        }
+
+        $sql = sprintf('UPDATE %s SET %s', $option->getTable(), implode(', ', $setParts));
 
         if ($option->hasWhere()) {
             [$whereSql, $whereBindings] = $this->compileWhere($option->getWhere());

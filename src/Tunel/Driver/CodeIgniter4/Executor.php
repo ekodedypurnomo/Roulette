@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Roulette\Tunel\Driver\CodeIgniter4;
 
 use Roulette\Query\Operation;
+use Roulette\Query\RawExpression;
 use Roulette\Tunel\Driver\Executor as ExecutorContract;
 
 /**
@@ -100,10 +101,21 @@ class Executor implements ExecutorContract
         if (!$option->hasTable()) return;
 
         $builder = $this->db->table($option->getTable());
+        $patch   = $option->getPatch();
+
+        foreach ($patch as $col => $value) {
+            if ($value instanceof RawExpression) {
+                $rawSql = str_replace('{col}', $col, (string) $value);
+                $builder->set($col, $rawSql, false);
+            } else {
+                $builder->set($col, $value);
+            }
+        }
+
         if ($option->hasWhere()) $this->buildWhere($option->getWhere(), $builder);
 
         try {
-            $builder->update($option->getPatch());
+            $builder->update();
             $affected                = $this->db->affectedRows();
             $operation->result       = $affected;
             $operation->success      = true;

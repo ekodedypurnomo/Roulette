@@ -48,7 +48,7 @@ trait SoftDeletable
     /**
      * Override destroy() — sets deleted_at to now instead of deleting the row.
      */
-    function destroy(mixed $callback = null): mixed
+    function destroy(mixed $callback = null): bool
     {
         if (!$this->isAlive(true)) {
             if (is_callable($callback)) $callback(false, null, $this);
@@ -92,9 +92,12 @@ trait SoftDeletable
 
     /**
      * Restore a soft-deleted record by clearing deleted_at.
+     * Returns false immediately if the record is not soft-deleted.
      */
     function restore(): bool
     {
+        if (!$this->isTrashed()) return false;
+
         $table     = static::getTable();
         $column    = static::resolveDeletedAtColumn();
         $condition = $this->getFields()->mapToSource([

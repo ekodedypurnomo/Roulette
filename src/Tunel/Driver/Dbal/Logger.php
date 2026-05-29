@@ -65,7 +65,17 @@ class Logger implements LoggerContract
             $captured = $logger->sql;
             $this->conn->getConfiguration()->setSQLLogger($prev);
         } else {
-            // DBAL 4+ — no simple SQL logger; pass-through and let executor own SQL capture
+            // DBAL 4+: setSQLLogger() removed. SQL logging unavailable.
+            // Use a Doctrine Middleware on the connection for query logging on DBAL 4+.
+            static $dbal4Warned = false;
+            if (!$dbal4Warned) {
+                trigger_error(
+                    'Roulette: DBAL 4+ detected — SQL logging unavailable (setSQLLogger was removed). ' .
+                    'Register a Doctrine Middleware for query logging.',
+                    \E_USER_NOTICE
+                );
+                $dbal4Warned = true;
+            }
             $execution();
         }
 

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Roulette\Tunel\Driver\Illuminate;
 
 use Roulette\Query\Operation;
+use Roulette\Query\RawExpression;
 use Roulette\Tunel\Driver\Executor as ExecutorContract;
 
 /**
@@ -96,6 +97,14 @@ class Executor implements ExecutorContract
 
         $builder = ($this->dbClass)::table($option->getTable());
         $patch   = $option->getPatch();
+
+        foreach ($patch as $col => &$value) {
+            if ($value instanceof RawExpression) {
+                $rawSql = str_replace('{col}', $col, (string) $value);
+                $value  = ($this->dbClass)::raw($rawSql);
+            }
+        }
+        unset($value);
 
         if ($option->hasWhere()) $this->buildWhere($option->getWhere(), $builder);
 

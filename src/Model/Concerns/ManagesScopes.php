@@ -43,11 +43,6 @@ trait ManagesScopes
         return static::query()->withEagerLoads($flat);
     }
 
-    static function filter(mixed $registeredFilter = null): string
-    {
-        return static::class;
-    }
-
     public static function applyScopes(mixed $qop, array $disabled = []): void
     {
         if (in_array('*', $disabled)) return;

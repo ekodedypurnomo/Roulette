@@ -77,6 +77,15 @@ class Field extends Base
     protected ?string $display = null;
 
     /**
+     * Whether this field may be set via mass assignment (constructor/fill with user data).
+     * Set to false for sensitive fields like 'role', 'is_admin', 'password_hash'.
+     * Fields with fillable=false are still read from and written to the database normally.
+     *
+     * @var boolean
+     */
+    protected bool $fillable = true;
+
+    /**
      * Accessibility for getData in model, private is `true` will be ignored for append on it.
      *
      * @var boolean
@@ -341,6 +350,17 @@ class Field extends Base
     function setToPublic(bool $value = true): static
     {
         $this->private = !$value;
+        return $this;
+    }
+
+    function isFillable(): bool
+    {
+        return $this->fillable;
+    }
+
+    function setFillable(bool $value = true): static
+    {
+        $this->fillable = $value;
         return $this;
     }
 

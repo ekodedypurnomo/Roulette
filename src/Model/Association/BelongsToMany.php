@@ -145,9 +145,17 @@ class BelongsToMany extends AssociationAbstract
      */
     function sync(Model $ownerRecord, array $relatedIds, array $pivotData = []): void
     {
-        $this->detach($ownerRecord);
-        foreach ($relatedIds as $id) {
-            $this->attach($ownerRecord, $id, $pivotData);
+        $tunel = Operation::getOperationTunel();
+        $tunel->beginTransaction();
+        try {
+            $this->detach($ownerRecord);
+            foreach ($relatedIds as $id) {
+                $this->attach($ownerRecord, $id, $pivotData);
+            }
+            $tunel->commit();
+        } catch (\Throwable $e) {
+            $tunel->rollback();
+            throw $e;
         }
     }
 

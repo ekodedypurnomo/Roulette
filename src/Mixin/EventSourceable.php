@@ -47,7 +47,7 @@ trait EventSourceable
      * Uses a wrapped callback so the $success flag from the DB operation is
      * the authoritative signal — avoids ambiguity in save()'s return value.
      */
-    function save(mixed $originalCallback = null, bool $validate = true, bool $recheck = true): mixed
+    function save(mixed $originalCallback = null, bool $validate = true, bool $recheck = true, bool $reload = true): bool
     {
         $isCreate = !$this->isAlive(false);
         $diff     = $this->capturePreSaveDiff();
@@ -62,7 +62,7 @@ trait EventSourceable
             return $success ? null : false;
         };
 
-        return parent::save($wrappedCallback, $validate, $recheck);
+        return parent::save($wrappedCallback, $validate, $recheck, $reload);
     }
 
     /**
@@ -71,7 +71,7 @@ trait EventSourceable
      * Detects success by comparing isAlive() before and after the parent call —
      * no extra DB roundtrip required.
      */
-    function destroy(mixed $callback = null): mixed
+    function destroy(mixed $callback = null): bool
     {
         $wasAlive = $this->isAlive(false);
         $result   = parent::destroy($callback);

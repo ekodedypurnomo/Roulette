@@ -34,6 +34,11 @@ trait ManagesAttributes
                 }
                 else
                 {
+                    // Non-fillable fields are protected from mass assignment.
+                    // Skip if user explicitly provided a value for this field.
+                    if (!$f->isFillable() && $data->hasKey($f->getName())) {
+                        return;
+                    }
                     $fieldValue->setValue($value);
                 }
             }

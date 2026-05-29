@@ -212,6 +212,17 @@ class Operation extends Base
         return static::class;
     }
 
+    /**
+     * Clear the operation log.
+     * Call between requests in long-running processes (Swoole, Octane, RoadRunner)
+     * to prevent the log from growing unbounded.
+     */
+    static function clearLog(): string
+    {
+        static::$operations = [];
+        return static::class;
+    }
+
     static function remove(Operation $operation): string
     {
         foreach (static::$operations as $i => $o)
@@ -446,7 +457,7 @@ class Operation extends Base
      */
     function isExecuted(): bool
     {
-        return !is_null($this->executed);
+        return isset($this->executeTime[1]);
     }
 
     function buildQuery(callable $callback): static

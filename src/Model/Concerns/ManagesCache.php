@@ -37,4 +37,11 @@ trait ManagesCache
 
         return Cache::fetch(static::formatCacheId($recordId));
     }
+
+    static function removeFromCache(mixed $id): void
+    {
+        if (!static::isUseCache()) return;
+
+        Cache::remove(static::formatCacheId($id));
+    }
 }

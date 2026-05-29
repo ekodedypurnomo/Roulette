@@ -55,7 +55,7 @@ class Policy extends Base
         $this->assertions = [];
     }
 
-    function getAssetions(): array
+    function getAssertions(): array
     {
         if (!is_array($this->assertions))
         {

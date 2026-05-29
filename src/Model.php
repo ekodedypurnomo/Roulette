@@ -131,9 +131,9 @@ class Model extends Base
         return static::class;
     }
 
-    static function getTable(): mixed
+    static function getTable(): string
     {
-        return static::prototype()->get('table');
+        return (string) static::prototype()->get('table');
     }
 
     static function setTable(mixed $table = null): string
@@ -142,9 +142,9 @@ class Model extends Base
         return static::class;
     }
 
-    static function getPrimary(): mixed
+    static function getPrimary(): string
     {
-        return static::prototype()->get('primary');
+        return (string) static::prototype()->get('primary');
     }
 
     static function setPrimary(mixed $primary = null): string

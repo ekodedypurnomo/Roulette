@@ -12,7 +12,7 @@ use Roulette\Query\Operation;
 
 trait ManagesQueries
 {
-    static function load(mixed $id = null): mixed
+    static function load(mixed $id = null): ?static
     {
         if ($_c = static::fetchFromCache($id))
         {
@@ -58,6 +58,7 @@ trait ManagesQueries
         $table     = static::getTable();
         $field     = array_flip(static::getFields()->filterSelectable()->getSource());
         $condition = static::getFields()->mapToSource($condition);
+        $order     = static::getFields()->mapToSource($order);
 
         $operation = Operation::create('select')->buildQuery(function($qop) use($table, $field, $condition, $take, $skip, $order, $group, $having, $class)
         {
@@ -168,21 +169,4 @@ trait ManagesQueries
         return ModelQueryBuilder::forModel(static::class);
     }
 
-    private static function batchFindByField(string $modelClass, string $fieldColumn, array $ids): array
-    {
-        $table        = $modelClass::getTable();
-        $selectFields = array_flip($modelClass::getFields()->filterSelectable()->getSource());
-
-        $operation = Operation::create('select')->buildQuery(function($qop) use($table, $selectFields, $fieldColumn, $ids) {
-            $qop->table($table)
-                ->select($selectFields)
-                ->whereIn($fieldColumn, $ids);
-        })->execute();
-
-        $results = [];
-        foreach ($operation->getRecords() as $row) {
-            $results[] = new $modelClass((array) $row, true);
-        }
-        return $results;
-    }
 }

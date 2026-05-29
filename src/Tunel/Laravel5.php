@@ -17,7 +17,10 @@ use Roulette\Tunel\TunelAbstract;
 use Roulette\Query\Operation;
 
 /**
- * The line to do trancasction to database via Laravel 5 application server
+ * Legacy tunel for Laravel 5 only.
+ *
+ * @deprecated Use Laravel.php instead — it supports Laravel 5–12 and Lumen.
+ *             This adapter is kept for backwards compatibility only.
  *
  * @package Roulette\Tunel\Laravel5
  * @since Version 2.0.0

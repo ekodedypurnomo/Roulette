@@ -18,10 +18,10 @@ use Roulette\Tunel\Driver\CodeIgniter3\Logger;
 use Roulette\Tunel\Driver\CodeIgniter3\Transaction;
 
 /**
- * Roulette tunel for CodeIgniter 3.
+ * Legacy tunel for CodeIgniter 3.
  *
- * Detects a running CI3 application via the CI super-object and the
- * presence of CI3's core classes, then assembles the CI3 drivers.
+ * @deprecated Use CodeIgniter4.php instead — it supports CodeIgniter 4.
+ *             If still on CI3, this adapter is kept for backwards compatibility.
  *
  * @package \Roulette\Tunel
  * @since   Version 2.0.0

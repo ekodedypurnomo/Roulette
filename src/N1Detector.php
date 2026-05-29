@@ -67,6 +67,18 @@ class N1Detector
         self::$hits = [];
     }
 
+    /**
+     * Full reset for long-running processes — clears hits, handler, and disables detection.
+     * Call between requests when using Swoole, Octane, or RoadRunner.
+     */
+    public static function fullReset(): void
+    {
+        self::$hits      = [];
+        self::$handler   = null;
+        self::$enabled   = false;
+        self::$threshold = 2;
+    }
+
     public static function setThreshold(int $n): void
     {
         self::$threshold = max(1, $n);
