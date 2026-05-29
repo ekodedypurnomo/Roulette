@@ -1,6 +1,6 @@
 title: Roulette ORM
 description: PHP ORM framework with field lifecycle, authorization, and validation
-theme: just-the-docs
+remote_theme: just-the-docs/just-the-docs@v0.10.0
 
 url: https://ekodedypurnomo.github.io
 baseurl: /roulette
