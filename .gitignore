@@ -2,6 +2,10 @@
 /vendor/
 composer.lock
 
+# Graphify knowledge graph (generated, not source)
+graphify-out/
+.graphifyignore
+
 # Claude Code workspace
 .claude/
 
