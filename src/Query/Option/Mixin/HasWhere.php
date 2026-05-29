@@ -137,6 +137,12 @@ trait HasWhere
         return $this->where($field, 'NOT IN', $inclusion, 'OR');
     }
 
+    function setWhere(array $conditions): static
+    {
+        $this->where = $conditions;
+        return $this;
+    }
+
     function resetWhere(): static
     {
         $this->where = [];

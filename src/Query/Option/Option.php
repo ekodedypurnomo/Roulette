@@ -63,10 +63,10 @@ class Option extends OptionAbstract
         return $select
             ->table($this->getTable())
             ->select($this->getSelect())
-            ->where($this->getWhere())
+            ->setWhere($this->getWhere())
             ->group($this->getGroup())
             ->having($this->getHaving())
-            ->order($this->getHaving())
+            ->order($this->getOrder())
             ->take($this->getLimit())
             ->skip($this->getOffset());
     }

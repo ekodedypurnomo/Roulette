@@ -191,4 +191,24 @@ abstract class AssociationAbstract extends Base
     abstract function loadRelation(Relation $relation): static;
 
     abstract function patchRelation(Relation $relation, mixed $value = null): static;
+
+    abstract function eagerLoad(Store $records): void;
+
+    protected function batchFetch(string $modelClass, string $fieldColumn, array $ids): array
+    {
+        $table        = $modelClass::getTable();
+        $selectFields = array_flip($modelClass::getFields()->filterSelectable()->getSource());
+
+        $operation = \Roulette\Query\Operation::create('select')->buildQuery(function($qop) use($table, $selectFields, $fieldColumn, $ids) {
+            $qop->table($table)
+                ->select($selectFields)
+                ->whereIn($fieldColumn, $ids);
+        })->execute();
+
+        $results = [];
+        foreach ($operation->getRecords() as $row) {
+            $results[] = new $modelClass((array) $row, true);
+        }
+        return $results;
+    }
 }

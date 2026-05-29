@@ -106,6 +106,22 @@ class Builder extends Base
         return $this->option;
     }
 
+    /**
+     * Add a WHERE condition. Accepts two forms:
+     *   ->where('field', value)          shorthand equality
+     *   ->where(['field' => value, ...]) array form (existing)
+     *   ->where('field', 'operator', value) 3-param form
+     */
+    function where(mixed $fieldOrArray, mixed $operatorOrValue = null, mixed $value = null): static
+    {
+        if (is_string($fieldOrArray) && $value === null && $operatorOrValue !== null) {
+            $this->getOption()->where([$fieldOrArray => $operatorOrValue]);
+        } else {
+            $this->getOption()->where($fieldOrArray, $operatorOrValue, $value);
+        }
+        return $this;
+    }
+
     function get(): Collection
     {
         $option = $this->getOption()->toSelect();

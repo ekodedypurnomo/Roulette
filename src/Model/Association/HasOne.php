@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Roulette\Model\Association;
 
 use Roulette\Model\Association\AssociationAbstract;
+use Roulette\Model\Association\Relation;
+use Roulette\Model\Store;
 use Roulette\Model;
 
 /**
@@ -51,5 +53,38 @@ class HasOne extends AssociationAbstract
         $relation->setResource(new $model($data));
 
         return $this;
+    }
+
+    function eagerLoad(Store $records): void
+    {
+        $model = $this->getModel();
+        $field = $this->getField();
+
+        $ids = [];
+        $records->each(function($record) use (&$ids) {
+            $id = $record->getId();
+            if ($id !== null) $ids[] = $id;
+        });
+
+        if (empty($ids)) return;
+
+        $fieldColumn   = array_key_first($model::getFields()->mapToSource([$field => '']));
+        $relatedModels = $this->batchFetch($model, $fieldColumn, $ids);
+
+        $grouped = [];
+        foreach ($relatedModels as $r) {
+            $fk = $r->get($field, false);
+            $grouped[$fk][] = $r;
+        }
+
+        $assoc = $this;
+        $records->each(function($record) use ($assoc, $grouped) {
+            $id    = $record->getId();
+            $items = $grouped[$id] ?? [];
+            $rel   = new Relation($assoc, $record);
+            $rel->setAssociated(true);
+            $rel->setResource($items[0] ?? null);
+            $record->getRelations()->set($assoc->getName(), $rel);
+        });
     }
 }

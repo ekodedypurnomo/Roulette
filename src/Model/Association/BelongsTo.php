@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Roulette\Model\Association;
 
 use Roulette\Model\Association\AssociationAbstract;
+use Roulette\Model\Association\Relation;
+use Roulette\Model\Store;
 use Roulette\Model;
 
 /**
@@ -50,5 +52,38 @@ class BelongsTo extends AssociationAbstract
         $relation->setResource(new $model($data));
 
         return $this;
+    }
+
+    function eagerLoad(Store $records): void
+    {
+        $model    = $this->getModel();
+        $field    = $this->getField();
+
+        $fkValues = [];
+        $records->each(function($record) use ($field, &$fkValues) {
+            $fk = $record->get($field, false);
+            if ($fk !== null) $fkValues[] = $fk;
+        });
+
+        if (empty($fkValues)) return;
+
+        $fkValues = array_unique($fkValues);
+        $pk       = $model::getPrimary();
+        $pkColumn = array_key_first($model::getFields()->mapToSource([$pk => '']));
+        $parents  = $this->batchFetch($model, $pkColumn, $fkValues);
+
+        $indexed = [];
+        foreach ($parents as $r) {
+            $indexed[$r->getId()] = $r;
+        }
+
+        $assoc = $this;
+        $records->each(function($record) use ($assoc, $field, $indexed) {
+            $fk  = $record->get($field, false);
+            $rel = new Relation($assoc, $record);
+            $rel->setAssociated(true);
+            $rel->setResource($indexed[$fk] ?? null);
+            $record->getRelations()->set($assoc->getName(), $rel);
+        });
     }
 }

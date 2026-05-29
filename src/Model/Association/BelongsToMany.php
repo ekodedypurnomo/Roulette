@@ -193,6 +193,33 @@ class BelongsToMany extends AssociationAbstract
         return $result;
     }
 
+    function eagerLoad(Store $records): void
+    {
+        $model    = $this->getModel();
+
+        $ownerIds = [];
+        $records->each(function($record) use (&$ownerIds) {
+            $id = $record->getId();
+            if ($id !== null) $ownerIds[] = $id;
+        });
+
+        if (empty($ownerIds)) return;
+
+        $grouped = $this->batchLoad($model, $ownerIds);
+
+        $assoc = $this;
+        $records->each(function($record) use ($assoc, $model, $grouped) {
+            $id       = $record->getId();
+            $items    = $grouped[$id] ?? [];
+            $rel      = new Relation($assoc, $record);
+            $relStore = new Store(null, $model);
+            foreach ($items as $r) $relStore->add($r);
+            $rel->setAssociated(true);
+            $rel->setResource($relStore);
+            $record->getRelations()->set($assoc->getName(), $rel);
+        });
+    }
+
     // -------------------------------------------------------------------------
 
     private function fetchRelatedModels(string $model, array $relatedIds): array
