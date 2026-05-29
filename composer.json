@@ -3,10 +3,17 @@
     "description": "PHP ORM framework with field lifecycle, authorization, and validation",
     "type": "library",
     "license": "MIT",
+    "keywords": ["orm", "database", "model", "php", "query-builder", "active-record", "validation"],
+    "homepage": "https://github.com/ekodedypurnomo/Roulette",
+    "support": {
+        "issues": "https://github.com/ekodedypurnomo/Roulette/issues",
+        "source": "https://github.com/ekodedypurnomo/Roulette"
+    },
     "authors": [
         {
             "name": "Eko Dedy Purnomo",
-            "email": "eko.dedy.purnomo@gmail.com"
+            "email": "eko.dedy.purnomo@gmail.com",
+            "homepage": "https://github.com/ekodedypurnomo"
         }
     ],
     "require": {
