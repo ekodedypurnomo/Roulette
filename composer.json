@@ -1,5 +1,5 @@
 {
-    "name": "ekodedypurnomo/roulette",
+    "name": "roulette/roulette",
     "description": "PHP ORM framework with field lifecycle, authorization, and validation",
     "type": "library",
     "license": "MIT",
