@@ -8,12 +8,15 @@ Associations are declared in the prototype under the `associations` key.
 static::prototype([
     'table'        => 'posts',
     'associations' => [
-        'author'   => ['type' => 'belongsTo', 'model' => User::class,    'field' => 'user_id'],
-        'comments' => ['type' => 'hasMany',   'model' => Comment::class, 'field' => 'post_id'],
-        'meta'     => ['type' => 'hasOne',    'model' => PostMeta::class, 'field' => 'post_id'],
+        'author'   => ['type' => 'belongsTo',    'model' => User::class,    'field' => 'user_id'],
+        'comments' => ['type' => 'hasMany',       'model' => Comment::class, 'field' => 'post_id'],
+        'meta'     => ['type' => 'hasOne',        'model' => PostMeta::class, 'field' => 'post_id'],
+        'tags'     => ['type' => 'belongsToMany', 'model' => Tag::class,     'pivotTable' => 'post_tags', 'foreignKey' => 'post_id', 'relatedKey' => 'tag_id'],
     ],
 ]);
 ```
+
+---
 
 ## HasMany
 
@@ -29,6 +32,8 @@ $post     = Post::load('post-id');
 $comments = $post->lookup('comments'); // → Store of Comment models
 ```
 
+---
+
 ## HasOne
 
 One record has one related record. The related model holds the foreign key.
@@ -40,8 +45,10 @@ One record has one related record. The related model holds the foreign key.
 
 ```php
 $user    = User::load('user-id');
-$profile = $user->lookup('profile'); // → single Profile model
+$profile = $user->lookup('profile'); // → single Profile model (or null)
 ```
+
+---
 
 ## BelongsTo
 
@@ -57,9 +64,69 @@ $post   = Post::load('post-id');
 $author = $post->lookup('author'); // → single User model
 ```
 
+---
+
+## BelongsToMany
+
+Many-to-many relationship through a pivot (join) table. Neither model holds the foreign key directly — a pivot table connects them.
+
+### Config keys
+
+| Key | Required | Description |
+| --- | -------- | ----------- |
+| `type` | yes | `'belongsToMany'` |
+| `model` | yes | Related model class |
+| `pivotTable` | yes | Name of the pivot/join table |
+| `foreignKey` | yes | Column in pivot that points to this model's PK |
+| `relatedKey` | yes | Column in pivot that points to the related model's PK |
+
+```php
+// Post belongs to many Tags via post_tags pivot
+'tags' => [
+    'type'        => 'belongsToMany',
+    'model'       => Tag::class,
+    'pivotTable'  => 'post_tags',
+    'foreignKey'  => 'post_id',
+    'relatedKey'  => 'tag_id',
+]
+```
+
+### Reading
+
+```php
+$post = Post::load('post-id');
+$tags = $post->lookup('tags'); // → Store of Tag models
+```
+
+### Managing the pivot
+
+```php
+$post = Post::load('post-id');
+
+// Attach one related record
+$post->lookup('tags')->attach($tagId);
+
+// Detach one related record
+$post->lookup('tags')->detach($tagId);
+
+// Replace all related records in one call
+$post->lookup('tags')->sync([$tagId1, $tagId2, $tagId3]);
+// → inserts rows for IDs not yet present, deletes rows no longer in the list
+```
+
+### Force reload
+
+Pass `true` to bypass the cached relation and re-query:
+
+```php
+$post->lookup('tags', true); // fresh query
+```
+
+---
+
 ## Lazy Loading & N+1
 
-Associations are lazy-loaded on first `lookup()` call. Be careful inside loops:
+All associations are lazy-loaded on the first `lookup()` call. Be careful inside loops:
 
 ```php
 // N+1 problem — one query per post
@@ -74,16 +141,18 @@ Enable N+1 detection during development:
 use Roulette\N1Detector;
 
 N1Detector::enable();
-N1Detector::setThreshold(2); // warn after 2 loads of same association
+N1Detector::setThreshold(2); // warn after 2 loads of the same association key
 N1Detector::onDetect(fn($key, $count) => error_log("N+1: $key ($count hits)"));
 ```
 
-See [Advanced → N+1 Detection](advanced.md#n1-detection) for details.
+See [Advanced → N+1 Detection](advanced.md#n1-detection) for full reference.
+
+---
 
 ## Force Reload
 
-Pass `true` to bypass the cached relation and re-query:
+Pass `true` to any `lookup()` call to bypass the in-memory cache and re-query:
 
 ```php
-$post->lookup('comments', true); // force fresh query
+$user->lookup('posts', true); // ignores cached result, runs fresh SELECT
 ```

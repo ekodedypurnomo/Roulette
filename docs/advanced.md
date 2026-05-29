@@ -25,7 +25,7 @@ $diff = Schema::diff(User::class);
 // $diff structure:
 [
     'table'   => 'users',
-    'exists'  => false,     // whether table exists in DB
+    'exists'  => false,     // whether the table exists in the DB
     'missing' => [          // columns in model but not in DB → need CREATE/ADD
         ['name' => 'email', 'type' => 'email', ...],
     ],
@@ -46,7 +46,7 @@ Schema::migrate(User::class);
 ### Type Mapping
 
 | ORM type | SQLite | MySQL |
-|----------|--------|-------|
+| -------- | ------ | ----- |
 | `string` | TEXT | VARCHAR(255) |
 | `integer` | INTEGER | INT |
 | `float` | REAL | FLOAT |
@@ -58,11 +58,77 @@ Schema::migrate(User::class);
 
 ---
 
+## Soft Deletes {#soft-deletes}
+
+Apply the `SoftDeletable` trait to any model to replace hard deletes with a timestamp flag.
+
+### Setup
+
+```php
+use Roulette\Mixin\SoftDeletable;
+
+class Post extends Model
+{
+    use SoftDeletable;
+
+    static function init(): void
+    {
+        static::prototype([
+            'table'  => 'posts',
+            'fields' => [
+                ['name' => 'id',         'update' => false],
+                ['name' => 'title',      'type' => 'string'],
+                ['name' => 'deleted_at', 'nullable' => true, 'update' => true],
+            ],
+        ]);
+    }
+}
+```
+
+The `deleted_at` column must be declared in the prototype **and** exist in the database table (e.g. `TEXT` or `DATETIME`, nullable).
+
+### Behavior
+
+| Method | Description |
+| ------ | ----------- |
+| `$post->destroy()` | Sets `deleted_at` to now — row stays in DB |
+| `$post->forceDelete()` | Permanently removes the row |
+| `$post->restore()` | Clears `deleted_at`, un-deleting the record |
+| `$post->isTrashed()` | Returns `true` when `deleted_at` is not null |
+| `Post::withTrashed()::find()` | Includes soft-deleted rows in results |
+| `Post::find()` | Automatically excludes soft-deleted rows |
+
+### How the scope works
+
+`SoftDeletable` injects a scope named `__softDelete` that appends `WHERE deleted_at IS NULL` to every `find()`, `load()`, `count()`, and `paginate()` call. Bypass it with:
+
+```php
+Post::withTrashed()::find();        // all rows including deleted
+Post::withTrashed()::count();       // count including deleted
+Post::withTrashed()::load($id);     // load a specific soft-deleted record
+```
+
+`withTrashed()` is consumed after one query — it does not persist.
+
+### Callbacks
+
+`destroy()` and `forceDelete()` accept the same optional callback as the base `destroy()`:
+
+```php
+$post->destroy(function(bool $success, $operation, $record) {
+    if ($success) {
+        // post-delete logic
+    }
+});
+```
+
+---
+
 ## Event Sourcing
 
 Add an automatic audit trail to any model by applying the `EventSourceable` trait.
 
-### Setup
+### Configuration
 
 ```php
 use Roulette\Mixin\EventSourceable;
@@ -98,10 +164,10 @@ static::prototype([
 ### What Gets Captured
 
 | Operation | Payload |
-|-----------|---------|
-| `create` | all fields with `from: null, to: <value>` |
-| `update` | only changed fields with `from: <old>, to: <new>` |
-| `delete` | empty payload `{}` |
+| --------- | ------- |
+| `create` | All fields with `from: null, to: <value>` |
+| `update` | Only changed fields with `from: <old>, to: <new>` |
+| `delete` | Empty payload `{}` |
 
 ### Reading History
 
@@ -110,7 +176,7 @@ $user = User::load('user-id');
 $user->set('name', 'New Name');
 $user->save();
 
-$history = $user->getHistory(); // → Collection, chronological
+$history = $user->getHistory(); // → Collection, chronological order
 
 foreach ($history as $event) {
     echo $event['operation'];          // 'create', 'update', 'delete'
@@ -130,8 +196,8 @@ Detect association lazy-load loops during development.
 ```php
 use Roulette\N1Detector;
 
-N1Detector::enable();           // off by default
-N1Detector::setThreshold(2);   // warn after N loads of same association (default: 2)
+N1Detector::enable();          // off by default
+N1Detector::setThreshold(2);  // warn after N loads of the same association key (default: 2)
 ```
 
 ### Custom Handler
@@ -177,8 +243,9 @@ Control record access using policies and the `Actor` class.
 ```php
 static::prototype([
     'policies' => [
-        'edit'   => fn($actor, $record) => $actor->getId() === $record->get('user_id'),
-        'delete' => fn($actor, $record) => $actor->get('role') === 'admin',
+        // Return true to DENY, false to ALLOW (inverted — callable is a "denial condition")
+        'edit'   => fn($actor, $record) => $actor->getId() !== $record->get('user_id'),
+        'delete' => fn($actor, $record) => $actor->get('role') !== 'admin',
     ],
 ]);
 ```
@@ -196,3 +263,75 @@ if ($actor->can('edit', $post)) {
 ```
 
 If no policy is registered for an action, access is **open by default**.
+
+---
+
+## Large Dataset Processing
+
+### chunk()
+
+Process records in fixed-size batches. Useful when the full result set would exceed available memory.
+
+```php
+User::chunk(
+    size:      100,
+    callback:  function(Store $batch) {
+        foreach ($batch as $user) {
+            // process each record
+        }
+        // return false to stop early
+    },
+    condition: ['active' => 1],
+    order:     ['id' => 'ASC']
+);
+```
+
+Returns total number of records processed.
+
+### cursor()
+
+Yield records one at a time using a PHP `Generator`. Fetches data in internal pages but exposes a flat stream — best for very large tables.
+
+```php
+foreach (User::cursor(condition: ['active' => 1]) as $user) {
+    echo $user->get('email') . PHP_EOL;
+}
+```
+
+Optional third argument controls the internal batch size (default `100`):
+
+```php
+foreach (User::cursor(batchSize: 500) as $user) {
+    // ...
+}
+```
+
+---
+
+## Exceptions
+
+All Roulette exceptions extend `Roulette\Exception\RouletteException`.
+
+| Exception | Thrown when |
+| --------- | ----------- |
+| `ModelNotFoundException` | `load()` finds no matching record |
+| `AssociationException` | Association is misconfigured |
+| `QueryException` | Query execution fails at the DB level |
+| `ValidationException` | `save()` is called with invalid field values |
+
+```php
+use Roulette\Exception\ModelNotFoundException;
+use Roulette\Exception\ValidationException;
+
+try {
+    $user = User::load('unknown-id');
+} catch (ModelNotFoundException $e) {
+    // handle not found
+}
+
+try {
+    $user->save();
+} catch (ValidationException $e) {
+    $errors = $e->getErrors(); // field-keyed error messages
+}
+```

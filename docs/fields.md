@@ -84,7 +84,16 @@ Add inline validators in the field config:
 ]]
 ```
 
-Built-in validators: `string`, `integer`, `float`, `double`, `boolean`, `datetime`, `date`, `time`, `numeric`, `email`, `url`, `uuid`, `format`, `custom`, `minvalue`, `maxvalue`, `below`, `above`, `minlength`, `maxlength`, `notblank`, `istrue`, `isfalse`, `unique`, `inclusion`, `exclusion`, `nullable`.
+For the full validator reference (parameters, error messages, custom validators), see [docs/validators.md](validators.md).
+
+**Register a custom validator globally:**
+
+```php
+use Roulette\Validation;
+
+Validation::addValidator('phone', App\Validator\PhoneValidator::class);
+// then use: ['phone'] in any field's validators array
+```
 
 ## Computed / Virtual Fields
 

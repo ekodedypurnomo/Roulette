@@ -15,7 +15,9 @@ namespace Roulette\Model;
 use Roulette\Collection as BaseCollection;
 
 /**
- * Is a class for helps in manipulating array in a single object.
+ * Typed container for model schema configuration (table, fields, associations,
+ * policies, scopes, views, properties). One instance per model class, stored
+ * as a static property. Extends Collection for flexible key-value access.
  *
  * @package \Roulette\Model
  * @since Version 2.0.0
