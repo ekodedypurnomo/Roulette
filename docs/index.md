@@ -21,16 +21,16 @@ composer require roulette/roulette
 
 | Topic | Description |
 | ----- | ----------- |
-| [Getting Started](getting-started.html) | Installation, DB connection, first model |
-| [Models](model.html) | Prototype config, CRUD, pagination, bulk ops, soft deletes |
-| [Fields](fields.html) | Types, lifecycle, validators, computed fields, mass assignment |
-| [Associations](associations.html) | HasOne, HasMany, BelongsTo, BelongsToMany |
-| [Query Builder](query.html) | Fluent queries, scopes, chunk, cursor, upsert |
-| [Collections](collections.html) | Collection, ManagedCollection, Store API reference |
-| [Authorization](authorization.html) | Actor, Policy, can/able |
-| [Validators](validators.html) | All 27+ built-in validators |
-| [Advanced](advanced.html) | Schema migration, soft deletes, event sourcing, N+1 detection |
-| [Framework Adapters](tunel.html) | Laravel, CodeIgniter, Phalcon, Symfony, Standalone PDO |
+| [Getting Started](getting-started/) | Installation, DB connection, first model |
+| [Models](model/) | Prototype config, CRUD, pagination, bulk ops, soft deletes |
+| [Fields](fields/) | Types, lifecycle, validators, computed fields, mass assignment |
+| [Associations](associations/) | HasOne, HasMany, BelongsTo, BelongsToMany |
+| [Query Builder](query/) | Fluent queries, scopes, chunk, cursor, upsert |
+| [Collections](collections/) | Collection, ManagedCollection, Store API reference |
+| [Authorization](authorization/) | Actor, Policy, can/able |
+| [Validators](validators/) | All 27+ built-in validators |
+| [Advanced](advanced/) | Schema migration, soft deletes, event sourcing, N+1 detection |
+| [Framework Adapters](tunel/) | Laravel, CodeIgniter, Phalcon, Symfony, Standalone PDO |
 
 ---
 
