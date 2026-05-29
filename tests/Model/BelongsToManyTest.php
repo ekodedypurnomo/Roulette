@@ -225,7 +225,7 @@ class BelongsToManyTest extends DbTestCase
         $this->seedPivot('u1', 'r2');
         $this->seedPivot('u2', 'r1');
 
-        $users = Btm_UserModel::with('roles')::find();
+        $users = Btm_UserModel::with('roles')->get();
 
         $users->each(function($user) {
             $roles = $user->getRelation('roles');

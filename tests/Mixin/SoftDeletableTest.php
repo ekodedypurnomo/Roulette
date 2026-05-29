@@ -63,7 +63,7 @@ class SoftDeletableTest extends DbTestCase
         $post->destroy();
 
         // withTrashed bypasses scope — row should still exist
-        $found = SoftPost::withTrashed()::find(['id' => 'p1']);
+        $found = SoftPost::withTrashed()->where(['id' => 'p1'])->get();
         $this->assertSame(1, $found->count());
     }
 
@@ -86,7 +86,7 @@ class SoftDeletableTest extends DbTestCase
         $this->seed('p1', 'Post One');
         $this->seed('p2', 'Post Two', '2024-01-01 00:00:00');
 
-        $posts = SoftPost::withTrashed()::find();
+        $posts = SoftPost::withTrashed()->get();
         $this->assertSame(2, $posts->count());
     }
 
@@ -101,7 +101,7 @@ class SoftDeletableTest extends DbTestCase
         $this->assertNull($notFound, 'load() should not return soft-deleted record');
 
         // withTrashed bypasses scope
-        $found = SoftPost::withTrashed()::load('p1');
+        $found = SoftPost::withTrashed()->where(['id' => 'p1'])->first();
         $this->assertNotNull($found);
         $this->assertSame('p1', $found->getId());
     }
@@ -128,7 +128,8 @@ class SoftDeletableTest extends DbTestCase
     public function testRestoreUndeletes(): void
     {
         $this->seed('p1', 'Post One', '2024-01-01 00:00:00');
-        $post = SoftPost::withTrashed()::loadOrFail('p1');
+        $post = SoftPost::withTrashed()->where(['id' => 'p1'])->first();
+        $this->assertNotNull($post, 'withTrashed()->first() should find soft-deleted record');
         $this->assertTrue($post->isTrashed());
 
         $result = $post->restore();
@@ -148,7 +149,7 @@ class SoftDeletableTest extends DbTestCase
         $post = SoftPost::loadOrFail('p1');
         $post->forceDelete();
 
-        $notFound = SoftPost::withTrashed()::find(['id' => 'p1']);
+        $notFound = SoftPost::withTrashed()->where(['id' => 'p1'])->get();
         $this->assertSame(0, $notFound->count());
     }
 }

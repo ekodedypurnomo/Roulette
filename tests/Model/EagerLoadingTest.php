@@ -108,7 +108,7 @@ class EagerLoadingTest extends DbTestCase
         $this->seedPosts();
         $this->seedComments();
 
-        $posts = EagerPost::with('comments')::find();
+        $posts = EagerPost::with('comments')->get();
 
         $this->assertSame(2, $posts->count());
 
@@ -128,7 +128,7 @@ class EagerLoadingTest extends DbTestCase
         $queryCount = 0;
         $originalTunel = $this->tunel;
 
-        $posts = EagerPost::with('comments')::find();
+        $posts = EagerPost::with('comments')->get();
         $posts->each(function($post) use (&$queryCount, $originalTunel) {
             $post->lookup('comments'); // should use preloaded data, not new query
         });
@@ -145,7 +145,7 @@ class EagerLoadingTest extends DbTestCase
         $this->seedPosts();
         $this->seedComments();
 
-        $posts = EagerPost::with('comments')::find();
+        $posts = EagerPost::with('comments')->get();
         $post1 = null;
         $post2 = null;
         $posts->each(function($p) use (&$post1, &$post2) {
@@ -164,7 +164,7 @@ class EagerLoadingTest extends DbTestCase
         $this->seedPosts();
         $this->seedProfiles();
 
-        $posts = EagerPost::with('profile')::find();
+        $posts = EagerPost::with('profile')->get();
         $post1 = null;
         $posts->each(function($p) use (&$post1) {
             if ($p->getId() === 'p1') $post1 = $p;
@@ -181,7 +181,7 @@ class EagerLoadingTest extends DbTestCase
         // No profile for p2
         $this->seedProfiles();
 
-        $posts = EagerPost::with('profile')::find();
+        $posts = EagerPost::with('profile')->get();
         $post2 = null;
         $posts->each(function($p) use (&$post2) {
             if ($p->getId() === 'p2') $post2 = $p;
@@ -197,7 +197,7 @@ class EagerLoadingTest extends DbTestCase
         $this->seedPosts();
         $this->seedComments();
 
-        $comments = EagerComment::with('post')::find();
+        $comments = EagerComment::with('post')->get();
 
         $this->assertGreaterThan(0, $comments->count());
         $comments->each(function($comment) {
@@ -212,7 +212,7 @@ class EagerLoadingTest extends DbTestCase
         $this->seedComments();
         $this->seedProfiles();
 
-        $posts = EagerPost::with(['comments', 'profile'])::find();
+        $posts = EagerPost::with(['comments', 'profile'])->get();
 
         $post1 = null;
         $posts->each(function($p) use (&$post1) {
@@ -223,18 +223,18 @@ class EagerLoadingTest extends DbTestCase
         $this->assertInstanceOf(EagerProfile::class, $post1->lookup('profile'));
     }
 
-    // --- with() returns class name for chaining ---
+    // --- with() returns ModelQueryBuilder for fluent chaining ---
 
-    public function testWithReturnsSameClass(): void
+    public function testWithReturnsQueryBuilder(): void
     {
         $result = EagerPost::with('comments');
-        $this->assertSame(EagerPost::class, $result);
+        $this->assertInstanceOf(\Roulette\Query\ModelQueryBuilder::class, $result);
     }
 
     public function testWithChainableWithFindReturnsStore(): void
     {
         $this->seedPosts();
-        $store = EagerPost::with('comments')::find();
+        $store = EagerPost::with('comments')->get();
         $this->assertInstanceOf(Store::class, $store);
     }
 }

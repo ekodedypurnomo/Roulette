@@ -129,7 +129,7 @@ trait SoftDeletable
      * Bypass the soft-delete scope for the next find()/load() call.
      * Returns the class name for static chaining.
      */
-    static function withTrashed(): string
+    static function withTrashed(): \Roulette\Query\ModelQueryBuilder
     {
         return static::withoutScope(static::SOFT_DELETE_SCOPE);
     }
@@ -137,7 +137,7 @@ trait SoftDeletable
     /**
      * Override applyScopes to inject the soft-delete filter before any user scopes.
      */
-    protected static function applyScopes(mixed $qop, array $disabled = []): void
+    public static function applyScopes(mixed $qop, array $disabled = []): void
     {
         if (!in_array('*', $disabled) && !in_array(static::SOFT_DELETE_SCOPE, $disabled)) {
             $column = static::resolveDeletedAtColumn();

@@ -73,7 +73,7 @@ class ScopeTest extends DbTestCase
     {
         $this->seed();
 
-        $results = ScopedUser::withoutScope('active')::find();
+        $results = ScopedUser::withoutScope('active')->get();
 
         $this->assertCount(3, $results);
     }
@@ -82,7 +82,7 @@ class ScopeTest extends DbTestCase
     {
         $this->seed();
 
-        $results = ScopedUser::withoutScopes()::find();
+        $results = ScopedUser::withoutScopes()->get();
 
         $this->assertCount(3, $results);
     }
@@ -92,7 +92,7 @@ class ScopeTest extends DbTestCase
         $this->seed();
 
         // First call bypasses active scope — should return all 3
-        $first = ScopedUser::withoutScope('active')::find();
+        $first = ScopedUser::withoutScope('active')->get();
         $this->assertCount(3, $first);
 
         // Second call uses no withoutScope — active scope must fire again
@@ -106,7 +106,7 @@ class ScopeTest extends DbTestCase
 
         // Bob (id=2) is deleted=1 — the 'active' scope adds WHERE deleted=0,
         // so load() should return null when the scope filters him out.
-        $bob = ScopedUser::withoutScopes()::load('2');
+        $bob = ScopedUser::withoutScopes()->where(['id' => '2'])->first();
         $this->assertNotNull($bob);  // found without scope
 
         $bobFiltered = ScopedUser::load('2');
@@ -117,7 +117,7 @@ class ScopeTest extends DbTestCase
     {
         $this->seed();
 
-        $results = ScopedUser::withoutScope(['active', 'alpha'])::find();
+        $results = ScopedUser::withoutScope(['active', 'alpha'])->get();
 
         $this->assertCount(3, $results);
     }
@@ -130,7 +130,7 @@ class ScopeTest extends DbTestCase
         // We verify via raw SQL count — ScopedUser has scopes but we just need
         // to confirm applyScopes() is a no-op when scopes config is absent.
         // Use withoutScopes() to bypass: if 3 rows come back, scopes aren't invented.
-        $results = ScopedUser::withoutScopes()::find();
+        $results = ScopedUser::withoutScopes()->get();
         $this->assertCount(3, $results);
     }
 }
