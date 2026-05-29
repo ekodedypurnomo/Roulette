@@ -10,12 +10,13 @@ PHP 8.1+ · Framework agnostic · Zero migration files
 
 - **Model-driven schema** — prototype declaration is the single source of truth for table structure
 - **Field lifecycle pipeline** — reader, converter, validator, writer, renderer per field
-- **Associations** — HasOne, HasMany, BelongsTo, BelongsToMany (many-to-many via pivot)
+- **Mass assignment protection** — `fillable: false` on sensitive fields prevents user data from overwriting them
+- **Associations** — HasOne, HasMany, BelongsTo, BelongsToMany (many-to-many via pivot; `sync()` is transactional)
 - **Global Query Scopes** — automatic WHERE constraints declared per model, bypassable per query
 - **Pagination** — `paginate()` returns a `Paginator` with total, page, and navigation metadata
 - **Bulk operations** — `insertOrIgnore()`, `upsert()`, `insertMany()`, `incrementWhere()`, `decrementWhere()`
 - **Large datasets** — `chunk()` for batch processing, `cursor()` for generator-based streaming
-- **Soft Deletes** — opt-in `SoftDeletable` trait; `destroy()` sets `deleted_at`, `restore()` reverts it
+- **Soft Deletes** — opt-in `SoftDeletable` trait; `destroy()` sets `deleted_at`, `restore()` reverts it (no-op if not trashed)
 - **Authorization** — policy-based access control via `Actor`
 - **Model Events** — `before:save`, `after:save`, `before:destroy`, `after:destroy`, `after:load`, `after:find`, and more; class-level (`Model::on()`) and instance-level (`$record->on()`)
 - **Event Sourcing** — opt-in audit trail via `EventSourceable` trait
@@ -23,6 +24,7 @@ PHP 8.1+ · Framework agnostic · Zero migration files
 - **Computed fields** — virtual fields calculated at runtime, never persisted
 - **N+1 Detection** — detects lazy-load loops during development
 - **Framework agnostic** — adapters for Laravel 5–12, CodeIgniter 3–4, Phalcon 3–5, Symfony 4–7, Standalone PDO
+- **Long-running process safe** — `Operation::clearLog()`, `N1Detector::fullReset()` for Octane/Swoole/RoadRunner
 
 ---
 
@@ -61,9 +63,11 @@ class User extends Model
 ```
 
 ```php
-// Create
+// Create — non-fillable fields in the array are silently ignored
 $user = new User(['name' => 'Alice', 'email' => 'alice@example.com']);
-$user->save();
+$user->save();               // returns bool
+$user->save(reload: false);  // skip post-save SELECT (faster for write-heavy paths)
+$user->saveOrFail();         // throws ValidationException or QueryException on any failure
 
 // Read
 $user  = User::load('some-id');

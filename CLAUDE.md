@@ -374,7 +374,7 @@ $post->restore();          // clears deleted_at
 $post->isTrashed();        // bool
 
 Post::find([...]);         // auto-excludes soft-deleted (via __softDelete scope)
-Post::withTrashed()::find([...]); // includes soft-deleted
+Post::withTrashed()->where([...])->get(); // includes soft-deleted
 ```
 
 ---
