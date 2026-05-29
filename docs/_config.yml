@@ -1,0 +1,19 @@
+title: Roulette ORM
+description: PHP ORM framework with field lifecycle, authorization, and validation
+theme: just-the-docs
+
+url: https://ekodedypurnomo.github.io
+baseurl: /roulette
+
+aux_links:
+  "GitHub":
+    - "https://github.com/ekodedypurnomo/Roulette"
+  "Packagist":
+    - "https://packagist.org/packages/roulette/roulette"
+
+footer_content: "© Eko Dedy Purnomo. Released under the MIT License."
+
+back_to_top: true
+back_to_top_text: "Back to top"
+
+search_enabled: true

@@ -1,3 +1,8 @@
+---
+title: Models
+nav_order: 3
+---
+
 # Models
 
 ## Prototype Configuration

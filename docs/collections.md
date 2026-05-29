@@ -1,3 +1,8 @@
+---
+title: Collections
+nav_order: 7
+---
+
 # Collections
 
 Three related classes form the collection hierarchy:

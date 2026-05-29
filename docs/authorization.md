@@ -1,3 +1,8 @@
+---
+title: Authorization
+nav_order: 8
+---
+
 # Authorization
 
 Roulette uses a Policy + Actor system for record-level access control.
